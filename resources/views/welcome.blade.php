@@ -174,7 +174,7 @@
         </div>
         <ul class="nav justify-content-end">
             <li class="nav-item">
-                <a class="nav-link" href="#strona-glowna">Strona Główna</a>
+                <a class="nav-link" href="#strona-glowna">Home</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#info">Info</a>
@@ -183,16 +183,16 @@
                 <a class="nav-link" href="#menu">Menu</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#galeria">Galeria</a>
+                <a class="nav-link" href="#galeria">Gallery</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#kucharze">Kucharze</a>
+                <a class="nav-link" href="#kucharze">Chefs</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#kontakt">Kontakt</a>
+                <a class="nav-link" href="#kontakt">Contact</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('logowanie') }}">Logowanie</a>
+                <a class="nav-link" href="{{ route('login') }}">Login</a>
             </li>
         </ul>
     </div>
