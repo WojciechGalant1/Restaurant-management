@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\Table;
+use App\Models\MenuItem;
+use App\Services\OrderService;
+use Illuminate\Http\Request;
+
+class OrderController extends Controller
+{
+    private OrderService $orderService;
+
+    public function __construct(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
+
+    public function index()
+    {
+        $this->authorize('viewAny', Order::class);
+        $orders = Order::with(['table', 'waiter', 'orderItems.menuItem.dish'])->latest()->paginate(15);
+        return view('orders.index', compact('orders'));
+    }
+
+    public function create()
+    {
+        $this->authorize('create', Order::class);
+        $tables = Table::where('status', 'available')->get();
+        $menuItems = MenuItem::with('dish')->where('is_available', true)->get();
+        return view('orders.create', compact('tables', 'menuItems'));
+    }
+
+    public function store(Request $request)
+    {
+        $this->authorize('create', Order::class);
+        
+        $validated = $request->validate([
+            'table_id' => 'required|exists:tables,id',
+            'items' => 'required|array|min:1',
+            'items.*.menu_item_id' => 'required|exists:menu_items,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_price' => 'required|numeric',
+        ]);
+
+        $order = $this->orderService->createOrder($validated, auth()->user());
+
+        return redirect()->route('orders.show', $order)->with('success', 'Order created successfully.');
+    }
+
+    public function show(Order $order)
+    {
+        $this->authorize('view', $order);
+        $order->load(['table', 'waiter', 'orderItems.menuItem.dish']);
+        return view('orders.show', compact('order'));
+    }
+
+    public function edit(Order $order)
+    {
+        $this->authorize('update', $order);
+        return view('orders.edit', compact('order'));
+    }
+
+    public function update(Request $request, Order $order)
+    {
+        $this->authorize('update', $order);
+        // Status update logic etc.
+        return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
+    }
+
+    public function destroy(Order $order)
+    {
+        $this->authorize('delete', $order);
+        $order->delete();
+        return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+    }
+}
