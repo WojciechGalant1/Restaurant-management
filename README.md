@@ -1,66 +1,67 @@
-<p align="center"><a href="https://laravel.com" target="\_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Restaurant Management System (Modern Edition)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A high-performance, secure, and modern restaurant management platform built with **Laravel 10**, **Tailwind CSS**, and **Alpine.js**. This project represents a complete refactor from a legacy codebase into a modern, English-first monolithic architecture.
 
-## About Laravel
+## Key Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Dynamic Dashboard**: A central hub providing an overview of restaurant operations and quick access to all modules.
+- **Order Management**: Real-time tracking of orders, from entry to kitchen preparation and final delivery.
+- **Interactive Tables**: Manage restaurant layout and track table availability in real-time.
+- **Reservation System**: Comprehensive booking management to handle customer schedules efficiently.
+- **Unified Menu & Dishes**: A two-tier system for managing base dish definitions and their specific pricing or availability as menu items.
+- **Staff & Shifts**: Full staff management with role-based schedules and shift tracking.
+- **Invoicing**: Generates financial records and handles order settlements with multiple payment methods.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Security & Authorization
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The application implements a robust **Role-Based Access Control (RBAC)** system using Laravel Policies:
+- **Managers**: Full access to staff management, financial records (invoices), and configuration.
+- **Waiters**: Access to orders, tables, and reservations.
+- **Chefs**: Specialized view for kitchen orders and meal preparation.
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Backend**: Laravel 10 (PHP 8.2+)
+- **Frontend**: Blade Components + Tailwind CSS
+- **Interactivity**: Alpine.js (for dynamic forms and UI states)
+- **Icons**: Blade Heroicons
+- **Auth**: Laravel Breeze
+- **Database**: MySQL / MariaDB
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Project Structure
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- `app/Models/`: Core domain models (Order, Table, User, Shift, etc.)
+- `app/Http/Controllers/`: Resourceful controllers handling business flow.
+- `app/Services/`: Business logic extraction (e.g., `OrderService`).
+- `app/Policies/`: Security layer for model-level authorization.
+- `resources/views/`: Modern, responsive Blade views organized by module.
+- `database/migrations/`: Structured database schema definitions.
 
-## Laravel Sponsors
+## Getting Started
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+1. **Clone & Install**:
+   ```bash
+   composer install
+   npm install
+   ```
+2. **Configure Environment**:
+   ```bash
+   copy .env.example .env
+   php artisan key:generate
+   ```
+3. **Database Setup**:
+   ```bash
+   php artisan migrate --seed
+   ```
+4. **Run Locally**:
+   ```bash
+   php artisan serve
+   npm run dev
+   ```
 
-### Premium Partners
+## Performance Notes
 
-- [**Vehikl**](https://vehikl.com/)
-- [**Tighten Co.**](https://tighten.co)
-- [**Kirschbaum Development Group**](https://kirschbaumdevelopment.com)
-- [**64 Robots**](https://64robots.com)
-- [**Cubet Techno Labs**](https://cubettech.com)
-- [**Cyber-Duck**](https://cyber-duck.co.uk)
-- [**Many**](https://www.many.co.uk)
-- [**Webdock, Fast VPS Hosting**](https://www.webdock.io/en)
-- [**DevSquad**](https://devsquad.com)
-- [**Curotec**](https://www.curotec.com/services/technologies/laravel/)
-- [**OP.GG**](https://op.gg)
-- [**WebReinvent**](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)
-- [**Lendio**](https://lendio.com)
+The application uses **Eager Loading** to prevent N+1 query issues and is optimized for fast response times. For development, **Laravel Debugbar** is integrated to monitor query performance and application state.
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*Maintained as a modern, English-standard professional codebase.*
