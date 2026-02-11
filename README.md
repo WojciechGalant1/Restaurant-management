@@ -1,4 +1,4 @@
-# Restaurant Management System (Modern Edition)
+# Restaurant Management System 
 
 A high-performance, secure, and modern restaurant management platform built with **Laravel 10**, **Tailwind CSS**, and **Alpine.js**. This project represents a complete refactor from a legacy codebase into a modern, English-first monolithic architecture.
 
