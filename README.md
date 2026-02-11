@@ -64,4 +64,3 @@ The application implements a robust **Role-Based Access Control (RBAC)** system 
 The application uses **Eager Loading** to prevent N+1 query issues and is optimized for fast response times. For development, **Laravel Debugbar** is integrated to monitor query performance and application state.
 
 ---
-*Maintained as a modern, English-standard professional codebase.*
