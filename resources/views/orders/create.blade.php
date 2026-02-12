@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <x-heroicon-o-plus class="w-4 h-4 mr-2" />
             {{ __('New Order') }}
         </h2>
     </x-slot>
@@ -8,7 +9,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <form method="POST" action="{{ route('orders.store') }}" x-data="{ 
+                <form method="POST" action="{{ route('orders.store') }}" x-data="{
                     items: [{ menu_item_id: '', quantity: 1, unit_price: 0 }],
                     menuItems: {{ $menuItems->toJson() }},
                     addItem() {
@@ -29,7 +30,7 @@
                     }
                 }">
                     @csrf
-                    
+
                     <div class="mb-8">
                         <x-input-label for="table_id" :value="__('Table')" />
                         <select id="table_id" name="table_id" class="mt-1 block w-1/3 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
@@ -61,13 +62,13 @@
                                 </div>
                                 <div class="w-24">
                                     <x-input-label :value="__('Qty')" />
-                                    <x-text-input type="number" :name="'items['+index+'][quantity]'" x-model="item.quantity" min="1" class="mt-1 block w-full" required />
+                                    <x-text-input type="number" x-bind:name="'items['+index+'][quantity]'" x-model="item.quantity" min="1" class="mt-1 block w-full" required />
                                 </div>
                                 <div class="w-32">
                                     <x-input-label :value="__('Price')" />
                                     <div class="mt-2 text-sm font-bold">
                                         <span x-text="(item.quantity * item.unit_price).toFixed(2)"></span> PLN
-                                        <input type="hidden" :name="'items['+index+'][unit_price]'" :value="item.unit_price">
+                                        <input type="hidden" x-bind:name="'items['+index+'][unit_price]'" :value="item.unit_price">
                                     </div>
                                 </div>
                                 <div>

@@ -1,312 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Restauracja</title>
-    <!-- Latest compiled and minified CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{{ config('app.name', 'Laravel') }} - Staff Portal</title>
 
-    <!-- Latest compiled JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
-
-        .tlo_strony1 {
-            width: 100%;
-            height: 20%;
-            margin-top: -270px;
-            position: relative;
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-
-        .tlo_strony2 {
-            width: 100%;
-            height: 20%;
-            margin-top: -52px;
-            position: relative;
-        }
-
-        .tlo_strony3 {
-            width: 100%;
-            height: 20%;
-            margin-top: -52px;
-            position: relative;
-        }
-
-        .tlo_strony4 {
-            width: 100%;
-            height: 20%;
-            margin-top: -52px;
-            position: relative;
-        }
-
-        .tlo_strony5 {
-            width: 100%;
-            height: 20%;
-            margin-top: -52px;
-            position: relative;
-        }
-
-        .tlo_strony6 {
-            width: 100%;
-            height: 20%;
-            margin-top: -52px;
-            position: relative;
-        }
-
-        .nawigacja {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            margin-top: 41px;
-            height: 77px;
-            background-color: transparent;
-            z-index: 999;
-        }
-
-        .logo {
-            margin-left: 20px;
-            color: white;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: white;
-            padding: 14px;
-            margin: 12px;
-        }
-
-        .nav-link:hover {
-            color: orange;
-            border-color: orange;
-            border-radius: 20px;
-            border-width: 3px;
-            border-style: solid;
-            transform: scale(1.2);
-        }
-
-        .content {
-            position: relative;
-            margin-top: 100px; /* Dodana wartość margin-top */
-        }
-
-        .text-on-image {
-            position: absolute;
-            top: 36%;
-            left: 26%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: white;
-            text-align: center;
-            font-family: 'Abril Fatface', cursive;
-            font-size: 56px;
-        }
-
-        .text-on-image2 {
-            position: absolute;
-            top: 45%;
-            left: 26%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: white;
-            text-align: center;
-            font-family: 'Abril Fatface', cursive;
-            font-size: 56px;
-        }
-
-        .restauracja {
-            color: orange;
-        }
-
-        .pagination {
-            margin-top: 10px;
-        }
-
-        .pagination button,
-        .pagination a {
-            padding: 5px 10px;
-            border: none;
-            background-color: #f0f0f0;
-            color: #333;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .pagination button:disabled,
-        .pagination a.disabled {
-            opacity: 0.5;
-            cursor: default;
-        }
-
-        .carousel-container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-
-        .carousel_slide {
-            width: 80%;
-            height: 50%;
-            position: absolute;
-            top: 25%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .tlo_strony3 {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: cover;
-        }
-
     </style>
 </head>
-
-<body>
-<header>
-    <div class="nawigacja">
-        <div class="logo">
-            <h1 class="text-on-image">Mieszany/Mieszany</h1>
-        </div>
-        <ul class="nav justify-content-end">
-            <li class="nav-item">
-                <a class="nav-link" href="#strona-glowna">Home</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#info">Info</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#menu">Menu</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#galeria">Gallery</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#kucharze">Chefs</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#kontakt">Contact</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('login') }}">Login</a>
-            </li>
-        </ul>
+<body class="antialiased font-sans bg-gray-900 overflow-hidden">
+    <!-- Background Decoration -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute top-20 -right-4 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
     </div>
-</header>
 
-<section id="strona-glowna">
-    <div class="content">
-        <img class="tlo_strony1"
-             src="https://images.pexels.com/photos/1639561/pexels-photo-1639561.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2">
-        <div class="text-on-image">Witaj w naszej <span class="restauracja">Restauracji</span></div>
-        <div class="text-on-image2">Jesteśmy z wami 10 lat</div>
-    </div>
-</section>
+    <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-gray-950 via-gray-900 to-indigo-950">
 
+        <div class="w-full max-w-md">
+            <!-- Logo area -->
+            <div class="flex flex-col items-center mb-8">
+                <div class="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-500/50 mb-4 transition-transform hover:scale-110 duration-500">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-white tracking-tight text-center">Management System</h1>
+                <p class="text-indigo-300 mt-2 font-medium">Enterprise Restaurant Portal</p>
+            </div>
 
-<section id="info">
-    <h2>Info</h2>
-    <img class="tlo_strony2"
-         src="https://images.pexels.com/photos/1126728/pexels-photo-1126728.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2">
+            <!-- Login Card -->
+            <div class="glass rounded-3xl p-8 shadow-2xl text-center">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6 tracking-tight">Staff Access Point</h2>
 
-</section>
+                <div class="space-y-4">
+                    @auth
+                        <div class="p-4 bg-indigo-50 rounded-2xl mb-6">
+                            <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Authenticated User</p>
+                            <p class="text-lg font-bold text-indigo-700">{{ Auth::user()->name }}</p>
+                        </div>
 
-<section id="menu">
-    <h2>Menu</h2>
-    <div class="menucontent">
-        <div class="carousel-container">
-            <img class="tlo_strony3"
-                 src="https://images.pexels.com/photos/313700/pexels-photo-313700.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2">
-            <div class="carousel_slide" data-bs-ride="carousel">
+                        <a href="{{ route('dashboard') }}" class="flex items-center justify-center w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition duration-300 transform hover:-translate-y-1 shadow-xl shadow-indigo-500/30">
+                            Go to Dashboard
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </a>
+                    @else
+                        <p class="text-gray-500 mb-8 leading-relaxed">Please sign in with your employee credentials to manage restaurant operations.</p>
 
-                <div class="carousel-indicators">
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="0" class="active"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="1"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="2"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="3"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="4"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="5"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="6"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="7"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="8"></button>
-                    <button type="button" data-bs-target="#demo" data-bs-slide-to="9"></button>
+                        <a href="{{ route('login') }}" class="flex items-center justify-center w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition duration-300 transform hover:-translate-y-1 shadow-xl shadow-indigo-500/30">
+                            Staff Login
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            </svg>
+                        </a>
+                    @endauth
                 </div>
 
-
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0004.jpg" alt="Los Angeles"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0005.jpg" alt="Chicago"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0006.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0007.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0008.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0009.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0010.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0011.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0012.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://www.browarikuchnia.pl/wp-content/uploads/2023/03/0013.jpg" alt="New York"
-                             class="d-block w-100">
-                    </div>
+                <div class="mt-8 pt-6 border-t border-gray-200/50">
+                    <p class="text-xs text-gray-400 uppercase tracking-widest font-bold">Internal Use Only</p>
                 </div>
+            </div>
 
-
-                <button class="carousel-control-prev" type="button" data-bs-target="#demo" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#demo" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
+            <!-- Footer -->
+            <div class="mt-12 text-center text-gray-500 text-sm">
+                &copy; {{ date('Y') }} {{ config('app.name') }} Management. All rights reserved.
             </div>
         </div>
     </div>
-</section>
-
-<section id="galeria">
-    <img class="tlo_strony4"
-         src="https://images.pexels.com/photos/735869/pexels-photo-735869.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2">
-</section>
-
-<section id="kucharze">
-    <img class="tlo_strony5"
-         src="https://images.pexels.com/photos/2544829/pexels-photo-2544829.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2">
-
-</section>
-
-<section id="kontakt">
-    <img class="tlo_strony6"
-         src="https://images.pexels.com/photos/1416530/pexels-photo-1416530.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2">
-
-</section>
 </body>
 </html>

@@ -34,6 +34,8 @@ class KitchenController extends Controller
 
         $orderItem->update(['status' => $validated['status']]);
 
+        event(new \App\Events\OrderItemStatusUpdated($orderItem));
+
         return back()->with('success', 'Item status updated.');
     }
 }

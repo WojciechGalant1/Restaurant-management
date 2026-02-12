@@ -19,13 +19,15 @@ class OrderService
             ]);
 
             foreach ($data['items'] as $item) {
-                $order->orderItems()->create([
+                $orderItem = $order->orderItems()->create([
                     'menu_item_id' => $item['menu_item_id'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                     'notes' => $item['notes'] ?? null,
                     'status' => 'pending',
                 ]);
+
+                event(new \App\Events\OrderItemCreated($orderItem));
             }
 
             $order->update(['total_price' => $order->orderItems->sum(fn($i) => $i->quantity * $i->unit_price)]);

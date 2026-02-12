@@ -1,12 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Invoices & Bills') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Invoices & Bills') }}
+            </h2>
+            <a href="{{ route('invoices.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
+                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
+                {{ __('New Invoice') }}
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm sm:rounded-r-lg" role="alert">
+                    <p>{{ session('success') }}</p>
+                </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -43,22 +55,22 @@
                                         {{ $invoice->issued_at->format('d.m.Y H:i') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
-                                        <a href="{{ route('invoices.show', $invoice) }}" class="text-indigo-600 hover:text-indigo-900" title="View PDF/Detail">
+                                        <a href="{{ route('invoices.show', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition" title="View Detail">
                                             <x-heroicon-o-document-text class="w-5 h-5" />
                                         </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-10 whitespace-nowrap text-sm text-gray-500 text-center">
-                                        No invoices found.
+                                    <td colspan="7" class="px-6 py-10 text-center text-gray-500 italic">
+                                        {{ __('No invoices found.') }}
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="mt-4">
                     {{ $invoices->links() }}
                 </div>

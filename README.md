@@ -21,7 +21,7 @@ The application implements a robust **Role-Based Access Control (RBAC)** system 
 
 ## Tech Stack
 
-- **Backend**: Laravel 10 (PHP 8.2+)
+- **Backend**: Laravel 12 (PHP 8.5+)
 - **Frontend**: Blade Components + Tailwind CSS
 - **Interactivity**: Alpine.js (for dynamic forms and UI states)
 - **Icons**: Blade Heroicons

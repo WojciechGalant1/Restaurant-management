@@ -9,6 +9,7 @@ use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\KitchenController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -34,6 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('shifts', ShiftController::class);
     Route::resource('users', UserController::class);
     Route::resource('invoices', InvoiceController::class);
+
+    // Kitchen
+    Route::get('/kitchen', [KitchenController::class, 'index'])->name('kitchen.index');
+    Route::patch('/kitchen/items/{orderItem}/status', [KitchenController::class, 'updateStatus'])->name('kitchen.update-status');
 });
 
 require __DIR__.'/auth.php';

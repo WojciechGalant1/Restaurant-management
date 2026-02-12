@@ -4,7 +4,8 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Dishes') }}
             </h2>
-            <a href="{{ route('dishes.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+            <a href="{{ route('dishes.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
+                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                 {{ __('Add New Dish') }}
             </a>
         </div>
@@ -12,6 +13,12 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm sm:rounded-r-lg" role="alert">
+                    <p>{{ session('success') }}</p>
+                </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -38,13 +45,13 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
-                                        <a href="{{ route('dishes.edit', $dish) }}" class="text-indigo-600 hover:text-indigo-900">
+                                        <a href="{{ route('dishes.edit', $dish) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition">
                                             <x-heroicon-o-pencil class="w-5 h-5" />
                                         </a>
-                                        <form action="{{ route('dishes.destroy', $dish) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                                        <form action="{{ route('dishes.destroy', $dish) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this dish?') }}')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">
+                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded transition">
                                                 <x-heroicon-o-trash class="w-5 h-5" />
                                             </button>
                                         </form>
@@ -52,15 +59,15 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-10 whitespace-nowrap text-sm text-gray-500 text-center">
-                                        No dishes found.
+                                    <td colspan="4" class="px-6 py-10 text-center text-gray-500 italic">
+                                        {{ __('No dishes found.') }}
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="mt-4">
                     {{ $dishes->links() }}
                 </div>

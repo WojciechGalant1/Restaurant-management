@@ -15,30 +15,42 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
-                        {{ __('Orders') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
-                        {{ __('Tables') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('reservations.index')" :active="request()->is('reservations*')">
-                        {{ __('Reservations') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('dishes.index')" :active="request()->is('dishes*')">
-                        {{ __('Dishes') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('menu-items.index')" :active="request()->is('menu-items*')">
-                        {{ __('Menu') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
-                        {{ __('Shifts') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('users.index')" :active="request()->is('users*')">
-                        {{ __('Staff') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('invoices.index')" :active="request()->is('invoices*')">
-                        {{ __('Invoices') }}
-                    </x-nav-link>
+
+                    @if(in_array(auth()->user()->role, ['manager', 'waiter']))
+                        <x-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
+                            {{ __('Orders') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
+                            {{ __('Tables') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('reservations.index')" :active="request()->is('reservations*')">
+                            {{ __('Reservations') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(in_array(auth()->user()->role, ['manager', 'chef']))
+                        <x-nav-link :href="route('kitchen.index')" :active="request()->is('kitchen*')">
+                            {{ __('Kitchen') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(auth()->user()->role === 'manager')
+                        <x-nav-link :href="route('dishes.index')" :active="request()->is('dishes*')">
+                            {{ __('Dishes') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('menu-items.index')" :active="request()->is('menu-items*')">
+                            {{ __('Menu') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
+                            {{ __('Shifts') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('users.index')" :active="request()->is('users*')">
+                            {{ __('Staff') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('invoices.index')" :active="request()->is('invoices*')">
+                            {{ __('Invoices') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -94,30 +106,42 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
-                {{ __('Orders') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
-                {{ __('Tables') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('reservations.index')" :active="request()->is('reservations*')">
-                {{ __('Reservations') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('dishes.index')" :active="request()->is('dishes*')">
-                {{ __('Dishes') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('menu-items.index')" :active="request()->is('menu-items*')">
-                {{ __('Menu') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
-                {{ __('Shifts') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('users.index')" :active="request()->is('users*')">
-                {{ __('Staff') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('invoices.index')" :active="request()->is('invoices*')">
-                {{ __('Invoices') }}
-            </x-responsive-nav-link>
+
+            @if(in_array(auth()->user()->role, ['manager', 'waiter']))
+                <x-responsive-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
+                    {{ __('Orders') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
+                    {{ __('Tables') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reservations.index')" :active="request()->is('reservations*')">
+                    {{ __('Reservations') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(in_array(auth()->user()->role, ['manager', 'chef']))
+                <x-responsive-nav-link :href="route('kitchen.index')" :active="request()->is('kitchen*')">
+                    {{ __('Kitchen') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(auth()->user()->role === 'manager')
+                <x-responsive-nav-link :href="route('dishes.index')" :active="request()->is('dishes*')">
+                    {{ __('Dishes') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('menu-items.index')" :active="request()->is('menu-items*')">
+                    {{ __('Menu') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
+                    {{ __('Shifts') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->is('users*')">
+                    {{ __('Staff') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('invoices.index')" :active="request()->is('invoices*')">
+                    {{ __('Invoices') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
