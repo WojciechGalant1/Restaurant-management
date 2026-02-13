@@ -4,9 +4,10 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Kitchen Display System') }}
             </h2>
-            <div class="flex items-center text-sm text-gray-500">
-                <span class="mr-2 animate-pulse rounded-full h-2 w-2 bg-green-500"></span>
-                {{ __('Live Updates (Refreshes every 10s)') }}
+            <div class="flex items-center text-sm text-gray-500" x-data>
+                <span x-bind:class="$store.echo.connected ? 'bg-green-500' : 'bg-red-500'" 
+                      class="mr-2 animate-pulse rounded-full h-2 w-2"></span>
+                <span x-text="$store.echo.connected ? '{{ __('Live Updates') }}' : '{{ __('Connecting...') }}'"></span>
             </div>
         </div>
     </x-slot>
@@ -126,32 +127,77 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
+            // Global store for Echo connection status
+            Alpine.store('echo', {
+                connected: false
+            });
+
             Alpine.data('kitchenDisplay', (initialItems) => ({
                 items: initialItems,
 
                 init() {
+                    // Wait for Echo to be available
+                    this.setupEcho();
+                },
+
+                setupEcho() {
+                    // Check if Echo is available, if not wait a bit
                     if (window.Echo) {
-                        window.Echo.private('kitchen')
-                            .listen('OrderItemCreated', (e) => {
-                                // Add logic to avoid duplicates just in case
+                        this.connectEcho();
+                    } else {
+                        // Retry after a short delay
+                        setTimeout(() => this.setupEcho(), 100);
+                    }
+                },
+
+                connectEcho() {
+                    try {
+                        const channel = window.Echo.private('kitchen');
+                        
+                        channel
+                            .listen('.OrderItemCreated', (e) => {
+                                console.log('OrderItemCreated event received:', e);
+                                // Check if item already exists (avoid duplicates)
                                 if (!this.items.find(i => i.id === e.id)) {
-                                    // Construct the update URL
-                                    // We can use a template or assume the structure
-                                    const updateUrl = "{{ route('kitchen.update-status', ':id') }}".replace(':id', e.id);
-                                    this.items.unshift({ ...e, update_url: updateUrl });
+                                    this.items.unshift(e);
                                 }
                             })
-                            .listen('OrderItemStatusUpdated', (e) => {
+                            .listen('.OrderItemStatusUpdated', (e) => {
+                                console.log('OrderItemStatusUpdated event received:', e);
                                 const index = this.items.findIndex(i => i.id === e.id);
                                 if (index !== -1) {
                                     if (e.status === 'served') {
+                                        // Remove item if status is served
                                         this.items.splice(index, 1);
                                     } else {
-                                        this.items[index].status = e.status;
-                                        this.items[index].updated_at_human = e.updated_at_human;
+                                        // Update existing item with new data
+                                        this.items[index] = { ...this.items[index], ...e };
                                     }
+                                } else if (e.status !== 'served') {
+                                    // If item doesn't exist and status is not served, add it
+                                    // This handles cases where item was created before page load
+                                    this.items.unshift(e);
                                 }
                             });
+
+                        // Listen for connection events
+                        window.Echo.connector.pusher.connection.bind('connected', () => {
+                            console.log('Echo connected to Reverb');
+                            Alpine.store('echo').connected = true;
+                        });
+
+                        window.Echo.connector.pusher.connection.bind('disconnected', () => {
+                            console.log('Echo disconnected from Reverb');
+                            Alpine.store('echo').connected = false;
+                        });
+
+                        // Set initial connection status
+                        Alpine.store('echo').connected = true;
+                    } catch (error) {
+                        console.error('Error setting up Echo:', error);
+                        Alpine.store('echo').connected = false;
+                        // Retry after delay
+                        setTimeout(() => this.setupEcho(), 1000);
                     }
                 }
             }));

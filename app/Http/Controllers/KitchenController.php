@@ -33,6 +33,9 @@ class KitchenController extends Controller
         ]);
 
         $orderItem->update(['status' => $validated['status']]);
+        
+        // Refresh the model to get latest data
+        $orderItem->refresh();
 
         event(new \App\Events\OrderItemStatusUpdated($orderItem));
 

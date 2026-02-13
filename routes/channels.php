@@ -18,5 +18,5 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('kitchen', function ($user) {
-    return in_array($user->role, ['chef', 'manager']);
+    return in_array($user->role, ['chef', 'manager', 'waiter']);
 });

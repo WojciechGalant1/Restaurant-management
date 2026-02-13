@@ -26,6 +26,9 @@
                         <x-nav-link :href="route('reservations.index')" :active="request()->is('reservations*')">
                             {{ __('Reservations') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('waiter.index')" :active="request()->is('waiter*')">
+                            {{ __('Waiter') }}
+                        </x-nav-link>
                     @endif
 
                     @if(in_array(auth()->user()->role, ['manager', 'chef']))

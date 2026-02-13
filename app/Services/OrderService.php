@@ -27,6 +27,9 @@ class OrderService
                     'status' => 'pending',
                 ]);
 
+                // Refresh to ensure we have the latest data
+                $orderItem->refresh();
+
                 event(new \App\Events\OrderItemCreated($orderItem));
             }
 

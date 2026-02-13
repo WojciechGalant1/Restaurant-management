@@ -16,6 +16,8 @@ class OrderItemCreated implements ShouldBroadcast
 
     public function __construct(public OrderItem $orderItem)
     {
+        // Load relationships needed for broadcast data
+        $this->orderItem->load(['order.table', 'menuItem.dish']);
     }
 
     public function broadcastOn(): array
@@ -23,6 +25,11 @@ class OrderItemCreated implements ShouldBroadcast
         return [
             new PrivateChannel('kitchen'),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'OrderItemCreated';
     }
 
     public function broadcastWith(): array
@@ -33,10 +40,13 @@ class OrderItemCreated implements ShouldBroadcast
             'table_number' => $this->orderItem->order->table->table_number ?? 'N/A',
             'name' => $this->orderItem->menuItem->dish->name,
             'quantity' => $this->orderItem->quantity,
+            'unit_price' => $this->orderItem->unit_price,
             'notes' => $this->orderItem->notes,
             'status' => $this->orderItem->status,
             'created_at' => $this->orderItem->created_at->toDateTimeString(),
             'created_at_human' => $this->orderItem->created_at->diffForHumans(),
+            'updated_at_human' => $this->orderItem->updated_at->diffForHumans(),
+            'update_url' => route('kitchen.update-status', $this->orderItem->id),
         ];
     }
 }
