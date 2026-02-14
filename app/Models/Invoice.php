@@ -19,8 +19,13 @@ class Invoice extends Model
         'issued_at',
     ];
 
+    protected $casts = [
+        'issued_at' => 'datetime',
+    ];
+
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
+    
 }
