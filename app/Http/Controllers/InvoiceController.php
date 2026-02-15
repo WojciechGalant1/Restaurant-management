@@ -47,6 +47,8 @@ class InvoiceController extends Controller
 
         $order->update(['status' => 'paid', 'paid_at' => now()]);
 
+        event(new \App\Events\InvoiceIssued($invoice));
+
         return redirect()->route('invoices.show', $invoice)->with('success', 'Invoice generated successfully.');
     }
 

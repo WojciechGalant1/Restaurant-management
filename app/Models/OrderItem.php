@@ -16,6 +16,11 @@ class OrderItem extends Model
         'unit_price',
         'notes',
         'status',
+        'ready_at',
+    ];
+
+    protected $casts = [
+        'ready_at' => 'datetime',
     ];
 
     public function order()

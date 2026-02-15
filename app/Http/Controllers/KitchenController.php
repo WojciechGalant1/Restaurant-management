@@ -32,8 +32,12 @@ class KitchenController extends Controller
             'status' => 'required|in:pending,preparing,ready,served',
         ]);
 
-        $orderItem->update(['status' => $validated['status']]);
-        
+        $data = ['status' => $validated['status']];
+        if (in_array($validated['status'], ['ready', 'served']) && !$orderItem->ready_at) {
+            $data['ready_at'] = now();
+        }
+        $orderItem->update($data);
+
         // Refresh the model to get latest data
         $orderItem->refresh();
 

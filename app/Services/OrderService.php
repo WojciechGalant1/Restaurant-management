@@ -35,6 +35,8 @@ class OrderService
 
             $order->update(['total_price' => $order->orderItems->sum(fn($i) => $i->quantity * $i->unit_price)]);
 
+            event(new \App\Events\OrderCreated($order->load('table')));
+
             return $order;
         });
     }

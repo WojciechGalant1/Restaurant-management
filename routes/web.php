@@ -9,6 +9,7 @@ use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\WaiterController;
 use Illuminate\Support\Facades\Route;
@@ -17,9 +18,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+Route::get('/dashboard/revenue', [DashboardController::class, 'revenue'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard.revenue');
 
 Route::middleware('auth')->group(function () {
     // Profile

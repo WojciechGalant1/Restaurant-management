@@ -2,8 +2,8 @@
 
 namespace App\Events;
 
+use App\Data\DashboardFeedPayload;
 use App\Models\OrderItem;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -16,7 +16,6 @@ class OrderItemStatusUpdated implements ShouldBroadcast
 
     public function __construct(public OrderItem $orderItem)
     {
-        // Load relationships needed for broadcast data
         $this->orderItem->load(['order.table', 'menuItem.dish']);
     }
 
@@ -24,6 +23,7 @@ class OrderItemStatusUpdated implements ShouldBroadcast
     {
         return [
             new PrivateChannel('kitchen'),
+            new PrivateChannel('dashboard'),
         ];
     }
 
@@ -34,7 +34,18 @@ class OrderItemStatusUpdated implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        return [
+        $name = $this->orderItem->menuItem->dish->name ?? __('Item');
+        $statusLabel = $this->orderItem->status === 'ready'
+            ? __('READY')
+            : ($this->orderItem->status === 'served' ? __('Served') : $this->orderItem->status);
+        $feedPayload = new DashboardFeedPayload(
+            type: 'order_item_status',
+            message: "{$name} – {$statusLabel}",
+            time: now()->format('H:i'),
+            link: route('kitchen.index'),
+        );
+
+        return array_merge([
             'id' => $this->orderItem->id,
             'order_id' => $this->orderItem->order_id,
             'table_number' => $this->orderItem->order->table->table_number ?? 'N/A',
@@ -45,6 +56,6 @@ class OrderItemStatusUpdated implements ShouldBroadcast
             'status' => $this->orderItem->status,
             'updated_at_human' => $this->orderItem->updated_at->diffForHumans(),
             'update_url' => route('kitchen.update-status', $this->orderItem->id),
-        ];
+        ], $feedPayload->toArray());
     }
 }

@@ -33,8 +33,12 @@ class WaiterController extends Controller
             return back()->with('error', 'Only ready items can be marked as served.');
         }
 
-        $orderItem->update(['status' => 'served']);
-        
+        $data = ['status' => 'served'];
+        if (!$orderItem->ready_at) {
+            $data['ready_at'] = now();
+        }
+        $orderItem->update($data);
+
         // Refresh the model to get latest data
         $orderItem->refresh();
 

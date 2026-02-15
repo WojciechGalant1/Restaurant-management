@@ -34,7 +34,8 @@ class ReservationController extends Controller
             'party_size' => 'required|integer|min:1',
         ]);
 
-        Reservation::create($validated);
+        $reservation = Reservation::create($validated);
+        event(new \App\Events\ReservationCreated($reservation));
         return redirect()->route('reservations.index')->with('success', 'Reservation created successfully.');
     }
 
@@ -57,6 +58,7 @@ class ReservationController extends Controller
         ]);
 
         $reservation->update($validated);
+        event(new \App\Events\ReservationUpdated($reservation));
         return redirect()->route('reservations.index')->with('success', 'Reservation updated successfully.');
     }
 
