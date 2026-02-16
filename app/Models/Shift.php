@@ -16,6 +16,10 @@ class Shift extends Model
         'notes',
     ];
 
+    protected $casts = [
+        'date' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

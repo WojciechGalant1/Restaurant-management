@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 class RevenueStatsService
 {
     private const KPI_CACHE_TTL = 60;
-    private const CHARTS_CACHE_TTL = 300;
+    private const CHARTS_CACHE_TTL = 60; // Reduced from 300s to 60s for faster updates
 
     public function revenueByDay(int $days = 7): array
     {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Http\Response;
 
 class DashboardController extends Controller
 {
@@ -24,7 +24,7 @@ class DashboardController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $user = $request->user();
         $role = $user->role ?? 'waiter';
@@ -38,7 +38,6 @@ class DashboardController extends Controller
             $data['revenueThisMonth'] = $this->dashboard->revenueThisMonth();
         }
         if ($sections['charts']) {
-            $data['revenueByDay1'] = $this->dashboard->revenueByDay(0); // today only
             $data['revenueByDay7'] = $this->dashboard->revenueByDay(7);
             $data['revenueByDay30'] = $this->dashboard->revenueByDay(30);
             $data['paymentBreakdown'] = $this->dashboard->paymentMethodBreakdown();
@@ -60,7 +59,12 @@ class DashboardController extends Controller
             $data['mostUsedPaymentMethod'] = $this->dashboard->mostUsedPaymentMethodToday();
         }
 
-        return view('dashboard.index', $data);
+        // Prevent browser caching of dashboard HTML (data changes frequently)
+        return response()
+            ->view('dashboard.index', $data)
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     private function sectionsForRole(string $role): array

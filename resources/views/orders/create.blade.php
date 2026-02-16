@@ -1,7 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            <x-heroicon-o-plus class="w-4 h-4 mr-2" />
             {{ __('New Order') }}
         </h2>
     </x-slot>

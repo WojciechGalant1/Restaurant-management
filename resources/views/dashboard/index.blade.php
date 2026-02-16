@@ -81,7 +81,6 @@
                             <h3 class="font-semibold text-gray-800">{{ __('Revenue') }}</h3>
                             <div class="flex flex-wrap items-center gap-2">
                                 <div class="flex rounded-lg border border-gray-200 p-0.5">
-                                    <button type="button" id="revenue-chart-btn-today" class="revenue-range-btn px-3 py-1.5 text-sm font-medium rounded-md transition bg-gray-200 text-gray-700">{{ __('Today') }}</button>
                                     <button type="button" id="revenue-chart-btn-7" class="revenue-range-btn px-3 py-1.5 text-sm font-medium rounded-md transition bg-gray-200 text-gray-700">{{ __('7 days') }}</button>
                                     <button type="button" id="revenue-chart-btn-30" class="revenue-range-btn px-3 py-1.5 text-sm font-medium rounded-md transition bg-gray-200 text-gray-700">{{ __('30 days') }}</button>
                                     <button type="button" id="revenue-chart-btn-custom" class="revenue-range-btn px-3 py-1.5 text-sm font-medium rounded-md transition bg-gray-200 text-gray-700">{{ __('Custom') }}</button>
@@ -95,12 +94,11 @@
                             </div>
                         </div>
                         <div id="revenue-chart"></div>
-                        @if(empty($revenueByDay1) && empty($revenueByDay7) && empty($revenueByDay30))
+                        @if(empty($revenueByDay7) && empty($revenueByDay30))
                             <p class="text-gray-400 text-sm py-4">{{ __('No data') }}</p>
                         @endif
                         <script>
                             window.dashboardRevenueData = {
-                                data1: @json($revenueByDay1 ?? []),
                                 data7: @json($revenueByDay7 ?? []),
                                 data30: @json($revenueByDay30 ?? []),
                                 customUrl: @json(route('dashboard.revenue')),

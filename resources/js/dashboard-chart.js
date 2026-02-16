@@ -62,21 +62,17 @@ function initRevenueChart() {
     const el = document.getElementById('revenue-chart');
     if (!el || !data) return;
 
-    const data1 = data.data1 || {};
     const data7 = data.data7 || {};
     const data30 = data.data30 || {};
-    const categories1 = Object.keys(data1).sort();
     const categories7 = Object.keys(data7).sort();
     const categories30 = Object.keys(data30).sort();
-    const series1 = categories1.map((d) => Number(data1[d]) || 0);
     const series7 = categories7.map((d) => Number(data7[d]) || 0);
     const series30 = categories30.map((d) => Number(data30[d]) || 0);
 
-    const hasData = categories1.length > 0 || categories7.length > 0 || categories30.length > 0;
+    const hasData = categories7.length > 0 || categories30.length > 0;
     if (!hasData) return;
 
     const pickFirst = () => {
-        if (categories1.length > 0) return { categories: categories1, series: series1, mode: 'today' };
         if (categories7.length > 0) return { categories: categories7, series: series7, mode: '7' };
         return { categories: categories30, series: series30, mode: '30' };
     };
@@ -85,7 +81,6 @@ function initRevenueChart() {
     const chart = new ApexCharts(el, buildChartOptions(initial.categories, initial.series, { seriesName: 'PLN' }));
     chart.render();
 
-    const btnToday = document.getElementById('revenue-chart-btn-today');
     const btn7 = document.getElementById('revenue-chart-btn-7');
     const btn30 = document.getElementById('revenue-chart-btn-30');
     const btnCustom = document.getElementById('revenue-chart-btn-custom');
@@ -95,7 +90,6 @@ function initRevenueChart() {
     const customApply = document.getElementById('revenue-custom-apply');
 
     const buttons = [
-        { el: btnToday, mode: 'today', categories: categories1, series: series1 },
         { el: btn7, mode: '7', categories: categories7, series: series7 },
         { el: btn30, mode: '30', categories: categories30, series: series30 },
     ];
@@ -131,12 +125,6 @@ function initRevenueChart() {
         });
     }
 
-    if (btnToday && categories1.length > 0) {
-        btnToday.addEventListener('click', () => {
-            applyData(categories1, series1);
-            setActive('today');
-        });
-    }
     if (btn7 && categories7.length > 0) {
         btn7.addEventListener('click', () => {
             applyData(categories7, series7);
