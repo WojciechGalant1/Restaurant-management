@@ -3,15 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\Table;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TableController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Table::class);
-        $tables = Table::all();
-        return view('tables.index', compact('tables'));
+
+        $user = $request->user();
+
+        $tables = Table::with('waiter')
+            ->forWaiter($user)
+            ->orderBy('table_number')
+            ->get();
+
+        $waiters = [];
+        if ($user->role === 'manager') {
+            $waiters = User::where('role', 'waiter')
+                ->orderBy('first_name')
+                ->orderBy('last_name')
+                ->get();
+        }
+
+        return view('tables.index', [
+            'tables' => $tables,
+            'waiters' => $waiters,
+            'currentUser' => $user,
+        ]);
     }
 
     public function create()
@@ -43,11 +64,32 @@ class TableController extends Controller
     {
         $this->authorize('update', $table);
         $validated = $request->validate([
-            'capacity' => 'integer|min:1',
-            'status' => 'in:available,occupied,reserved',
+            'capacity' => 'sometimes|integer|min:1',
+            'status' => 'sometimes|in:available,occupied,reserved',
+            'waiter_id' => [
+                'sometimes',
+                'nullable',
+                Rule::exists('users', 'id')->where('role', 'waiter'),
+            ],
         ]);
 
-        $table->update($validated);
+        if (array_key_exists('waiter_id', $validated)) {
+            if ($validated['waiter_id']) {
+                $waiter = User::find($validated['waiter_id']);
+                if ($waiter) {
+                    $table->assignTo($waiter);
+                }
+            } else {
+                // Jeśli kelner usunięty z przypisania, oznacz stolik jako dostępny
+                $table->markAsAvailable();
+            }
+            unset($validated['waiter_id']);
+        }
+
+        if (!empty($validated)) {
+            $table->update($validated);
+        }
+
         return redirect()->route('tables.index')->with('success', 'Table updated successfully.');
     }
 

@@ -1,13 +1,22 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Tables Management') }}
-            </h2>
-            <a href="{{ route('tables.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
-                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
-                {{ __('Add New Table') }}
-            </a>
+            <div>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Tables Management') }}
+                </h2>
+                @if(isset($currentUser) && $currentUser->role !== 'manager')
+                    <p class="text-sm text-gray-500 mt-1">
+                        {{ __('You are viewing tables assigned to you.') }}
+                    </p>
+                @endif
+            </div>
+            @if(isset($currentUser) && $currentUser->role === 'manager')
+                <a href="{{ route('tables.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
+                    <x-heroicon-o-plus class="w-4 h-4 mr-2" />
+                    {{ __('Add New Table') }}
+                </a>
+            @endif
         </div>
     </x-slot>
 
@@ -30,11 +39,17 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waiter</th>
+                                @if(isset($currentUser) && $currentUser->role === 'manager')
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($tables as $table)
+                                @php
+                                    $status = $table->status instanceof \App\Enums\TableStatus ? $table->status : \App\Enums\TableStatus::tryFrom($table->status);
+                                @endphp
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ $table->table_number }}
@@ -44,24 +59,41 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $table->status === 'available' ? 'bg-green-100 text-green-800' : '' }}
-                                            {{ $table->status === 'occupied' ? 'bg-red-100 text-red-800' : '' }}
-                                            {{ $table->status === 'reserved' ? 'bg-yellow-100 text-yellow-800' : '' }}">
-                                            {{ ucfirst($table->status) }}
+                                            {{ $status === \App\Enums\TableStatus::Available ? 'bg-green-100 text-green-800' : '' }}
+                                            {{ $status === \App\Enums\TableStatus::Occupied ? 'bg-red-100 text-red-800' : '' }}
+                                            {{ $status === \App\Enums\TableStatus::Reserved ? 'bg-yellow-100 text-yellow-800' : '' }}">
+                                            {{ ucfirst($status?->value ?? $table->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
-                                        <a href="{{ route('tables.edit', $table) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition">
-                                            <x-heroicon-o-pencil class="w-5 h-5" />
-                                        </a>
-                                        <form action="{{ route('tables.destroy', $table) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this table?') }}')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded transition">
-                                                <x-heroicon-o-trash class="w-5 h-5" />
-                                            </button>
-                                        </form>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $table->waiter?->name ?? __('Unassigned') }}
                                     </td>
+                                    @if(isset($currentUser) && $currentUser->role === 'manager')
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2 items-center">
+                                            <form action="{{ route('tables.update', $table) }}" method="POST" class="flex items-center space-x-2">
+                                                @csrf
+                                                @method('PUT')
+                                                <select name="waiter_id" class="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" onchange="this.form.submit()">
+                                                    <option value="">{{ __('Unassigned') }}</option>
+                                                    @foreach($waiters as $waiter)
+                                                        <option value="{{ $waiter->id }}" @selected($table->waiter_id === $waiter->id)>
+                                                            {{ $waiter->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </form>
+                                            <a href="{{ route('tables.edit', $table) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition">
+                                                <x-heroicon-o-pencil class="w-5 h-5" />
+                                            </a>
+                                            <form action="{{ route('tables.destroy', $table) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this table?') }}')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded transition">
+                                                    <x-heroicon-o-trash class="w-5 h-5" />
+                                                </button>
+                                            </form>
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
