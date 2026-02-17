@@ -1,65 +1,132 @@
 # Restaurant Management
 
-Nowoczesny system do zarządzania restauracją zbudowany w oparciu o **Laravel 12**, **Blade + Tailwind CSS**, **Laravel Breeze** oraz **Laravel Reverb** (zdarzenia realtime).
+<div align="center">
 
-Projekt obejmuje pełny przepływ operacyjny restauracji:
-- zarządzanie salą (stoliki + rezerwacje),
-- obsługę zamówień od kelnera do kuchni,
-- panel kuchenny i panel kelnerski,
-- fakturowanie,
-- harmonogramy zmian pracowników,
-- dashboard menedżerski z KPI, alertami i feedem aktywności.
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
+**A comprehensive, real-time restaurant management system built with Laravel**
+
+[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Tech Stack](#-tech-stack) • [Screenshots](#-screenshots)
+
+</div>
+
+**Restaurant Management System** is a full-featured, production-ready application designed to streamline restaurant operations. Built with Laravel 12 and modern web technologies, it offers real-time updates, role-based access control, and comprehensive management tools for orders, reservations, staff, and inventory.
 
 ## Spis treści
-1. [Najważniejsze funkcje](#najważniejsze-funkcje)
-2. [Role i autoryzacja](#role-i-autoryzacja)
-3. [Stack technologiczny](#stack-technologiczny)
-4. [Architektura projektu](#architektura-projektu)
-5. [Model danych (skrót)](#model-danych-skrót)
-6. [Wymagania](#wymagania)
-7. [Szybki start (lokalnie)](#szybki-start-lokalnie)
-8. [Szybki start przez Docker Sail](#szybki-start-przez-docker-sail)
-9. [Konta testowe](#konta-testowe)
-10. [Uruchamianie testów i jakości kodu](#uruchamianie-testów-i-jakości-kodu)
-11. [Realtime i kanały broadcast](#realtime-i-kanały-broadcast)
-12. [Przydatne komendy Artisan](#przydatne-komendy-artisan)
-13. [Najczęstsze problemy](#najczęstsze-problemy)
-14. [Roadmapa rozwoju](#roadmapa-rozwoju)
+- [Najważniejsze funkcje](#najważniejsze-funkcje)
+- [Role i autoryzacja](#role-i-autoryzacja)
+- [Stack technologiczny](#stack-technologiczny)
+- [Architektura projektu](#architektura-projektu)
+- [Model danych (skrót)](#model-danych-skrót)
+- [Wymagania](#wymagania)
+- [Szybki start (lokalnie)](#szybki-start-lokalnie)
+- [Szybki start przez Docker Sail](#szybki-start-przez-docker-sail)
+- [Konta testowe](#konta-testowe)
+- [Uruchamianie testów i jakości kodu](#uruchamianie-testów-i-jakości-kodu)
+- [Realtime i kanały broadcast](#realtime-i-kanały-broadcast)
+- [Przydatne komendy Artisan](#przydatne-komendy-artisan)
+- [Najczęstsze problemy](#najczęstsze-problemy)
+- [Roadmapa rozwoju](#roadmapa-rozwoju)
 
 ---
 
 ## Najważniejsze funkcje
 
-### Dashboard operacyjno-menedżerski
-- KPI dzienne i miesięczne (przychód, liczba zamówień, średnia wartość, obłożenie stolików).
-- Segmenty dashboardu zależne od roli (manager / chef / waiter).
-- Alerty operacyjne (np. brak wolnych stolików, zamówienia zalegające w kuchni, brak kucharza na zmianie).
-- Feed aktywności realtime (zamówienia, rezerwacje, faktury, statusy pozycji zamówień).
+### Dashboard & Analytics
+- **Real-time KPI Monitoring**: Revenue, orders, active tables, kitchen queue
+- **Interactive Charts**: Revenue trends, payment method breakdown (ApexCharts)
+- **Performance Indicators**: Kitchen efficiency, staff performance, top dishes
+- **Live Activity Feed**: WebSocket-powered real-time updates
+- **Role-Specific Views**: Customized dashboards for each user role
+- **Alert System**: Critical notifications for pending orders, staff shortages
 
-### Zamówienia
-- Tworzenie zamówienia dla stolika z pozycjami menu.
-- Statusy zamówień i pozycji zamówień (od `pending` do `served`/`paid`).
-- Logika biznesowa wydzielona do serwisu (`OrderService`).
+### Order Management
+- **Multi-Item Orders**: Support for complex orders with multiple dishes
+- **Order Tracking**: Real-time status updates from placement to payment
+- **Table Assignment**: Associate orders with specific tables
+- **Quick Actions**: Fast order creation and modification
+- **Order History**: Complete audit trail of all orders
 
-### Kuchnia i kelnerzy
-- Panel kuchenny z kolejką pozycji do przygotowania.
-- Panel kelnerski z pozycjami gotowymi do wydania (`ready`).
-- Aktualizacje statusów w czasie rzeczywistym przez eventy i kanały prywatne.
+### Kitchen Display System (KDS)
+- **Real-time Order Board**: Live updates when orders are placed
+- **Kanban-Style Workflow**: Pending → Preparing → Ready columns
+- **Status Management**: Quick status updates with one click
+- **Order Prioritization**: Oldest orders highlighted
+- **Live WebSocket Updates**: Zero refresh, instant notifications
 
-### Rezerwacje i stoliki
-- Zarządzanie stolikami (`available`, `occupied`, `reserved`).
-- Rezerwacje z cyklem życia (`pending`, `confirmed`, `cancelled`, `completed`).
+### Waiter Interface
+- **Ready Items Display**: View all items ready to serve
+- **Table Organization**: Orders grouped by table number
+- **Quick Serving**: One-click mark as served
+- **Real-time Notifications**: Instant updates when items are ready
 
-### Kadry i finanse
-- Zarządzanie pracownikami i rolami.
-- Zmiany (`morning`, `evening`, `full_day`).
-- Faktury z metodami płatności (`cash`, `card`, `online`).
+### Table Management
+- **Visual Table Layout**: Grid view of all restaurant tables
+- **Status Tracking**: Available, Occupied, Reserved
+- **Capacity Management**: Define seating capacity per table
+- **Real-time Updates**: Automatic status changes based on orders
+
+### Reservation System
+- **Booking**: Customer reservation management
+- **Table Assignment**: Auto-assign or manually select tables
+- **Conflict Detection**: Prevent double-bookings
+- **Status Workflow**: Pending → Confirmed → Completed
+- **Customer Information**: Store contact details and party size
+
+### Menu & Inventory
+- **Dish Management**: Create and categorize dishes
+- **Pricing Control**: Set and update menu item prices
+- **Availability Toggle**: Mark items as available/unavailable
+- **Category System**: Starters, mains, desserts, drinks, sides
+
+### Invoice & Billing
+- **Automated Invoice Generation**: Create invoices from orders
+- **Multiple Payment Methods**: Cash, card, online payments
+- **Tax ID Support**: VAT/NIP number recording
+- **Printable Invoices**: Professional invoice template
+- **Payment Tracking**: Complete financial records
+
+### Staff Management
+- **Employee Profiles**: Store staff information and roles
+- **Shift Scheduling**: Morning, evening, and full-day shifts
+- **Role-Based Access**: Manager, chef, waiter permissions
+- **Performance Tracking**: Revenue per waiter, dish preparation times
+
+### Real-time Broadcasting
+- **Laravel Reverb**: WebSocket server for live updates
+- **Private Channels**: Secure, authenticated broadcasting
+- **Event-Driven**: OrderCreated, OrderItemStatusUpdated, etc.
+- **Zero Latency**: Instant UI updates without polling
 
 ---
 
-## Role i autoryzacja
-Aplikacja korzysta z polityk Laravel (`app/Policies`) oraz kontroli uprawnień zależnej od roli użytkownika.
+## 📸 Screenshots (todo)
+
+### Dashboard - Manager View
+![Dashboard](docs/screenshots/dashboard.png)
+*Comprehensive analytics with revenue charts, KPIs, and live activity feed*
+
+### Kitchen Display System
+![Kitchen](docs/screenshots/kitchen.png)
+*Real-time order board with Kanban-style workflow*
+
+### Order Management
+![Orders](docs/screenshots/orders.png)
+*Complete order tracking and management*
+
+### Invoice Generation
+![Invoice](docs/screenshots/invoice.png)
+*Professional invoice template with print support*
+
+### Waiter Interface
+![Waiter](docs/screenshots/waiter.png)
+*Ready-to-serve items with quick actions*
+
+---
 
 
 ## Stack technologiczny
@@ -84,50 +151,6 @@ Aplikacja korzysta z polityk Laravel (`app/Policies`) oraz kontroli uprawnień z
 - MySQL 8 / MariaDB
 - Redis (cache / wsparcie dla realtime)
 - Mailpit (lokalny SMTP pod Sail)
-
----
-
-## Architektura projektu
-
-```text
-app/
-├── Http/Controllers/    # kontrolery zasobów + kitchen/waiter/dashboard
-├── Models/              # modele domenowe (Order, Table, Reservation, Invoice...)
-├── Services/            # logika biznesowa (OrderService, DashboardService, statystyki)
-├── Policies/            # autoryzacja RBAC
-├── Events/              # zdarzenia realtime
-└── Data/                # payloady do feedu dashboardu
-
-resources/views/         # widoki Blade pogrupowane modułowo
-database/migrations/     # schemat danych
-database/seeders/        # dane startowe
-routes/web.php           # routing panelu WWW
-routes/channels.php      # autoryzacja kanałów broadcast
-```
-
----
-
-## Model danych (skrót)
-Główne encje:
-- `users` (rola: manager/waiter/chef),
-- `tables`,
-- `reservations`,
-- `dishes` + `menu_items`,
-- `orders` + `order_items` (`ready_at` dla pomiaru wydania),
-- `shifts`,
-- `invoices`.
-
-Relacje są utrzymywane kluczami obcymi i `onDelete('cascade')`.
-
----
-
-## Wymagania
-- PHP 8.5+
-- Composer 2+
-- Node.js 18+ i npm
-- MySQL 8+ (lub MariaDB)
-- (opcjonalnie) Redis
-- (opcjonalnie) Docker + Docker Compose (dla Sail)
 
 ---
 
@@ -190,12 +213,6 @@ Domyślnie panel będzie dostępny pod: `http://127.0.0.1:8000`.
    ./vendor/bin/sail npm run dev
    ```
 
-Usługi (domyślnie):
-- aplikacja: `http://localhost`
-- Vite: `http://localhost:5173`
-- Mailpit UI: `http://localhost:8025`
-- Reverb: port `8080`
-
 ---
 
 ## Konta testowe
@@ -204,34 +221,6 @@ Po `php artisan migrate --seed` dostępne są konta:
 - **Manager**: `manager@restaurant.com` / `password`
 - **Waiter**: `waiter@restaurant.com` / `password`
 - **Chef**: `chef@restaurant.com` / `password`
-
----
-
-## Uruchamianie testów i jakości kodu
-
-```bash
-php artisan test
-./vendor/bin/phpunit
-./vendor/bin/pint
-npm run build
-```
-
-> Uwaga: część testów może wymagać poprawnie skonfigurowanej bazy testowej (`.env.testing`).
-
----
-
-## Realtime i kanały broadcast
-Aplikacja wysyła zdarzenia m.in. dla:
-- utworzenia zamówienia,
-- utworzenia/zmiany rezerwacji,
-- wystawienia faktury,
-- aktualizacji statusu pozycji zamówienia.
-
-Kanały prywatne:
-- `private-kitchen`
-- `private-dashboard`
-
-Autoryzacja kanałów jest realizowana w `routes/channels.php` na podstawie roli użytkownika.
 
 ---
 
@@ -244,25 +233,6 @@ php artisan test
 php artisan queue:work
 php artisan reverb:start --debug
 ```
-
----
-
-## Najczęstsze problemy
-
-### 1) Brak połączenia z bazą
-- Sprawdź dane `DB_*` w `.env`.
-- Upewnij się, że baza istnieje i użytkownik ma uprawnienia.
-
-### 2) Frontend się nie odświeża
-- Uruchom `npm run dev` i zweryfikuj port Vite.
-- Wyczyść cache:
-  ```bash
-  php artisan optimize:clear
-  ```
-
-### 3) Realtime nie działa
-- Sprawdź konfigurację Reverb/Echo w `.env`.
-- Upewnij się, że działa Redis oraz serwer Reverb.
 
 ---
 
