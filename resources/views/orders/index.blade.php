@@ -1,18 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Active Orders') }}
-            </h2>
+        <div class="flex justify-between items-center">  
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Orders') }}
+                </h2>
             <a href="{{ route('orders.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
                 {{ __('Create New Order') }}
             </a>
-        </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="mt-2 inline-flex rounded-md shadow-sm border border-gray-200 bg-white overflow-hidden">
+                    @php $currentFilter = $filter ?? 'all'; @endphp
+                    <a href="{{ route('orders.index', ['filter' => 'all']) }}"
+                       class="px-3 py-1.5 text-xs sm:text-sm font-medium {{ $currentFilter === 'all' ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        {{ __('All') }}
+                    </a>
+                    <a href="{{ route('orders.index', ['filter' => 'today']) }}"
+                       class="px-3 py-1.5 text-xs sm:text-sm font-medium border-l border-gray-200 {{ $currentFilter === 'today' ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        {{ __('Today') }}
+                    </a>
+                    <a href="{{ route('orders.index', ['filter' => 'pending']) }}"
+                       class="px-3 py-1.5 text-xs sm:text-sm font-medium border-l border-gray-200 {{ $currentFilter === 'pending' ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        {{ __('Pending') }}
+                    </a>
+                </div>
+            </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">

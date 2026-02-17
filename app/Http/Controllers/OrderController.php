@@ -17,11 +17,26 @@ class OrderController extends Controller
         $this->orderService = $orderService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Order::class);
-        $orders = Order::with(['table', 'waiter', 'orderItems.menuItem.dish'])->latest()->paginate(15);
-        return view('orders.index', compact('orders'));
+
+        $filter = $request->query('filter', 'all'); // all | today | pending
+
+        $query = Order::with(['table', 'waiter', 'orderItems.menuItem.dish'])->latest();
+
+        if ($filter === 'today') {
+            $query->whereDate('ordered_at', today());
+        } elseif ($filter === 'pending') {
+            $query->where('status', 'pending');
+        }
+
+        $orders = $query->paginate(15)->withQueryString();
+
+        return view('orders.index', [
+            'orders' => $orders,
+            'filter' => $filter,
+        ]);
     }
 
     public function create()
