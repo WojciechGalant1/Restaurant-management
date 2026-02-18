@@ -8,10 +8,6 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-**A comprehensive, real-time restaurant management system built with Laravel**
-
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Tech Stack](#-tech-stack) • [Screenshots](#-screenshots)
-
 </div>
 
 **Restaurant Management System** is a full-featured, production-ready application designed to streamline restaurant operations. Built with Laravel 12 and modern web technologies, it offers real-time updates, role-based access control, and comprehensive management tools for orders, reservations, staff, and inventory.
@@ -131,26 +127,15 @@
 
 ## Stack technologiczny
 
-### Backend
-- PHP **8.5+**
-- Laravel **12**
-- Eloquent ORM, Policies, Events/Broadcasting
-- DomPDF (`barryvdh/laravel-dompdf`)
-
-### Frontend
-- Blade Templates + Blade Components
-- Tailwind CSS
-- Alpine.js
-- ApexCharts (wizualizacje dashboardu)
-
-### Realtime
-- Laravel Reverb
-- Laravel Echo + kanały prywatne
-
-### Baza danych i infrastruktura
-- MySQL 8 / MariaDB
-- Redis (cache / wsparcie dla realtime)
-- Mailpit (lokalny SMTP pod Sail)
+| Warstwa | Technologie |
+|---|---|
+| **Backend** | PHP 8.2+, Laravel 12, Eloquent ORM, Policies, Events/Broadcasting |
+| **Frontend** | Blade Templates + Blade Components, Tailwind CSS, Alpine.js, ApexCharts |
+| **Real-time** | Laravel Reverb (WebSocket), Laravel Echo, Pusher.js |
+| **Baza danych** | MySQL 8 / MariaDB |
+| **Cache** | Redis / file driver |
+| **PDF** | DomPDF (`barryvdh/laravel-dompdf`) |
+| **Infrastruktura** | Docker Compose (Laravel Sail), Vite |
 
 ---
 
@@ -170,9 +155,7 @@
    ```
 
 3. **Uzupełnij konfigurację bazy** w `.env`:
-   - `DB_CONNECTION=mysql`
    - `DB_HOST=127.0.0.1`
-   - `DB_PORT=3306`
    - `DB_DATABASE=restaurant_management`
    - `DB_USERNAME=...`
    - `DB_PASSWORD=...`
@@ -186,25 +169,24 @@
    ```bash
    php artisan serve
    npm run dev
+   php artisan reverb:start --debug 
    ```
-
-Domyślnie panel będzie dostępny pod: `http://127.0.0.1:8000`.
 
 ---
 
 ## Szybki start przez Docker Sail
 
-1. Skonfiguruj `.env`:
+1. Konfiguracja `.env`:
    ```bash
    cp .env.example .env
    ```
 
-2. Uruchom kontenery:
+2. Uruchomienie kontenerów:
    ```bash
    ./vendor/bin/sail up -d
    ```
 
-3. Wykonaj setup:
+3. Setup:
    ```bash
    ./vendor/bin/sail composer install
    ./vendor/bin/sail npm install
@@ -216,11 +198,14 @@ Domyślnie panel będzie dostępny pod: `http://127.0.0.1:8000`.
 ---
 
 ## Konta testowe
-Po `php artisan migrate --seed` dostępne są konta:
+Po uruchomieniu `php artisan migrate --seed`:
 
-- **Manager**: `manager@restaurant.com` / `password`
-- **Waiter**: `waiter@restaurant.com` / `password`
-- **Chef**: `chef@restaurant.com` / `password`
+| Rola | E-mail | Hasło |
+|---|---|---|
+| **Manager** | `manager@restaurant.com` | `password` |
+| **Kelner** | `waiter@restaurant.com` | `password` |
+| **Kucharz** | `chef@restaurant.com` | `password` |
+
 
 ---
 
