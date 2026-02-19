@@ -39,12 +39,16 @@ class OrderController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create', Order::class);
-        $tables = Table::where('status', 'available')->get();
+        $preselectedTableId = $request->query('table_id') ? (int) $request->query('table_id') : null;
+        $tables = Table::where('status', 'available')
+            ->orWhere('id', $preselectedTableId)
+            ->orderBy('table_number')
+            ->get();
         $menuItems = MenuItem::with('dish')->where('is_available', true)->get();
-        return view('orders.create', compact('tables', 'menuItems'));
+        return view('orders.create', compact('tables', 'menuItems', 'preselectedTableId'));
     }
 
     public function store(Request $request)

@@ -34,7 +34,7 @@
                         <x-input-label for="table_id" :value="__('Table')" />
                         <select id="table_id" name="table_id" class="mt-1 block w-1/3 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             @foreach($tables as $table)
-                                <option value="{{ $table->id }}">Table #{{ $table->table_number }}</option>
+                                <option value="{{ $table->id }}" @selected(isset($preselectedTableId) && $preselectedTableId === $table->id)>Table #{{ $table->table_number }}</option>
                             @endforeach
                         </select>
                         <x-input-error :messages="$errors->get('table_id')" class="mt-2" />

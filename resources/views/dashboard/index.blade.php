@@ -348,10 +348,12 @@
                             <x-heroicon-o-document-text class="w-8 h-8 text-gray-500" />
                             <span class="font-medium text-gray-900">{{ __('Orders') }}</span>
                         </a>
-                        <a href="{{ route('tables.index') }}" class="flex items-center gap-3 bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition border-l-4 border-gray-300">
-                            <x-heroicon-o-squares-2x2 class="w-8 h-8 text-gray-500" />
-                            <span class="font-medium text-gray-900">{{ __('Tables') }}</span>
-                        </a>
+                        @can('viewAny', App\Models\Table::class)
+                            <a href="{{ route('tables.index') }}" class="flex items-center gap-3 bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition border-l-4 border-gray-300">
+                                <x-heroicon-o-squares-2x2 class="w-8 h-8 text-gray-500" />
+                                <span class="font-medium text-gray-900">{{ __('Tables') }}</span>
+                            </a>
+                        @endcan
                         <a href="{{ route('menu-items.index') }}" class="flex items-center gap-3 bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition border-l-4 border-gray-300">
                             <x-heroicon-o-book-open class="w-8 h-8 text-gray-500" />
                             <span class="font-medium text-gray-900">{{ __('Menu') }}</span>

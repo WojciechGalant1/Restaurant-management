@@ -10,7 +10,7 @@ class TablePolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->role === 'manager';
     }
 
     public function view(User $user, Table $table): bool

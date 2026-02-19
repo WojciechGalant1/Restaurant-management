@@ -4,15 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class KitchenController extends Controller
 {
     public function index()
     {
-        if (!in_array(auth()->user()->role, ['manager', 'chef'])) {
-            abort(403);
-        }
+        $this->authorize('kitchen.view');
 
         $items = OrderItem::with(['order.table', 'menuItem.dish'])
             ->whereIn('status', ['pending', 'preparing', 'ready'])
@@ -24,9 +21,7 @@ class KitchenController extends Controller
 
     public function updateStatus(Request $request, OrderItem $orderItem)
     {
-        if (!in_array(auth()->user()->role, ['manager', 'chef'])) {
-            abort(403);
-        }
+        $this->authorize('kitchen.update-item-status', $orderItem);
 
         $validated = $request->validate([
             'status' => 'required|in:pending,preparing,ready,served',

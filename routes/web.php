@@ -49,6 +49,9 @@ Route::middleware('auth')->group(function () {
     // Waiter
     Route::get('/waiter', [WaiterController::class, 'index'])->name('waiter.index');
     Route::patch('/waiter/items/{orderItem}/mark-served', [WaiterController::class, 'markAsServed'])->name('waiter.mark-served');
+    Route::patch('/waiter/reservations/{reservation}/mark-seated', [WaiterController::class, 'markReservationAsSeated'])->name('waiter.reservation.mark-seated');
+    Route::patch('/waiter/reservations/{reservation}/mark-no-show', [WaiterController::class, 'markReservationAsNoShow'])->name('waiter.reservation.mark-no-show');
+    Route::patch('/waiter/reservations/{reservation}/status', [WaiterController::class, 'updateReservationStatus'])->name('waiter.reservation.update-status');
 });
 
 require __DIR__.'/auth.php';

@@ -23,6 +23,7 @@
                     </div>
                 </a>
 
+                @can('viewAny', App\Models\Table::class)
                 <!-- Tables Card -->
                 <a href="{{ route('tables.index') }}" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition group border-l-4 border-green-500">
                     <div class="flex items-center">
@@ -33,6 +34,7 @@
                         </div>
                     </div>
                 </a>
+                @endcan
 
                 <!-- Reservations Card -->
                 <a href="{{ route('reservations.index') }}" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition group border-l-4 border-yellow-500">

@@ -44,5 +44,8 @@ class DatabaseSeeder extends Seeder
                 'status' => 'available',
             ]);
         }
+        $this->call([
+            DishSeeder::class,
+        ]);
     }
 }

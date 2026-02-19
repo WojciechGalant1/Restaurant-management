@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\Order;
+use App\Models\Reservation;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -47,6 +49,20 @@ class InvoiceController extends Controller
         ]);
 
         $order->update(['status' => 'paid', 'paid_at' => now()]);
+
+        // Auto-complete reservations for this table (visit finished with payment)
+        $order->load('table');
+        if ($order->table_id) {
+            $orderDate = Carbon::parse($order->ordered_at ?? $order->created_at)->toDateString();
+            $reservations = Reservation::where('table_id', $order->table_id)
+                ->whereIn('status', ['confirmed', 'seated'])
+                ->whereDate('reservation_date', $orderDate)
+                ->get();
+            foreach ($reservations as $reservation) {
+                $reservation->update(['status' => 'completed']);
+                event(new \App\Events\ReservationUpdated($reservation));
+            }
+        }
 
         // Clear dashboard revenue caches when new invoice is created
         $this->clearRevenueCaches();

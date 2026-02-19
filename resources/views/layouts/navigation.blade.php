@@ -20,9 +20,11 @@
                         <x-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
                             {{ __('Orders') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
-                            {{ __('Tables') }}
-                        </x-nav-link>
+                        @if(auth()->user()->role === 'manager')
+                            <x-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
+                                {{ __('Tables') }}
+                            </x-nav-link>
+                        @endif
                         <x-nav-link :href="route('reservations.index')" :active="request()->is('reservations*')">
                             {{ __('Reservations') }}
                         </x-nav-link>
@@ -114,11 +116,16 @@
                 <x-responsive-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
                     {{ __('Orders') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
-                    {{ __('Tables') }}
-                </x-responsive-nav-link>
+                @if(auth()->user()->role === 'manager')
+                    <x-responsive-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
+                        {{ __('Tables') }}
+                    </x-responsive-nav-link>
+                @endif
                 <x-responsive-nav-link :href="route('reservations.index')" :active="request()->is('reservations*')">
                     {{ __('Reservations') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('waiter.index')" :active="request()->is('waiter*')">
+                    {{ __('Waiter') }}
                 </x-responsive-nav-link>
             @endif
 

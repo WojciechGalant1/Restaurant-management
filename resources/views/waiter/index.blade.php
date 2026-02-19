@@ -2,17 +2,17 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Waiter Display - Ready Items') }}
+                {{ __('Waiter Display') }}
             </h2>
             <div class="flex items-center text-sm text-gray-500" x-data>
-                <span x-bind:class="$store.echo.connected ? 'bg-green-500' : 'bg-red-500'" 
+                <span x-bind:class="$store.echo.connected ? 'bg-green-500' : 'bg-red-500'"
                       class="mr-2 animate-pulse rounded-full h-2 w-2"></span>
-                <span x-text="$store.echo.connected ? '{{ __('Live Updates') }}' : '{{ __('Connecting...') }}'"></span>
+                <span x-text="$store.echo.connected ? '{{ __('Live') }}' : '{{ __('Connecting...') }}'"></span>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="waiterDisplay(@js($items->map(fn($item) => [
+    <div class="py-6" x-data="waiterDisplay(@js($readyItems->map(fn($item) => [
         'id' => $item->id,
         'order_id' => $item->order_id,
         'table_number' => $item->order->table->table_number ?? 'N/A',
@@ -26,100 +26,260 @@
         'updated_at_human' => $item->updated_at->diffForHumans(),
         'mark_served_url' => route('waiter.mark-served', $item->id),
     ])))">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-6">
-                <div class="bg-white rounded-lg shadow p-4">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">
-                            {{ __('Items Ready to Serve') }}
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            {{-- 1. Sticky alert: Ready to Serve --}}
+            <div x-show="items.filter(i => i.status === 'ready').length > 0"
+                 class="sticky top-4 z-10 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-lg p-4 animate-pulse-subtle">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-red-600 font-bold text-lg">🔔</span>
+                        <h3 class="text-lg font-bold text-red-800">
+                            <span x-text="items.filter(i => i.status === 'ready').length"></span> {{ __('Ready to Serve') }}
                         </h3>
-                        <span class="text-sm text-gray-500" x-text="`${items.filter(i => i.status === 'ready').length} {{ __('items') }}`"></span>
                     </div>
+                    <a href="#ready-section" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">
+                        {{ __('Go to items') }}
+                    </a>
                 </div>
+                <p class="text-sm text-red-700 mt-1" x-show="items.filter(i => i.status === 'ready').length > 0">
+                    <template x-for="(item, idx) in items.filter(i => i.status === 'ready').slice(0, 3)" :key="item.id">
+                        <span><span x-text="`Table ${item.table_number} – #${item.order_id}`"></span><span x-show="idx < Math.min(2, items.filter(i => i.status === 'ready').length - 1)">, </span></span>
+                    </template>
+                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <template x-for="item in items.filter(i => i.status === 'ready')" :key="item.id">
-                    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg shadow-sm p-6 animate-fade-in-down">
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <span class="font-bold text-lg text-gray-900" x-text="`Table ${item.table_number}`"></span>
-                                <span class="text-sm text-gray-600 ml-2" x-text="`Order #${item.order_id}`"></span>
+            {{-- 2. My Tables --}}
+            @if($tables->isNotEmpty())
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('My Tables') }}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        @foreach($tables as $table)
+                            @php
+                                $status = $table->status instanceof \App\Enums\TableStatus ? $table->status : \App\Enums\TableStatus::tryFrom($table->status);
+                                $activeOrder = $activeOrders->firstWhere('table_id', $table->id);
+                                $reservation = $reservationsByTable->get($table->id)?->first();
+                            @endphp
+                            <div class="bg-white rounded-lg shadow border-l-4
+                                {{ $status === \App\Enums\TableStatus::Occupied ? 'border-red-400' : '' }}
+                                {{ $status === \App\Enums\TableStatus::Reserved ? 'border-yellow-400' : '' }}
+                                {{ $status === \App\Enums\TableStatus::Available ? 'border-green-400' : '' }}">
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span class="font-bold text-gray-900">Table #{{ $table->table_number }}</span>
+                                        <span class="text-xs px-2 py-0.5 rounded-full
+                                            {{ $status === \App\Enums\TableStatus::Available ? 'bg-green-100 text-green-800' : '' }}
+                                            {{ $status === \App\Enums\TableStatus::Occupied ? 'bg-red-100 text-red-800' : '' }}
+                                            {{ $status === \App\Enums\TableStatus::Reserved ? 'bg-yellow-100 text-yellow-800' : '' }}">
+                                            {{ ucfirst($status?->value ?? $table->status) }}
+                                        </span>
+                                    </div>
+                                    
+                                    @if($reservation)
+                                        <div class="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <p class="text-xs font-semibold text-blue-800">
+                                                    {{ __('Reservation') }}: {{ ucfirst($reservation->status) }}
+                                                </p>
+                                            </div>
+                                            <p class="text-sm text-gray-700 mb-2">
+                                                {{ \Carbon\Carbon::parse($reservation->reservation_time)->format('H:i') }} · {{ $reservation->party_size }} {{ __('guests') }}
+                                            </p>
+                                            
+                                            @php
+                                                $allowedStatuses = [];
+                                                switch($reservation->status) {
+                                                    case 'pending':
+                                                        $allowedStatuses = ['confirmed', 'cancelled'];
+                                                        break;
+                                                    case 'confirmed':
+                                                        $allowedStatuses = ['seated', 'no_show', 'cancelled'];
+                                                        break;
+                                                    case 'seated':
+                                                        $allowedStatuses = ['completed', 'cancelled'];
+                                                        break;
+                                                    default:
+                                                        $allowedStatuses = [];
+                                                }
+                                                
+                                                $statusLabels = [
+                                                    'pending' => __('Pending'),
+                                                    'confirmed' => __('Confirmed'),
+                                                    'seated' => __('Seated'),
+                                                    'completed' => __('Completed'),
+                                                    'cancelled' => __('Cancelled'),
+                                                    'no_show' => __('No Show'),
+                                                ];
+                                                
+                                                $statusColors = [
+                                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                                    'confirmed' => 'bg-blue-100 text-blue-800',
+                                                    'seated' => 'bg-green-100 text-green-800',
+                                                    'completed' => 'bg-gray-100 text-gray-800',
+                                                    'cancelled' => 'bg-red-100 text-red-800',
+                                                    'no_show' => 'bg-red-100 text-red-800',
+                                                ];
+                                            @endphp
+                                            
+                                            @if(!empty($allowedStatuses))
+                                                <form action="{{ route('waiter.reservation.update-status', $reservation) }}" method="POST" class="mt-2">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <div class="flex gap-1 flex-wrap">
+                                                        @foreach($allowedStatuses as $status)
+                                                            <button type="submit" name="status" value="{{ $status }}" 
+                                                                    class="flex-1 py-1.5 px-2 rounded text-xs font-medium transition
+                                                                    {{ $status === 'seated' || $status === 'completed' ? 'bg-green-600 hover:bg-green-700 text-white' : '' }}
+                                                                    {{ $status === 'no_show' || $status === 'cancelled' ? 'bg-red-600 hover:bg-red-700 text-white' : '' }}
+                                                                    {{ $status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700 text-white' : '' }}">
+                                                                {{ $statusLabels[$status] }}
+                                                            </button>
+                                                        @endforeach
+                                                    </div>
+                                                </form>
+                                            @else
+                                                <p class="text-xs {{ $statusColors[$reservation->status] ?? 'text-gray-600' }} mt-1 font-medium px-2 py-1 rounded">
+                                                    {{ $statusLabels[$reservation->status] ?? ucfirst($reservation->status) }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    
+                                    <p class="text-xs text-gray-500 mb-2">{{ $table->capacity }} {{ __('capacity') }}</p>
+                                    
+                                    @if($activeOrder)
+                                        <p class="text-sm font-semibold text-gray-700 mb-3">{{ __('Order') }} #{{ $activeOrder->id }}: {{ number_format($activeOrder->total_price, 2) }} PLN</p>
+                                        <a href="{{ route('orders.show', $activeOrder) }}" class="block w-full text-center py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
+                                            {{ __('Open Order') }}
+                                        </a>
+                                    @else
+                                        <a href="{{ route('orders.create', ['table_id' => $table->id]) }}" class="block w-full text-center py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
+                                            {{ __('Create Order') }}
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
-                            <span class="text-xs text-gray-500" x-text="item.updated_at_human"></span>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <div class="text-xl font-bold text-gray-900 mb-1" x-text="`${item.quantity}x ${item.name}`"></div>
-                            <div class="text-sm text-gray-600" x-text="`{{ __('Unit Price') }}: ${item.unit_price} PLN`"></div>
-                            <div class="text-sm font-semibold text-gray-800" x-text="`{{ __('Total') }}: ${item.total_price} PLN`"></div>
-                        </div>
-
-                        <template x-if="item.notes">
-                            <div class="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4">
-                                <p class="text-sm text-yellow-800 italic" x-text="`&quot;${item.notes}&quot;`"></p>
-                            </div>
-                        </template>
-
-                        <form :action="item.mark_served_url" method="POST" class="mt-4">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
-                                {{ __('Mark as Served') }}
-                            </button>
-                        </form>
+                        @endforeach
                     </div>
-                </template>
-            </div>
+                </section>
+            @endif
 
-            <div x-show="items.filter(i => i.status === 'ready').length === 0" class="text-center py-12 bg-white rounded-lg shadow">
-                <x-heroicon-o-check-circle class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p class="text-gray-500 text-lg">{{ __('No items ready to serve.') }}</p>
-            </div>
+            {{-- 3. Ready to Serve (detailed) --}}
+            <section id="ready-section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('Ready to Serve') }}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <template x-for="item in items.filter(i => i.status === 'ready')" :key="item.id">
+                        <div class="bg-green-50 border-l-4 border-green-500 rounded-lg shadow-sm p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-bold text-gray-900" x-text="`Table ${item.table_number}`"></span>
+                                <span class="text-xs text-gray-500" x-text="item.updated_at_human"></span>
+                            </div>
+                            <p class="text-lg font-bold text-gray-900 mb-1" x-text="`${item.quantity}x ${item.name}`"></p>
+                            <p class="text-sm text-gray-600 mb-3" x-text="`${item.total_price} PLN`"></p>
+                            <form :action="item.mark_served_url" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                                    {{ __('Mark as Served') }}
+                                </button>
+                            </form>
+                        </div>
+                    </template>
+                </div>
+                <div x-show="items.filter(i => i.status === 'ready').length === 0" class="text-center py-8 bg-white rounded-lg shadow text-gray-500">
+                    {{ __('No items ready to serve.') }}
+                </div>
+            </section>
+
+            {{-- 4. Active Orders --}}
+            <section>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('Active Orders') }}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @forelse($activeOrders as $order)
+                        <div class="bg-white rounded-lg shadow border p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-bold text-gray-900">#{{ $order->id }}</span>
+                                <span class="text-xs px-2 py-0.5 rounded-full
+                                    {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                    {{ $order->status === 'in_preparation' ? 'bg-blue-100 text-blue-800' : '' }}
+                                    {{ $order->status === 'ready' ? 'bg-green-100 text-green-800' : '' }}">
+                                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600">Table #{{ $order->table->table_number ?? 'N/A' }}</p>
+                            <p class="text-lg font-semibold text-gray-900 mt-1">{{ number_format($order->total_price, 2) }} PLN</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="{{ route('orders.show', $order) }}" class="flex-1 text-center py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium">
+                                    {{ __('View') }}
+                                </a>
+                                <a href="{{ route('orders.edit', $order) }}" class="flex-1 text-center py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
+                                    {{ __('Add item') }}
+                                </a>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-span-full text-center py-8 bg-white rounded-lg shadow text-gray-500">
+                            {{ __('No active orders.') }}
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+
+            {{-- 5. Today Closed --}}
+            <section>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('Today Closed') }}</h3>
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    @if($todayClosed->isEmpty())
+                        <p class="p-6 text-center text-gray-500">{{ __('No closed orders today.') }}</p>
+                    @else
+                        <ul class="divide-y divide-gray-200">
+                            @foreach($todayClosed as $order)
+                                <li class="px-4 py-3 flex justify-between items-center hover:bg-gray-50">
+                                    <div>
+                                        <span class="font-medium text-gray-900">#{{ $order->id }}</span>
+                                        <span class="text-sm text-gray-500 ml-2">Table #{{ $order->table->table_number ?? 'N/A' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <span class="font-semibold text-gray-900">{{ number_format($order->total_price, 2) }} PLN</span>
+                                        <a href="{{ route('orders.show', $order) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">{{ __('View') }}</a>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            </section>
         </div>
     </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
-            // Use existing Echo store if available, otherwise create it
             if (!Alpine.store('echo')) {
-                Alpine.store('echo', {
-                    connected: false
-                });
+                Alpine.store('echo', { connected: false });
             }
 
             Alpine.data('waiterDisplay', (initialItems) => ({
                 items: initialItems,
 
                 init() {
-                    // Wait for Echo to be available
                     this.setupEcho();
                 },
 
                 setupEcho() {
-                    // Check if Echo is available, if not wait a bit
                     if (window.Echo) {
                         this.connectEcho();
                     } else {
-                        // Retry after a short delay
                         setTimeout(() => this.setupEcho(), 100);
                     }
                 },
 
                 connectEcho() {
                     try {
-                        // Use private channel for waiters (same as kitchen)
                         const channel = window.Echo.private('kitchen');
-                        
                         channel
                             .listen('.OrderItemStatusUpdated', (e) => {
-                                console.log('OrderItemStatusUpdated event received:', e);
                                 const index = this.items.findIndex(i => i.id === e.id);
-                                
                                 if (e.status === 'ready') {
-                                    // Add item if it's ready and doesn't exist
                                     if (index === -1) {
-                                        // Construct the mark served URL
                                         const markServedUrl = "{{ route('waiter.mark-served', ':id') }}".replace(':id', e.id);
                                         this.items.unshift({
                                             ...e,
@@ -127,19 +287,13 @@
                                             mark_served_url: markServedUrl
                                         });
                                     } else {
-                                        // Update existing item
                                         this.items[index] = { ...this.items[index], ...e };
                                     }
                                 } else if (e.status === 'served' || e.status !== 'ready') {
-                                    // Remove item if it's served or no longer ready
-                                    if (index !== -1) {
-                                        this.items.splice(index, 1);
-                                    }
+                                    if (index !== -1) this.items.splice(index, 1);
                                 }
                             })
                             .listen('.OrderItemCreated', (e) => {
-                                console.log('OrderItemCreated event received:', e);
-                                // Only add if status is ready (shouldn't happen often, but handle it)
                                 if (e.status === 'ready' && !this.items.find(i => i.id === e.id)) {
                                     const markServedUrl = "{{ route('waiter.mark-served', ':id') }}".replace(':id', e.id);
                                     this.items.unshift({
@@ -150,39 +304,21 @@
                                 }
                             });
 
-                        // Listen for connection events
-                        if (window.Echo.connector && window.Echo.connector.pusher) {
-                            window.Echo.connector.pusher.connection.bind('connected', () => {
-                                console.log('Echo connected to Reverb (Waiter)');
-                                Alpine.store('echo').connected = true;
-                            });
-
-                            window.Echo.connector.pusher.connection.bind('disconnected', () => {
-                                console.log('Echo disconnected from Reverb (Waiter)');
-                                Alpine.store('echo').connected = false;
-                            });
-
-                            // Set initial connection status
+                        if (window.Echo.connector?.pusher) {
+                            window.Echo.connector.pusher.connection.bind('connected', () => { Alpine.store('echo').connected = true; });
+                            window.Echo.connector.pusher.connection.bind('disconnected', () => { Alpine.store('echo').connected = false; });
                             Alpine.store('echo').connected = true;
                         }
                     } catch (error) {
-                        console.error('Error setting up Echo:', error);
-                        Alpine.store('echo').connected = false;
-                        // Retry after delay
+                        console.error('Echo:', error);
                         setTimeout(() => this.setupEcho(), 1000);
                     }
                 }
             }));
         });
     </script>
-
     <style>
-        .animate-fade-in-down {
-            animation: fadeInDown 0.5s ease-out;
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .animate-pulse-subtle { animation: pulseSub 2s ease-in-out infinite; }
+        @keyframes pulseSub { 0%, 100% { opacity: 1; } 50% { opacity: 0.95; } }
     </style>
 </x-app-layout>
