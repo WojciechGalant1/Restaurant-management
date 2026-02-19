@@ -72,6 +72,11 @@
                                         <a href="{{ route('orders.show', $order) }}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
                                             <x-heroicon-o-eye class="w-5 h-5" />
                                         </a>
+                                        @can('update', $order)
+                                            <a href="{{ route('orders.edit', $order) }}" class="text-amber-600 hover:text-amber-900" title="Edit Order">
+                                                <x-heroicon-o-pencil class="w-5 h-5" />
+                                            </a>
+                                        @endcan
                                         @if($order->status !== 'paid')
                                             <a href="{{ route('invoices.create', ['order_id' => $order->id]) }}" class="text-green-600 hover:text-green-900" title="Generate Invoice">
                                                 <x-heroicon-o-credit-card class="w-5 h-5" />

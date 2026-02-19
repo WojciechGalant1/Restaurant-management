@@ -5,6 +5,11 @@
                 {{ __('Order Details') }} #{{ $order->id }}
             </h2>
             <div class="flex space-x-3">
+                @can('update', $order)
+                    <a href="{{ route('orders.edit', $order) }}" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                        {{ __('Edit Order') }}
+                    </a>
+                @endcan
                 @if($order->status !== 'paid')
                     <a href="{{ route('invoices.create', ['order_id' => $order->id]) }}" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
                         {{ __('Generate Invoice') }}

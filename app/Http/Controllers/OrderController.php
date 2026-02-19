@@ -50,7 +50,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Order::class);
-        
+
         $validated = $request->validate([
             'table_id' => 'required|exists:tables,id',
             'items' => 'required|array|min:1',
@@ -74,13 +74,26 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $this->authorize('update', $order);
-        return view('orders.edit', compact('order'));
+        $order->load(['orderItems.menuItem.dish']);
+        $tables = Table::where('status', 'available')->orWhere('id', $order->table_id)->orderBy('table_number')->get();
+        $menuItems = MenuItem::with('dish')->where('is_available', true)->get();
+        return view('orders.edit', compact('order', 'tables', 'menuItems'));
     }
 
     public function update(Request $request, Order $order)
     {
         $this->authorize('update', $order);
-        // Status update logic etc.
+        $validated = $request->validate([
+            'table_id' => 'sometimes|exists:tables,id',
+            'items' => 'sometimes|array|min:1',
+            'items.*.id' => 'sometimes|nullable|exists:order_items,id',
+            'items.*.menu_item_id' => 'required_with:items|exists:menu_items,id',
+            'items.*.quantity' => 'required_with:items|integer|min:1',
+            'items.*.unit_price' => 'required_with:items|numeric',
+            'items.*.notes' => 'nullable|string',
+        ]);
+
+        $order = $this->orderService->updateOrder($order, $validated);
         return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
     }
 

@@ -33,7 +33,7 @@ class UserController extends Controller
             'phone_number' => 'nullable|string',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        //$validated['password'] = Hash::make($validated['password']);
         User::create($validated);
         
         return redirect()->route('users.index')->with('success', 'Staff member added successfully.');
