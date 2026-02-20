@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Table;
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Http\Requests\StoreTableRequest;
+use App\Http\Requests\UpdateTableRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -42,16 +44,11 @@ class TableController extends Controller
         return view('tables.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreTableRequest $request)
     {
         $this->authorize('create', Table::class);
-        $validated = $request->validate([
-            'table_number' => 'required|integer|unique:tables',
-            'capacity' => 'required|integer|min:1',
-            'status' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\TableStatus::class)],
-        ]);
 
-        Table::create($validated);
+        Table::create($request->validated());
         return redirect()->route('tables.index')->with('success', 'Table created successfully.');
     }
 
@@ -61,18 +58,10 @@ class TableController extends Controller
         return view('tables.edit', compact('table'));
     }
 
-    public function update(Request $request, Table $table)
+    public function update(UpdateTableRequest $request, Table $table)
     {
         $this->authorize('update', $table);
-        $validated = $request->validate([
-            'capacity' => 'sometimes|integer|min:1',
-            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(\App\Enums\TableStatus::class)],
-            'waiter_id' => [
-                'sometimes',
-                'nullable',
-                Rule::exists('users', 'id')->where('role', UserRole::Waiter->value),
-            ],
-        ]);
+        $validated = $request->validated();
 
         if (array_key_exists('waiter_id', $validated)) {
             if ($validated['waiter_id']) {
@@ -81,7 +70,6 @@ class TableController extends Controller
                     $table->assignTo($waiter);
                 }
             } else {
-                // Jeśli kelner usunięty z przypisania, oznacz stolik jako dostępny
                 $table->markAsAvailable();
             }
             unset($validated['waiter_id']);

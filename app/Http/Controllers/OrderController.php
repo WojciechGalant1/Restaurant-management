@@ -7,6 +7,8 @@ use App\Models\Table;
 use App\Models\MenuItem;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
 
 class OrderController extends Controller
 {
@@ -54,19 +56,11 @@ class OrderController extends Controller
         return view('orders.create', compact('tables', 'menuItems', 'preselectedTableId'));
     }
 
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request)
     {
         $this->authorize('create', Order::class);
 
-        $validated = $request->validate([
-            'table_id' => 'required|exists:tables,id',
-            'items' => 'required|array|min:1',
-            'items.*.menu_item_id' => 'required|exists:menu_items,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric',
-        ]);
-
-        $order = $this->orderService->createOrder($validated, auth()->user());
+        $order = $this->orderService->createOrder($request->validated(), auth()->user());
 
         return redirect()->route('orders.show', $order)->with('success', 'Order created successfully.');
     }
@@ -87,21 +81,11 @@ class OrderController extends Controller
         return view('orders.edit', compact('order', 'tables', 'menuItems'));
     }
 
-    public function update(Request $request, Order $order)
+    public function update(UpdateOrderRequest $request, Order $order)
     {
         $this->authorize('update', $order);
-        $validated = $request->validate([
-            'table_id' => 'sometimes|exists:tables,id',
-            'items' => 'sometimes|array|min:1',
-            'items.*.id' => 'sometimes|nullable|exists:order_items,id',
-            'items.*.menu_item_id' => 'required_with:items|exists:menu_items,id',
-            'items.*.quantity' => 'required_with:items|integer|min:1',
-            'items.*.unit_price' => 'required_with:items|numeric',
-            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(\App\Enums\OrderStatus::class)],
-            'items.*.notes' => 'nullable|string',
-        ]);
 
-        $order = $this->orderService->updateOrder($order, $validated);
+        $order = $this->orderService->updateOrder($order, $request->validated());
         return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
     }
 

@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\DishCategory;
 use App\Models\Dish;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class DishController extends Controller
 {
@@ -22,16 +20,11 @@ class DishController extends Controller
         return view('dishes.create');
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreDishRequest $request)
     {
         $this->authorize('create', Dish::class);
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'description' => 'nullable|string',
-            'category' => ['required', Rule::enum(DishCategory::class)],
-        ]);
 
-        Dish::create($validated);
+        Dish::create($request->validated());
         return redirect()->route('dishes.index')->with('success', 'Dish created successfully.');
     }
 
@@ -41,16 +34,11 @@ class DishController extends Controller
         return view('dishes.edit', compact('dish'));
     }
 
-    public function update(Request $request, Dish $dish)
+    public function update(\App\Http\Requests\UpdateDishRequest $request, Dish $dish)
     {
         $this->authorize('update', $dish);
-        $validated = $request->validate([
-            'name' => 'string',
-            'description' => 'nullable|string',
-            'category' => [Rule::enum(DishCategory::class)],
-        ]);
 
-        $dish->update($validated);
+        $dish->update($request->validated());
         return redirect()->route('dishes.index')->with('success', 'Dish updated successfully.');
     }
 

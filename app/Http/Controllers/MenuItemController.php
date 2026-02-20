@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuItem;
 use App\Models\Dish;
+use App\Http\Requests\StoreMenuItemRequest;
+use App\Http\Requests\UpdateMenuItemRequest;
 use Illuminate\Http\Request;
 
 class MenuItemController extends Controller
@@ -22,16 +24,11 @@ class MenuItemController extends Controller
         return view('menu-items.create', compact('dishes'));
     }
 
-    public function store(Request $request)
+    public function store(StoreMenuItemRequest $request)
     {
         $this->authorize('create', MenuItem::class);
-        $validated = $request->validate([
-            'dish_id' => 'required|exists:dishes,id',
-            'price' => 'required|numeric',
-            'is_available' => 'boolean',
-        ]);
 
-        MenuItem::create($validated);
+        MenuItem::create($request->validated());
         return redirect()->route('menu-items.index')->with('success', 'Menu item added successfully.');
     }
 
@@ -42,15 +39,11 @@ class MenuItemController extends Controller
         return view('menu-items.edit', compact('menuItem', 'dishes'));
     }
 
-    public function update(Request $request, MenuItem $menuItem)
+    public function update(UpdateMenuItemRequest $request, MenuItem $menuItem)
     {
         $this->authorize('update', $menuItem);
-        $validated = $request->validate([
-            'price' => 'numeric',
-            'is_available' => 'boolean',
-        ]);
 
-        $menuItem->update($validated);
+        $menuItem->update($request->validated());
         return redirect()->route('menu-items.index')->with('success', 'Menu item updated successfully.');
     }
 

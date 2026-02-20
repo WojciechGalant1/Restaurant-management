@@ -10,11 +10,17 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Reservation;
 use App\Models\Table;
+use App\Services\ReservationService;
+use App\Http\Requests\UpdateReservationStatusRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class WaiterController extends Controller
 {
+    public function __construct(
+        private ReservationService $reservationService
+    ) {}
+
     public function index()
     {
         $this->authorize('waiter.view');
@@ -107,13 +113,11 @@ class WaiterController extends Controller
             }
         }
 
-        // Only allow marking confirmed reservations as seated
-        if ($reservation->status !== ReservationStatus::Confirmed) {
-            return back()->with('error', 'Only confirmed reservations can be marked as seated.');
+        try {
+            $this->reservationService->updateStatus($reservation, ReservationStatus::Seated);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $reservation->update(['status' => ReservationStatus::Seated]);
-        event(new \App\Events\ReservationUpdated($reservation));
 
         return back()->with('success', 'Reservation marked as seated.');
     }
@@ -132,18 +136,16 @@ class WaiterController extends Controller
             }
         }
 
-        // Only allow marking confirmed reservations as no_show
-        if ($reservation->status !== ReservationStatus::Confirmed) {
-            return back()->with('error', 'Only confirmed reservations can be marked as no show.');
+        try {
+            $this->reservationService->updateStatus($reservation, ReservationStatus::NoShow);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $reservation->update(['status' => ReservationStatus::NoShow]);
-        event(new \App\Events\ReservationUpdated($reservation));
 
         return back()->with('success', 'Reservation marked as no show.');
     }
 
-    public function updateReservationStatus(Request $request, Reservation $reservation)
+    public function updateReservationStatus(UpdateReservationStatusRequest $request, Reservation $reservation)
     {
         $this->authorize('waiter.view');
         
@@ -157,37 +159,13 @@ class WaiterController extends Controller
             }
         }
 
-        $validated = $request->validate([
-            'status' => ['required', Rule::enum(ReservationStatus::class)],
-        ]);
+        $validated = $request->validated();
 
-        $newStatus = $validated['status'];
-        $currentStatus = $reservation->status;
-
-        // Define allowed transitions for waiter
-        $allowedTransitions = [
-            ReservationStatus::Pending->value => [ReservationStatus::Confirmed->value, ReservationStatus::Cancelled->value],
-            ReservationStatus::Confirmed->value => [ReservationStatus::Seated->value, ReservationStatus::NoShow->value, ReservationStatus::Cancelled->value],
-            ReservationStatus::Seated->value => [ReservationStatus::Completed->value, ReservationStatus::Cancelled->value],
-            ReservationStatus::NoShow->value => [], // terminal state
-            ReservationStatus::Completed->value => [], // terminal state
-            ReservationStatus::Cancelled->value => [], // terminal state
-        ];
-
-        // Since we cast to enum, we need to compare enum instances or use values depending on how strict we want to be.
-        // The casting on model means $currentStatus is an Enum instance (or should be).
-        // The $newStatus from validation is likely the backing value (string) unless we manually cast it,
-        // BUT Rule::enum ensures valid value.
-        // Let's use ->value for comparison to be safe if $currentStatus is enum.
-        
-        $currentStatusValue = $currentStatus instanceof ReservationStatus ? $currentStatus->value : $currentStatus;
-        
-        if (!in_array($newStatus, $allowedTransitions[$currentStatusValue] ?? [])) {
-            return back()->with('error', "Cannot change status from {$currentStatusValue} to {$newStatus}.");
+        try {
+            $this->reservationService->updateStatus($reservation, $validated['status']);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $reservation->update(['status' => $newStatus]);
-        event(new \App\Events\ReservationUpdated($reservation));
 
         return back()->with('success', "Reservation status updated.");
     }

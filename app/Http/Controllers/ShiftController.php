@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Shift;
 use App\Models\User;
+use App\Http\Requests\StoreShiftRequest;
 use Illuminate\Http\Request;
 
 class ShiftController extends Controller
@@ -22,17 +23,11 @@ class ShiftController extends Controller
         return view('shifts.create', compact('users'));
     }
 
-    public function store(Request $request)
+    public function store(StoreShiftRequest $request)
     {
         $this->authorize('create', Shift::class);
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'shift_type' => 'required|in:morning,evening,full_day',
-            'notes' => 'nullable|string',
-        ]);
 
-        Shift::create($validated);
+        Shift::create($request->validated());
         return redirect()->route('shifts.index')->with('success', 'Shift scheduled successfully.');
     }
 

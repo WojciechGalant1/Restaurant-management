@@ -6,6 +6,7 @@ use App\Models\OrderItem;
 use App\Enums\OrderItemStatus;
 use App\Enums\UserRole;
 use App\Enums\DishCategory;
+use App\Http\Requests\UpdateKitchenItemStatusRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -28,7 +29,7 @@ class KitchenController extends Controller
         return view('kitchen.index', compact('items'));
     }
 
-    public function updateStatus(Request $request, OrderItem $orderItem)
+    public function updateStatus(UpdateKitchenItemStatusRequest $request, OrderItem $orderItem)
     {
         $this->authorize('kitchen.update-item-status', $orderItem);
 
@@ -37,10 +38,7 @@ class KitchenController extends Controller
             abort(403, 'You are not authorized to update this item category.');
         }
 
-        $validated = $request->validate([
-            'status' => ['required', Rule::enum(OrderItemStatus::class)],
-        ]);
-
+        $validated = $request->validated();
         $status = $validated['status'];
         $data = ['status' => $status];
 

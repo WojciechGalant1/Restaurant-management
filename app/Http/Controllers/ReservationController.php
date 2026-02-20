@@ -4,10 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservation;
 use App\Models\Table;
+use App\Services\ReservationService;
+use App\Enums\ReservationStatus;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ReservationController extends Controller
 {
+    public function __construct(
+        private ReservationService $reservationService
+        ) {}
+
     public function index()
     {
         $this->authorize('viewAny', Reservation::class);
@@ -22,22 +29,12 @@ class ReservationController extends Controller
         return view('reservations.create', compact('tables'));
     }
 
-    public function store(Request $request)
+    public function store(StoreReservationRequest $request)
     {
         $this->authorize('create', Reservation::class);
-        $validated = $request->validate([
-            'table_id' => 'required|exists:tables,id',
-            'customer_name' => 'required|string',
-            'phone_number' => 'required|string',
-            'reservation_date' => 'required|date',
-            'reservation_time' => 'required',
-            'party_size' => 'required|integer|min:1',
-        ]);
 
-        $validated['status'] = \App\Enums\ReservationStatus::Pending;
+        $this->reservationService->createReservation($request->validated());
 
-        $reservation = Reservation::create($validated);
-        event(new \App\Events\ReservationCreated($reservation));
         return redirect()->route('reservations.index')->with('success', 'Reservation created successfully.');
     }
 
@@ -48,20 +45,25 @@ class ReservationController extends Controller
         return view('reservations.edit', compact('reservation', 'tables'));
     }
 
-    public function update(Request $request, Reservation $reservation)
+    public function update(UpdateReservationRequest $request, Reservation $reservation)
     {
         $this->authorize('update', $reservation);
-        $validated = $request->validate([
-            'table_id' => 'exists:tables,id',
-            'customer_name' => 'string',
-            'phone_number' => 'string',
-            'reservation_date' => 'date',
-            'party_size' => 'integer|min:1',
-            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(\App\Enums\ReservationStatus::class)],
-        ]);
 
-        $reservation->update($validated);
-        event(new \App\Events\ReservationUpdated($reservation));
+        $validated = $request->validated();
+
+        if (isset($validated['status'])) {
+            try {
+                $this->reservationService->updateStatus($reservation, $validated['status']);
+                unset($validated['status']); // Avoid mass assignment in case of direct update below
+            } catch (\InvalidArgumentException $e) {
+                return back()->with('error', $e->getMessage());
+            }
+        }
+
+        if (!empty($validated)) {
+            $reservation->update($validated);
+        }
+
         return redirect()->route('reservations.index')->with('success', 'Reservation updated successfully.');
     }
 
