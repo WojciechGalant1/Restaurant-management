@@ -37,7 +37,7 @@
                         </x-nav-link>
                     @endif
 
-                    @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Chef]))
+                    @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Chef, UserRole::Bartender]))
                         <x-nav-link :href="route('kitchen.index')" :active="request()->is('kitchen*')">
                             {{ __('Kitchen') }}
                         </x-nav-link>
@@ -133,7 +133,7 @@
                 </x-responsive-nav-link>
             @endif
 
-            @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Chef]))
+            @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Chef, UserRole::Bartender]))
                 <x-responsive-nav-link :href="route('kitchen.index')" :active="request()->is('kitchen*')">
                     {{ __('Kitchen') }}
                 </x-responsive-nav-link>

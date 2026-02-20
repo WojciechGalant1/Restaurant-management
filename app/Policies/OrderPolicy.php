@@ -28,7 +28,7 @@ class OrderPolicy
     public function update(User $user, Order $order): bool
     {
         if ($user->role === UserRole::Manager) return true;
-        if ($user->role === UserRole::Chef) return $order->status === OrderStatus::Open;
+        if (in_array($user->role, [UserRole::Chef, UserRole::Bartender])) return $order->status === OrderStatus::Open;
         if ($user->role === UserRole::Waiter) return $order->user_id === $user->id;
         
         return false;

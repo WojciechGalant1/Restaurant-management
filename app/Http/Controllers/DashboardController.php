@@ -91,6 +91,16 @@ class DashboardController extends Controller
                 'live_feed' => true,
                 'quick_actions' => true,
             ],
+            UserRole::Bartender => [
+                'kpis' => true,
+                'charts' => false,
+                'kitchen' => true,
+                'staff' => false,
+                'alerts' => false,
+                'top_performers' => false,
+                'live_feed' => true,
+                'quick_actions' => true,
+            ],
             UserRole::Waiter => [
                 'kpis' => true,
                 'charts' => false,

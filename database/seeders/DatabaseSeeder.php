@@ -44,6 +44,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'chef',
         ]);
 
+        User::create([
+            'first_name' => 'Bartender',
+            'last_name' => 'Expert',
+            'email' => 'bartender@restaurant.com',
+            'password' => Hash::make('password'),
+            'role' => 'bartender',
+        ]);
+
         $this->call([
             TableSeeder::class,
             DishSeeder::class,
