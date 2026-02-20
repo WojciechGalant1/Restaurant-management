@@ -29,6 +29,14 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
+            'first_name' => 'Mark',
+            'last_name' => 'Waiter',
+            'email' => 'waiter2@restaurant.com',
+            'password' => Hash::make('password'),
+            'role' => 'waiter',
+        ]);
+
+        User::create([
             'first_name' => 'Chef',
             'last_name' => 'Master',
             'email' => 'chef@restaurant.com',
@@ -36,16 +44,12 @@ class DatabaseSeeder extends Seeder
             'role' => 'chef',
         ]);
 
-        // Create some tables
-        for ($i = 1; $i <= 10; $i++) {
-            Table::create([
-                'table_number' => $i,
-                'capacity' => rand(2, 6),
-                'status' => 'available',
-            ]);
-        }
         $this->call([
+            TableSeeder::class,
             DishSeeder::class,
+            ReservationSeeder::class,
+            OrderSeeder::class,
+            ShiftSeeder::class,
         ]);
     }
 }
