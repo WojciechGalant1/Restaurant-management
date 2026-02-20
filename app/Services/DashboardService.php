@@ -144,6 +144,25 @@ class DashboardService
             ];
         }
 
+        $largeReservation = Reservation::query()
+            ->whereDate('reservation_date', today())
+            ->whereIn('status', [ReservationStatus::Pending, ReservationStatus::Confirmed])
+            ->where('party_size', '>=', 6)
+            ->orderByDesc('party_size')
+            ->first();
+
+        if ($largeReservation && $staff['waiter'] < 2) {
+            $alerts[] = [
+                'type' => 'large_reservation_low_staff',
+                'message' => __('Large reservation (:size guests) today with only :waiters waiter(s) on shift', [
+                    'size' => $largeReservation->party_size,
+                    'waiters' => $staff['waiter'],
+                ]),
+                'link' => route('reservations.index'),
+                'severity' => 'warning',
+            ];
+        }
+
         $order = ['critical' => 0, 'warning' => 1, 'info' => 2];
         usort($alerts, fn ($a, $b) => ($order[$a['severity']] ?? 3) <=> ($order[$b['severity']] ?? 3));
         return $alerts;

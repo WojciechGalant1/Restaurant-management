@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Shift;
 use App\Models\Table;
 use App\Models\User;
 use App\Enums\UserRole;
@@ -25,7 +26,9 @@ class TableController extends Controller
 
         $waiters = [];
         if ($user->role === UserRole::Manager) {
+            $activeWaiterIds = Shift::activeNow()->pluck('user_id');
             $waiters = User::where('role', UserRole::Waiter)
+                ->whereIn('id', $activeWaiterIds)
                 ->orderBy('first_name')
                 ->orderBy('last_name')
                 ->get();

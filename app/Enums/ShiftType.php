@@ -21,8 +21,8 @@ enum ShiftType: string
     {
         return match($this) {
             self::Morning => ['start' => '08:00', 'end' => '16:00'],
-            self::Evening => ['start' => '16:00', 'end' => '24:00'],
-            self::FullDay  => ['start' => '08:00', 'end' => '24:00'],
+            self::Evening => ['start' => '16:00', 'end' => '23:59'],
+            self::FullDay  => ['start' => '08:00', 'end' => '23:59'],
         };
     }
 

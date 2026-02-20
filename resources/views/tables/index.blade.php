@@ -73,7 +73,7 @@
                                             <form action="{{ route('tables.update', $table) }}" method="POST" class="flex items-center space-x-2">
                                                 @csrf
                                                 @method('PUT')
-                                                <select name="waiter_id" class="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" onchange="this.form.submit()">
+                                                <select name="waiter_id" class="text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" onchange="this.form.submit()" title="{{ __('Only waiters currently on shift') }}">
                                                     <option value="">{{ __('Unassigned') }}</option>
                                                     @foreach($waiters as $waiter)
                                                         <option value="{{ $waiter->id }}" @selected($table->waiter_id === $waiter->id)>

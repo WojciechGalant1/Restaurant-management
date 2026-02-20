@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Schedule New Shift') }}
+                {{ __('Edit Shift') }}
             </h2>
             <a href="{{ route('shifts.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition flex items-center">
                 <x-heroicon-o-arrow-left class="w-4 h-4 mr-2" />
@@ -14,15 +14,16 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <form method="POST" action="{{ route('shifts.store') }}">
+                <form method="POST" action="{{ route('shifts.update', $shift) }}">
                     @csrf
+                    @method('PUT')
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <x-input-label for="user_id" :value="__('Staff Member')" />
-                            <select id="user_id" name="user_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required autofocus>
+                            <select id="user_id" name="user_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
                                 <option value="">-- Select Staff --</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->first_name }} {{ $user->last_name }} ({{ ucfirst($user->role->value) }})</option>
+                                    <option value="{{ $user->id }}" @selected(old('user_id', $shift->user_id) == $user->id)>{{ $user->first_name }} {{ $user->last_name }} ({{ ucfirst($user->role->value) }})</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('user_id')" class="mt-2" />
@@ -30,7 +31,7 @@
 
                         <div>
                             <x-input-label for="date" :value="__('Shift Date')" />
-                            <x-text-input id="date" name="date" type="date" class="mt-1 block w-full" :value="old('date', request('date', date('Y-m-d')))" required />
+                            <x-text-input id="date" name="date" type="date" class="mt-1 block w-full" :value="old('date', $shift->date->format('Y-m-d'))" required />
                             <x-input-error :messages="$errors->get('date')" class="mt-2" />
                         </div>
 
@@ -41,7 +42,7 @@
                                     <option value="{{ $type->value }}"
                                         data-start="{{ $type->startTime() }}"
                                         data-end="{{ $type->endTime() }}"
-                                        {{ old('shift_type') === $type->value ? 'selected' : '' }}>
+                                        @selected(old('shift_type', $shift->shift_type->value) === $type->value)>
                                         {{ $type->label() }}
                                     </option>
                                 @endforeach
@@ -52,26 +53,26 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="start_time" :value="__('Start Time')" />
-                                <x-text-input id="start_time" name="start_time" type="time" class="mt-1 block w-full" :value="old('start_time', \App\Enums\ShiftType::Morning->startTime())" required />
+                                <x-text-input id="start_time" name="start_time" type="time" class="mt-1 block w-full" :value="old('start_time', \Carbon\Carbon::parse($shift->start_time)->format('H:i'))" required />
                                 <x-input-error :messages="$errors->get('start_time')" class="mt-2" />
                             </div>
                             <div>
                                 <x-input-label for="end_time" :value="__('End Time')" />
-                                <x-text-input id="end_time" name="end_time" type="time" class="mt-1 block w-full" :value="old('end_time', \App\Enums\ShiftType::Morning->endTime())" required />
+                                <x-text-input id="end_time" name="end_time" type="time" class="mt-1 block w-full" :value="old('end_time', \Carbon\Carbon::parse($shift->end_time)->format('H:i'))" required />
                                 <x-input-error :messages="$errors->get('end_time')" class="mt-2" />
                             </div>
                         </div>
 
                         <div class="md:col-span-2">
                             <x-input-label for="notes" :value="__('Notes')" />
-                            <textarea id="notes" name="notes" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3">{{ old('notes') }}</textarea>
+                            <textarea id="notes" name="notes" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3">{{ old('notes', $shift->notes) }}</textarea>
                             <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                         </div>
                     </div>
 
                     <div class="mt-6">
                         <x-primary-button>
-                            {{ __('Schedule Shift') }}
+                            {{ __('Update Shift') }}
                         </x-primary-button>
                     </div>
                 </form>

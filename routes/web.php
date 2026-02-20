@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('dishes', DishController::class);
     Route::resource('menu-items', MenuItemController::class);
     Route::resource('shifts', ShiftController::class);
+    Route::get('shifts-calendar-events', [ShiftController::class, 'calendarEvents'])->name('shifts.calendar-events');
     Route::resource('users', UserController::class);
     Route::resource('invoices', InvoiceController::class);
 
