@@ -36,12 +36,30 @@
 
                         <div>
                             <x-input-label for="shift_type" :value="__('Shift Type')" />
-                             <select id="shift_type" name="shift_type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="{{ \App\Enums\ShiftType::Morning->value }}" {{ old('shift_type') === \App\Enums\ShiftType::Morning->value ? 'selected' : '' }}>Morning (e.g. 08:00 - 16:00)</option>
-                                <option value="{{ \App\Enums\ShiftType::Evening->value }}" {{ old('shift_type') === \App\Enums\ShiftType::Evening->value ? 'selected' : '' }}>Evening (e.g. 16:00 - 24:00)</option>
-                                <option value="{{ \App\Enums\ShiftType::FullDay->value }}" {{ old('shift_type') === \App\Enums\ShiftType::FullDay->value ? 'selected' : '' }}>Full Day</option>
+                            <select id="shift_type" name="shift_type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                @foreach($shiftTypes as $type)
+                                    <option value="{{ $type->value }}"
+                                        data-start="{{ $type->startTime() }}"
+                                        data-end="{{ $type->endTime() }}"
+                                        {{ old('shift_type') === $type->value ? 'selected' : '' }}>
+                                        {{ $type->label() }}
+                                    </option>
+                                @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('shift_type')" class="mt-2" />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <x-input-label for="start_time" :value="__('Start Time')" />
+                                <x-text-input id="start_time" name="start_time" type="time" class="mt-1 block w-full" :value="old('start_time', \App\Enums\ShiftType::Morning->startTime())" required />
+                                <x-input-error :messages="$errors->get('start_time')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="end_time" :value="__('End Time')" />
+                                <x-text-input id="end_time" name="end_time" type="time" class="mt-1 block w-full" :value="old('end_time', \App\Enums\ShiftType::Morning->endTime())" required />
+                                <x-input-error :messages="$errors->get('end_time')" class="mt-2" />
+                            </div>
                         </div>
 
                         <div class="md:col-span-2">
@@ -60,4 +78,21 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        document.getElementById('shift_type').addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            const startInput = document.getElementById('start_time');
+            const endInput = document.getElementById('end_time');
+
+            if (selected.dataset.start) {
+                startInput.value = selected.dataset.start;
+            }
+            if (selected.dataset.end) {
+                endInput.value = selected.dataset.end;
+            }
+        });
+    </script>
+    @endpush
 </x-app-layout>

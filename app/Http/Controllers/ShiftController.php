@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ShiftType;
 use App\Models\Shift;
 use App\Models\User;
 use App\Http\Requests\StoreShiftRequest;
@@ -12,7 +13,10 @@ class ShiftController extends Controller
     public function index()
     {
         $this->authorize('viewAny', Shift::class);
-        $shifts = Shift::with('user')->latest()->paginate(20);
+        $shifts = Shift::with('user')
+            ->orderByDesc('date')
+            ->orderBy('start_time')
+            ->paginate(20);
         return view('shifts.index', compact('shifts'));
     }
 
@@ -20,7 +24,8 @@ class ShiftController extends Controller
     {
         $this->authorize('create', Shift::class);
         $users = User::all();
-        return view('shifts.create', compact('users'));
+        $shiftTypes = ShiftType::cases();
+        return view('shifts.create', compact('users', 'shiftTypes'));
     }
 
     public function store(StoreShiftRequest $request)

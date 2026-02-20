@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ShiftType;
 use App\Models\Shift;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -15,10 +16,14 @@ class ShiftFactory extends Factory
 
     public function definition(): array
     {
+        $type = $this->faker->randomElement(ShiftType::cases());
+
         return [
             'user_id' => User::factory(),
             'date' => $this->faker->dateTimeBetween('-1 month', 'now'),
-            'shift_type' => $this->faker->randomElement(['morning', 'evening']),
+            'shift_type' => $type->value,
+            'start_time' => $type->startTime(),
+            'end_time' => $type->endTime(),
             'notes' => $this->faker->optional()->sentence(),
         ];
     }

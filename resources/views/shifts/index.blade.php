@@ -27,6 +27,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Member</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -34,7 +35,7 @@
                             @forelse ($shifts as $shift)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                        {{ $shift->date }}
+                                        {{ $shift->date->format('Y-m-d') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $shift->user->first_name ?? 'Unknown' }} {{ $shift->user->last_name ?? '' }}
@@ -45,8 +46,11 @@
                                             {{ $shift->shift_type === \App\Enums\ShiftType::Morning ? 'bg-yellow-100 text-yellow-800' : '' }}
                                             {{ $shift->shift_type === \App\Enums\ShiftType::Evening ? 'bg-indigo-100 text-indigo-800' : '' }}
                                             {{ $shift->shift_type === \App\Enums\ShiftType::FullDay ? 'bg-green-100 text-green-800' : '' }}">
-                                            {{ str_replace('_', ' ', ucfirst($shift->shift_type->value)) }}
+                                            {{ $shift->shift_type->label() }}
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                        {{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }} – {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <form action="{{ route('shifts.destroy', $shift) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this shift?') }}')">
@@ -60,7 +64,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-10 text-center text-gray-500 italic">
+                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
                                         {{ __('No shifts scheduled.') }}
                                     </td>
                                 </tr>
