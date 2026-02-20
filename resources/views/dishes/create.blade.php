@@ -31,12 +31,12 @@
 
                         <div>
                             <x-input-label for="category" :value="__('Category')" />
-                            <select id="category" name="category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="starter" {{ old('category') === 'starter' ? 'selected' : '' }}>Starter</option>
-                                <option value="main" {{ old('category') === 'main' ? 'selected' : '' }}>Main Course</option>
-                                <option value="dessert" {{ old('category') === 'dessert' ? 'selected' : '' }}>Dessert</option>
-                                <option value="drink" {{ old('category') === 'drink' ? 'selected' : '' }}>Drink</option>
-                                <option value="side" {{ old('category') === 'side' ? 'selected' : '' }}>Side Dish</option>
+                             <select id="category" name="category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="{{ \App\Enums\DishCategory::Starter->value }}" {{ old('category') === \App\Enums\DishCategory::Starter->value ? 'selected' : '' }}>Starter</option>
+                                <option value="{{ \App\Enums\DishCategory::Main->value }}" {{ old('category') === \App\Enums\DishCategory::Main->value ? 'selected' : '' }}>Main Course</option>
+                                <option value="{{ \App\Enums\DishCategory::Dessert->value }}" {{ old('category') === \App\Enums\DishCategory::Dessert->value ? 'selected' : '' }}>Dessert</option>
+                                <option value="{{ \App\Enums\DishCategory::Drink->value }}" {{ old('category') === \App\Enums\DishCategory::Drink->value ? 'selected' : '' }}>Drink</option>
+                                <option value="{{ \App\Enums\DishCategory::Side->value }}" {{ old('category') === \App\Enums\DishCategory::Side->value ? 'selected' : '' }}>Side Dish</option>
                             </select>
                             <x-input-error :messages="$errors->get('category')" class="mt-2" />
                         </div>

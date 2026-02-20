@@ -34,6 +34,8 @@ class ReservationController extends Controller
             'party_size' => 'required|integer|min:1',
         ]);
 
+        $validated['status'] = \App\Enums\ReservationStatus::Pending;
+
         $reservation = Reservation::create($validated);
         event(new \App\Events\ReservationCreated($reservation));
         return redirect()->route('reservations.index')->with('success', 'Reservation created successfully.');
@@ -55,6 +57,7 @@ class ReservationController extends Controller
             'phone_number' => 'string',
             'reservation_date' => 'date',
             'party_size' => 'integer|min:1',
+            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(\App\Enums\ReservationStatus::class)],
         ]);
 
         $reservation->update($validated);

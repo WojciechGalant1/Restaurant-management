@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $role = $user->role ?? 'waiter';
+        $role = $user->role ?? UserRole::Waiter;
 
         $sections = $this->sectionsForRole($role);
         $data = ['sections' => $sections];
@@ -67,10 +68,10 @@ class DashboardController extends Controller
             ->header('Expires', '0');
     }
 
-    private function sectionsForRole(string $role): array
+    private function sectionsForRole(UserRole $role): array
     {
         return match ($role) {
-            'manager' => [
+            UserRole::Manager => [
                 'kpis' => true,
                 'charts' => true,
                 'kitchen' => true,
@@ -80,7 +81,7 @@ class DashboardController extends Controller
                 'live_feed' => true,
                 'quick_actions' => true,
             ],
-            'chef' => [
+            UserRole::Chef => [
                 'kpis' => true,
                 'charts' => false,
                 'kitchen' => true,
@@ -90,17 +91,7 @@ class DashboardController extends Controller
                 'live_feed' => true,
                 'quick_actions' => true,
             ],
-            'waiter' => [
-                'kpis' => true,
-                'charts' => false,
-                'kitchen' => false,
-                'staff' => false,
-                'alerts' => false,
-                'top_performers' => false,
-                'live_feed' => true,
-                'quick_actions' => true,
-            ],
-            default => [
+            UserRole::Waiter => [
                 'kpis' => true,
                 'charts' => false,
                 'kitchen' => false,

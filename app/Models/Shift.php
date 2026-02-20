@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ShiftType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,6 +19,7 @@ class Shift extends Model
 
     protected $casts = [
         'date' => 'datetime',
+        'shift_type' => ShiftType::class,
     ];
 
     public function user()

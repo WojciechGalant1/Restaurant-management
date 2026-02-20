@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,6 +22,7 @@ class Invoice extends Model
 
     protected $casts = [
         'issued_at' => 'datetime',
+        'payment_method' => PaymentMethod::class,
     ];
 
     public function order()

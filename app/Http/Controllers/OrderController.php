@@ -21,21 +21,24 @@ class OrderController extends Controller
     {
         $this->authorize('viewAny', Order::class);
 
-        $filter = $request->query('filter', 'all'); // all | today | pending
+        $filter = $request->query('filter');
+        $status = $request->query('status');
 
         $query = Order::with(['table', 'waiter', 'orderItems.menuItem.dish'])->latest();
 
         if ($filter === 'today') {
             $query->whereDate('ordered_at', today());
-        } elseif ($filter === 'pending') {
-            $query->where('status', 'pending');
+        }
+
+        if ($status) {
+            $query->where('status', $status);
         }
 
         $orders = $query->paginate(15)->withQueryString();
 
         return view('orders.index', [
             'orders' => $orders,
-            'filter' => $filter,
+            'filter' => $status ?: ($filter ?: 'all'),
         ]);
     }
 
@@ -94,6 +97,7 @@ class OrderController extends Controller
             'items.*.menu_item_id' => 'required_with:items|exists:menu_items,id',
             'items.*.quantity' => 'required_with:items|integer|min:1',
             'items.*.unit_price' => 'required_with:items|numeric',
+            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(\App\Enums\OrderStatus::class)],
             'items.*.notes' => 'nullable|string',
         ]);
 

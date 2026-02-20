@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DishCategory;
 use App\Models\Dish;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DishController extends Controller
 {
@@ -26,7 +28,7 @@ class DishController extends Controller
         $validated = $request->validate([
             'name' => 'required|string',
             'description' => 'nullable|string',
-            'category' => 'required|in:starter,main,dessert,drink,side',
+            'category' => ['required', Rule::enum(DishCategory::class)],
         ]);
 
         Dish::create($validated);
@@ -45,7 +47,7 @@ class DishController extends Controller
         $validated = $request->validate([
             'name' => 'string',
             'description' => 'nullable|string',
-            'category' => 'in:starter,main,dessert,drink,side',
+            'category' => [Rule::enum(DishCategory::class)],
         ]);
 
         $dish->update($validated);

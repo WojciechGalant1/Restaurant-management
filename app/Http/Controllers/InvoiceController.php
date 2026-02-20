@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Reservation;
+use App\Enums\ReservationStatus;
+use App\Enums\OrderStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -22,7 +24,7 @@ class InvoiceController extends Controller
     public function create()
     {
         $this->authorize('create', Invoice::class);
-        $orders = Order::where('status', '!=', 'paid')->get();
+        $orders = Order::where('status', '!=', OrderStatus::Paid)->get();
         return view('invoices.create', compact('orders'));
     }
 
@@ -33,7 +35,7 @@ class InvoiceController extends Controller
             'order_id' => 'required|exists:orders,id',
             'customer_name' => 'nullable|string',
             'tax_id' => 'nullable|string',
-            'payment_method' => 'required|in:cash,card,online',
+            'payment_method' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\PaymentMethod::class)],
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
@@ -48,18 +50,18 @@ class InvoiceController extends Controller
             'issued_at' => now(),
         ]);
 
-        $order->update(['status' => 'paid', 'paid_at' => now()]);
+        $order->update(['status' => OrderStatus::Paid, 'paid_at' => now()]);
 
         // Auto-complete reservations for this table (visit finished with payment)
         $order->load('table');
         if ($order->table_id) {
             $orderDate = Carbon::parse($order->ordered_at ?? $order->created_at)->toDateString();
             $reservations = Reservation::where('table_id', $order->table_id)
-                ->whereIn('status', ['confirmed', 'seated'])
+                ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::Seated])
                 ->whereDate('reservation_date', $orderDate)
                 ->get();
             foreach ($reservations as $reservation) {
-                $reservation->update(['status' => 'completed']);
+                $reservation->update(['status' => ReservationStatus::Completed]);
                 event(new \App\Events\ReservationUpdated($reservation));
             }
         }

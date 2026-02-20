@@ -2,6 +2,7 @@
 
 namespace App\Services\Dashboard;
 
+use App\Enums\PaymentMethod;
 use App\Models\Invoice;
 use App\Models\OrderItem;
 use App\Models\User;
@@ -42,7 +43,7 @@ class TopPerformersService
         return $userId ? User::find($userId) : null;
     }
 
-    public function mostUsedPaymentMethodToday(): ?string
+    public function mostUsedPaymentMethodToday(): ?PaymentMethod
     {
         $today = today();
         return Invoice::query()

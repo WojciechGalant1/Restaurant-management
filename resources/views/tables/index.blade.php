@@ -5,13 +5,13 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Tables Management') }}
                 </h2>
-                @if(isset($currentUser) && $currentUser->role !== 'manager')
+                @if(isset($currentUser) && $currentUser->role !== \App\Enums\UserRole::Manager)
                     <p class="text-sm text-gray-500 mt-1">
                         {{ __('You are viewing tables assigned to you.') }}
                     </p>
                 @endif
             </div>
-            @if(isset($currentUser) && $currentUser->role === 'manager')
+            @if(isset($currentUser) && $currentUser->role === \App\Enums\UserRole::Manager)
                 <a href="{{ route('tables.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
                     <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                     {{ __('Add New Table') }}
@@ -40,7 +40,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waiter</th>
-                                @if(isset($currentUser) && $currentUser->role === 'manager')
+                                @if(isset($currentUser) && $currentUser->role === \App\Enums\UserRole::Manager)
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 @endif
                             </tr>
@@ -62,13 +62,13 @@
                                             {{ $status === \App\Enums\TableStatus::Available ? 'bg-green-100 text-green-800' : '' }}
                                             {{ $status === \App\Enums\TableStatus::Occupied ? 'bg-red-100 text-red-800' : '' }}
                                             {{ $status === \App\Enums\TableStatus::Reserved ? 'bg-yellow-100 text-yellow-800' : '' }}">
-                                            {{ ucfirst($status?->value ?? $table->status) }}
+                                            {{ $status instanceof \App\Enums\TableStatus ? $status->label() : ucfirst($table->status) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $table->waiter?->name ?? __('Unassigned') }}
                                     </td>
-                                    @if(isset($currentUser) && $currentUser->role === 'manager')
+                                    @if(isset($currentUser) && $currentUser->role === \App\Enums\UserRole::Manager)
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2 items-center">
                                             <form action="{{ route('tables.update', $table) }}" method="POST" class="flex items-center space-x-2">
                                                 @csrf

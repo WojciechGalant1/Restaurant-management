@@ -34,7 +34,7 @@ class RegisteredUserController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'in:manager,waiter,chef'],
+            'role' => ['required', 'string', \Illuminate\Validation\Rule::enum(\App\Enums\UserRole::class)],
         ]);
 
         $user = User::create([

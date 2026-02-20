@@ -13,7 +13,15 @@ return new class extends Migration
             $table->integer('table_number')->unique();
             $table->integer('capacity');
             $table->enum('status', ['available', 'occupied', 'reserved'])->default('available');
+            $table->foreignId('waiter_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->timestamps();
+
+            $table->index('waiter_id');
+            $table->index('status');
+            $table->index(['waiter_id', 'status']);
         });
     }
 

@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
+use App\Enums\OrderItemStatus;
+use App\Enums\ReservationStatus;
+use App\Enums\UserRole;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Reservation;
 use App\Models\Table;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class WaiterController extends Controller
 {
@@ -16,25 +21,25 @@ class WaiterController extends Controller
 
         $user = auth()->user();
 
-        // My Tables (waiter only; manager sees empty in this view)
-        $tables = $user->role === 'waiter'
+        // waiter only
+        $tables = $user->role === UserRole::Waiter
             ? Table::where('waiter_id', $user->id)->orderBy('table_number')->get()
             : collect();
 
         // Items ready to serve (OrderItem status = ready)
         $readyItemsQuery = OrderItem::with(['order.table', 'menuItem.dish'])
-            ->where('status', 'ready')
+            ->where('status', OrderItemStatus::Ready)
             ->orderBy('updated_at', 'asc');
 
-        if ($user->role === 'waiter') {
+        if ($user->role === UserRole::Waiter) {
             $readyItemsQuery->whereHas('order', fn ($q) => $q->where('user_id', $user->id));
         }
 
         $readyItems = $readyItemsQuery->get();
 
-        // Active orders (operational: pending, in_preparation, ready – not paid)
+        // Active orders (operational: open – not paid/cancelled)
         $activeOrders = Order::forWaiter($user)
-            ->whereIn('status', ['pending', 'in_preparation', 'ready'])
+            ->where('status', OrderStatus::Open)
             ->with(['table', 'orderItems'])
             ->latest()
             ->get();
@@ -42,25 +47,24 @@ class WaiterController extends Controller
         // Today closed (paid today)
         $todayClosed = Order::forWaiter($user)
             ->whereDate('ordered_at', today())
-            ->where('status', 'paid')
+            ->where('status', OrderStatus::Paid)
             ->with('table')
             ->latest()
             ->get();
 
-        // Reservations for waiter's tables (for display in table cards)
+        // Reservations for waiter's tables
         $reservationsByTable = collect();
-        if ($user->role === 'waiter') {
+        if ($user->role === UserRole::Waiter) {
             $tableIds = $tables->pluck('id');
             if ($tableIds->isNotEmpty()) {
                 $reservations = Reservation::whereIn('table_id', $tableIds)
-                    ->whereIn('status', ['pending', 'confirmed', 'seated'])
+                    ->whereIn('status', [ReservationStatus::Pending, ReservationStatus::Confirmed, ReservationStatus::Seated])
                     ->whereDate('reservation_date', '>=', today())
                     ->with('table')
                     ->orderBy('reservation_date')
                     ->orderBy('reservation_time')
                     ->get();
                 
-                // Group by table_id for easy lookup
                 $reservationsByTable = $reservations->groupBy('table_id');
             }
         }
@@ -72,18 +76,16 @@ class WaiterController extends Controller
     {
         $this->authorize('waiter.serve-item', $orderItem);
 
-        // Only allow marking items with 'ready' status as 'served'
-        if ($orderItem->status !== 'ready') {
+        if ($orderItem->status !== OrderItemStatus::Ready) {
             return back()->with('error', 'Only ready items can be marked as served.');
         }
 
-        $data = ['status' => 'served'];
+        $data = ['status' => OrderItemStatus::Served];
         if (!$orderItem->ready_at) {
             $data['ready_at'] = now();
         }
         $orderItem->update($data);
 
-        // Refresh the model to get latest data
         $orderItem->refresh();
 
         event(new \App\Events\OrderItemStatusUpdated($orderItem));
@@ -98,7 +100,7 @@ class WaiterController extends Controller
         $user = auth()->user();
         
         // Verify reservation belongs to waiter's table
-        if ($user->role === 'waiter') {
+        if ($user->role === UserRole::Waiter) {
             $waiterTableIds = Table::where('waiter_id', $user->id)->pluck('id');
             if (!$waiterTableIds->contains($reservation->table_id)) {
                 abort(403, 'This reservation does not belong to your tables.');
@@ -106,11 +108,11 @@ class WaiterController extends Controller
         }
 
         // Only allow marking confirmed reservations as seated
-        if ($reservation->status !== 'confirmed') {
+        if ($reservation->status !== ReservationStatus::Confirmed) {
             return back()->with('error', 'Only confirmed reservations can be marked as seated.');
         }
 
-        $reservation->update(['status' => 'seated']);
+        $reservation->update(['status' => ReservationStatus::Seated]);
         event(new \App\Events\ReservationUpdated($reservation));
 
         return back()->with('success', 'Reservation marked as seated.');
@@ -123,7 +125,7 @@ class WaiterController extends Controller
         $user = auth()->user();
         
         // Verify reservation belongs to waiter's table
-        if ($user->role === 'waiter') {
+        if ($user->role === UserRole::Waiter) {
             $waiterTableIds = Table::where('waiter_id', $user->id)->pluck('id');
             if (!$waiterTableIds->contains($reservation->table_id)) {
                 abort(403, 'This reservation does not belong to your tables.');
@@ -131,11 +133,11 @@ class WaiterController extends Controller
         }
 
         // Only allow marking confirmed reservations as no_show
-        if ($reservation->status !== 'confirmed') {
+        if ($reservation->status !== ReservationStatus::Confirmed) {
             return back()->with('error', 'Only confirmed reservations can be marked as no show.');
         }
 
-        $reservation->update(['status' => 'no_show']);
+        $reservation->update(['status' => ReservationStatus::NoShow]);
         event(new \App\Events\ReservationUpdated($reservation));
 
         return back()->with('success', 'Reservation marked as no show.');
@@ -148,7 +150,7 @@ class WaiterController extends Controller
         $user = auth()->user();
         
         // Verify reservation belongs to waiter's table
-        if ($user->role === 'waiter') {
+        if ($user->role === UserRole::Waiter) {
             $waiterTableIds = Table::where('waiter_id', $user->id)->pluck('id');
             if (!$waiterTableIds->contains($reservation->table_id)) {
                 abort(403, 'This reservation does not belong to your tables.');
@@ -156,7 +158,7 @@ class WaiterController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,confirmed,seated,completed,cancelled,no_show',
+            'status' => ['required', Rule::enum(ReservationStatus::class)],
         ]);
 
         $newStatus = $validated['status'];
@@ -164,30 +166,29 @@ class WaiterController extends Controller
 
         // Define allowed transitions for waiter
         $allowedTransitions = [
-            'pending' => ['confirmed', 'cancelled'],
-            'confirmed' => ['seated', 'no_show', 'cancelled'],
-            'seated' => ['completed', 'cancelled'],
-            'no_show' => [], // terminal state
-            'completed' => [], // terminal state
-            'cancelled' => [], // terminal state
+            ReservationStatus::Pending->value => [ReservationStatus::Confirmed->value, ReservationStatus::Cancelled->value],
+            ReservationStatus::Confirmed->value => [ReservationStatus::Seated->value, ReservationStatus::NoShow->value, ReservationStatus::Cancelled->value],
+            ReservationStatus::Seated->value => [ReservationStatus::Completed->value, ReservationStatus::Cancelled->value],
+            ReservationStatus::NoShow->value => [], // terminal state
+            ReservationStatus::Completed->value => [], // terminal state
+            ReservationStatus::Cancelled->value => [], // terminal state
         ];
 
-        if (!in_array($newStatus, $allowedTransitions[$currentStatus] ?? [])) {
-            return back()->with('error', "Cannot change status from {$currentStatus} to {$newStatus}.");
+        // Since we cast to enum, we need to compare enum instances or use values depending on how strict we want to be.
+        // The casting on model means $currentStatus is an Enum instance (or should be).
+        // The $newStatus from validation is likely the backing value (string) unless we manually cast it,
+        // BUT Rule::enum ensures valid value.
+        // Let's use ->value for comparison to be safe if $currentStatus is enum.
+        
+        $currentStatusValue = $currentStatus instanceof ReservationStatus ? $currentStatus->value : $currentStatus;
+        
+        if (!in_array($newStatus, $allowedTransitions[$currentStatusValue] ?? [])) {
+            return back()->with('error', "Cannot change status from {$currentStatusValue} to {$newStatus}.");
         }
 
         $reservation->update(['status' => $newStatus]);
         event(new \App\Events\ReservationUpdated($reservation));
 
-        $statusLabels = [
-            'pending' => 'pending',
-            'confirmed' => 'confirmed',
-            'seated' => 'seated',
-            'completed' => 'completed',
-            'cancelled' => 'cancelled',
-            'no_show' => 'no show',
-        ];
-
-        return back()->with('success', "Reservation status changed to {$statusLabels[$newStatus]}.");
+        return back()->with('success', "Reservation status updated.");
     }
 }

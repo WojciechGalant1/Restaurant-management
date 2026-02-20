@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Dish;
+use App\Models\OrderItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

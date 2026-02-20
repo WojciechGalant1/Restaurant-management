@@ -29,7 +29,7 @@ class UserController extends Controller
             'last_name' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8',
-            'role' => 'required|in:manager,waiter,chef',
+            'role' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\UserRole::class)],
             'phone_number' => 'nullable|string',
         ]);
 
@@ -51,7 +51,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'first_name' => 'string',
             'last_name' => 'string',
-            'role' => 'in:manager,waiter,chef',
+            'role' => [\Illuminate\Validation\Rule::enum(\App\Enums\UserRole::class)],
             'phone_number' => 'nullable|string',
         ]);
 

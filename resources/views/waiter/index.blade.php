@@ -19,7 +19,7 @@
         'name' => $item->menuItem->dish->name,
         'quantity' => $item->quantity,
         'notes' => $item->notes,
-        'status' => $item->status,
+        'status' => $item->status->value,
         'unit_price' => $item->unit_price,
         'total_price' => number_format($item->quantity * $item->unit_price, 2),
         'created_at_human' => $item->created_at->diffForHumans(),
@@ -28,22 +28,22 @@
     ])))">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
             {{-- 1. Sticky alert: Ready to Serve --}}
-            <div x-show="items.filter(i => i.status === 'ready').length > 0"
+            <div x-show="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').length > 0"
                  class="sticky top-4 z-10 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-lg p-4 animate-pulse-subtle">
                 <div class="flex items-center justify-between flex-wrap gap-3">
                     <div class="flex items-center gap-2">
                         <span class="text-red-600 font-bold text-lg">🔔</span>
                         <h3 class="text-lg font-bold text-red-800">
-                            <span x-text="items.filter(i => i.status === 'ready').length"></span> {{ __('Ready to Serve') }}
+                            <span x-text="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').length"></span> {{ __('Ready to Serve') }}
                         </h3>
                     </div>
                     <a href="#ready-section" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">
                         {{ __('Go to items') }}
                     </a>
                 </div>
-                <p class="text-sm text-red-700 mt-1" x-show="items.filter(i => i.status === 'ready').length > 0">
-                    <template x-for="(item, idx) in items.filter(i => i.status === 'ready').slice(0, 3)" :key="item.id">
-                        <span><span x-text="`Table ${item.table_number} – #${item.order_id}`"></span><span x-show="idx < Math.min(2, items.filter(i => i.status === 'ready').length - 1)">, </span></span>
+                <p class="text-sm text-red-700 mt-1" x-show="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').length > 0">
+                    <template x-for="(item, idx) in items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').slice(0, 3)" :key="item.id">
+                        <span><span x-text="`Table ${item.table_number} – #${item.order_id}`"></span><span x-show="idx < Math.min(2, items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').length - 1)">, </span></span>
                     </template>
                 </p>
             </div>
@@ -70,7 +70,7 @@
                                             {{ $status === \App\Enums\TableStatus::Available ? 'bg-green-100 text-green-800' : '' }}
                                             {{ $status === \App\Enums\TableStatus::Occupied ? 'bg-red-100 text-red-800' : '' }}
                                             {{ $status === \App\Enums\TableStatus::Reserved ? 'bg-yellow-100 text-yellow-800' : '' }}">
-                                            {{ ucfirst($status?->value ?? $table->status) }}
+                                            {{ $status instanceof \App\Enums\TableStatus ? $status->label() : ucfirst($table->status) }}
                                         </span>
                                     </div>
                                     
@@ -78,7 +78,7 @@
                                         <div class="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
                                             <div class="flex justify-between items-start mb-1">
                                                 <p class="text-xs font-semibold text-blue-800">
-                                                    {{ __('Reservation') }}: {{ ucfirst($reservation->status) }}
+                                                    {{ __('Reservation') }}: {{ ucfirst($reservation->status->value) }}
                                                 </p>
                                             </div>
                                             <p class="text-sm text-gray-700 mb-2">
@@ -88,35 +88,35 @@
                                             @php
                                                 $allowedStatuses = [];
                                                 switch($reservation->status) {
-                                                    case 'pending':
-                                                        $allowedStatuses = ['confirmed', 'cancelled'];
+                                                    case \App\Enums\ReservationStatus::Pending:
+                                                        $allowedStatuses = [\App\Enums\ReservationStatus::Confirmed, \App\Enums\ReservationStatus::Cancelled];
                                                         break;
-                                                    case 'confirmed':
-                                                        $allowedStatuses = ['seated', 'no_show', 'cancelled'];
+                                                    case \App\Enums\ReservationStatus::Confirmed:
+                                                        $allowedStatuses = [\App\Enums\ReservationStatus::Seated, \App\Enums\ReservationStatus::NoShow, \App\Enums\ReservationStatus::Cancelled];
                                                         break;
-                                                    case 'seated':
-                                                        $allowedStatuses = ['completed', 'cancelled'];
+                                                    case \App\Enums\ReservationStatus::Seated:
+                                                        $allowedStatuses = [\App\Enums\ReservationStatus::Completed, \App\Enums\ReservationStatus::Cancelled];
                                                         break;
                                                     default:
                                                         $allowedStatuses = [];
                                                 }
                                                 
                                                 $statusLabels = [
-                                                    'pending' => __('Pending'),
-                                                    'confirmed' => __('Confirmed'),
-                                                    'seated' => __('Seated'),
-                                                    'completed' => __('Completed'),
-                                                    'cancelled' => __('Cancelled'),
-                                                    'no_show' => __('No Show'),
+                                                    \App\Enums\ReservationStatus::Pending->value => __('Pending'),
+                                                    \App\Enums\ReservationStatus::Confirmed->value => __('Confirmed'),
+                                                    \App\Enums\ReservationStatus::Seated->value => __('Seated'),
+                                                    \App\Enums\ReservationStatus::Completed->value => __('Completed'),
+                                                    \App\Enums\ReservationStatus::Cancelled->value => __('Cancelled'),
+                                                    \App\Enums\ReservationStatus::NoShow->value => __('No Show'),
                                                 ];
                                                 
                                                 $statusColors = [
-                                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                                    'confirmed' => 'bg-blue-100 text-blue-800',
-                                                    'seated' => 'bg-green-100 text-green-800',
-                                                    'completed' => 'bg-gray-100 text-gray-800',
-                                                    'cancelled' => 'bg-red-100 text-red-800',
-                                                    'no_show' => 'bg-red-100 text-red-800',
+                                                    \App\Enums\ReservationStatus::Pending->value => 'bg-yellow-100 text-yellow-800',
+                                                    \App\Enums\ReservationStatus::Confirmed->value => 'bg-blue-100 text-blue-800',
+                                                    \App\Enums\ReservationStatus::Seated->value => 'bg-green-100 text-green-800',
+                                                    \App\Enums\ReservationStatus::Completed->value => 'bg-gray-100 text-gray-800',
+                                                    \App\Enums\ReservationStatus::Cancelled->value => 'bg-red-100 text-red-800',
+                                                    \App\Enums\ReservationStatus::NoShow->value => 'bg-red-100 text-red-800',
                                                 ];
                                             @endphp
                                             
@@ -126,19 +126,19 @@
                                                     @method('PATCH')
                                                     <div class="flex gap-1 flex-wrap">
                                                         @foreach($allowedStatuses as $status)
-                                                            <button type="submit" name="status" value="{{ $status }}" 
+                                                            <button type="submit" name="status" value="{{ $status->value }}" 
                                                                     class="flex-1 py-1.5 px-2 rounded text-xs font-medium transition
-                                                                    {{ $status === 'seated' || $status === 'completed' ? 'bg-green-600 hover:bg-green-700 text-white' : '' }}
-                                                                    {{ $status === 'no_show' || $status === 'cancelled' ? 'bg-red-600 hover:bg-red-700 text-white' : '' }}
-                                                                    {{ $status === 'confirmed' ? 'bg-blue-600 hover:bg-blue-700 text-white' : '' }}">
-                                                                {{ $statusLabels[$status] }}
+                                                                    {{ $status === \App\Enums\ReservationStatus::Seated || $status === \App\Enums\ReservationStatus::Completed ? 'bg-green-600 hover:bg-green-700 text-white' : '' }}
+                                                                    {{ $status === \App\Enums\ReservationStatus::NoShow || $status === \App\Enums\ReservationStatus::Cancelled ? 'bg-red-600 hover:bg-red-700 text-white' : '' }}
+                                                                    {{ $status === \App\Enums\ReservationStatus::Confirmed ? 'bg-blue-600 hover:bg-blue-700 text-white' : '' }}">
+                                                                {{ $statusLabels[$status->value] }}
                                                             </button>
                                                         @endforeach
                                                     </div>
                                                 </form>
                                             @else
                                                 <p class="text-xs {{ $statusColors[$reservation->status] ?? 'text-gray-600' }} mt-1 font-medium px-2 py-1 rounded">
-                                                    {{ $statusLabels[$reservation->status] ?? ucfirst($reservation->status) }}
+                                                    {{ $statusLabels[$reservation->status->value] ?? ucfirst($reservation->status->value) }}
                                                 </p>
                                             @endif
                                         </div>
@@ -167,7 +167,7 @@
             <section id="ready-section">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('Ready to Serve') }}</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <template x-for="item in items.filter(i => i.status === 'ready')" :key="item.id">
+                    <template x-for="item in items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}')" :key="item.id">
                         <div class="bg-green-50 border-l-4 border-green-500 rounded-lg shadow-sm p-4">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="font-bold text-gray-900" x-text="`Table ${item.table_number}`"></span>
@@ -179,13 +179,13 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                                    {{ __('Mark as Served') }}
+                                    {{ __('Mark as Delivered') }}
                                 </button>
                             </form>
                         </div>
                     </template>
                 </div>
-                <div x-show="items.filter(i => i.status === 'ready').length === 0" class="text-center py-8 bg-white rounded-lg shadow text-gray-500">
+                <div x-show="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').length === 0" class="text-center py-8 bg-white rounded-lg shadow text-gray-500">
                     {{ __('No items ready to serve.') }}
                 </div>
             </section>
@@ -199,10 +199,10 @@
                             <div class="flex justify-between items-start mb-2">
                                 <span class="font-bold text-gray-900">#{{ $order->id }}</span>
                                 <span class="text-xs px-2 py-0.5 rounded-full
-                                    {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                    {{ $order->status === 'in_preparation' ? 'bg-blue-100 text-blue-800' : '' }}
-                                    {{ $order->status === 'ready' ? 'bg-green-100 text-green-800' : '' }}">
-                                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                    {{ $order->status === \App\Enums\OrderStatus::Open ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                    {{ $order->status === \App\Enums\OrderStatus::Paid ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $order->status === \App\Enums\OrderStatus::Cancelled ? 'bg-red-100 text-red-800' : '' }}">
+                                    {{ ucfirst(str_replace('_', ' ', $order->status->value)) }}
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600">Table #{{ $order->table->table_number ?? 'N/A' }}</p>
@@ -278,7 +278,7 @@
                         channel
                             .listen('.OrderItemStatusUpdated', (e) => {
                                 const index = this.items.findIndex(i => i.id === e.id);
-                                if (e.status === 'ready') {
+                                if (e.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}') {
                                     if (index === -1) {
                                         const markServedUrl = "{{ route('waiter.mark-served', ':id') }}".replace(':id', e.id);
                                         this.items.unshift({
@@ -289,12 +289,12 @@
                                     } else {
                                         this.items[index] = { ...this.items[index], ...e };
                                     }
-                                } else if (e.status === 'served' || e.status !== 'ready') {
+                                } else if (e.status === '{{ \App\Enums\OrderItemStatus::Served->value }}' || e.status === '{{ \App\Enums\OrderItemStatus::Cancelled->value }}' || e.status !== '{{ \App\Enums\OrderItemStatus::Ready->value }}') {
                                     if (index !== -1) this.items.splice(index, 1);
                                 }
                             })
                             .listen('.OrderItemCreated', (e) => {
-                                if (e.status === 'ready' && !this.items.find(i => i.id === e.id)) {
+                                if (e.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}' && !this.items.find(i => i.id === e.id)) {
                                     const markServedUrl = "{{ route('waiter.mark-served', ':id') }}".replace(':id', e.id);
                                     this.items.unshift({
                                         ...e,

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Reservation;
 use App\Models\Table;
+use App\Enums\ReservationStatus;
 use App\Services\Dashboard\KitchenStatsService;
 use App\Services\Dashboard\RevenueStatsService;
 use App\Services\Dashboard\StaffShiftService;
@@ -124,7 +125,7 @@ class DashboardService
         }
         $unconfirmed = Reservation::query()
             ->whereDate('reservation_date', today())
-            ->where('status', 'pending')
+            ->where('status', ReservationStatus::Pending)
             ->count();
         if ($unconfirmed > 0) {
             $alerts[] = [
@@ -174,7 +175,7 @@ class DashboardService
         return $this->topPerformers->bestWaiterByRevenueToday();
     }
 
-    public function mostUsedPaymentMethodToday(): ?string
+    public function mostUsedPaymentMethodToday(): ?\App\Enums\PaymentMethod
     {
         return $this->topPerformers->mostUsedPaymentMethodToday();
     }

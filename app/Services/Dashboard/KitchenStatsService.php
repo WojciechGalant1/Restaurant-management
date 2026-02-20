@@ -3,6 +3,7 @@
 namespace App\Services\Dashboard;
 
 use App\Models\OrderItem;
+use App\Enums\OrderItemStatus;
 use Illuminate\Support\Carbon;
 
 class KitchenStatsService
@@ -19,27 +20,27 @@ class KitchenStatsService
         $cutoff20 = $now->copy()->subMinutes(self::PENDING_CRITICAL_MINUTES);
 
         $prepTimes = OrderItem::query()
-            ->whereIn('status', ['ready', 'served'])
+            ->whereIn('status', [OrderItemStatus::Ready, OrderItemStatus::Served])
             ->whereDate('created_at', $today)
             ->get()
             ->map(function (OrderItem $item) {
                 $end = $item->ready_at ?? $item->updated_at;
-                return $item->created_at->diffInMinutes($end);
+                return abs($item->created_at->diffInMinutes($end, false));
             });
         $avgPrepTimeMinutes = $prepTimes->isEmpty() ? null : round($prepTimes->avg(), 1);
 
         $longest = OrderItem::query()
-            ->whereIn('status', ['pending', 'preparing'])
+            ->whereIn('status', [OrderItemStatus::Pending, OrderItemStatus::Preparing])
             ->min('created_at');
         $longestWaitingOrderMinutes = $longest ? (int) Carbon::parse($longest)->diffInMinutes($now) : null;
 
         $pendingOver15MinCount = (int) OrderItem::query()
-            ->where('status', 'pending')
+            ->where('status', OrderItemStatus::Pending)
             ->where('created_at', '<', $cutoff15)
             ->count();
 
         $pendingOver20MinCount = (int) OrderItem::query()
-            ->where('status', 'pending')
+            ->where('status', OrderItemStatus::Pending)
             ->where('created_at', '<', $cutoff20)
             ->count();
 
@@ -63,14 +64,15 @@ class KitchenStatsService
     public function getQueueCount(): array
     {
         $kitchenQueue = OrderItem::query()
-            ->whereIn('status', ['pending', 'preparing'])
+            ->whereIn('status', [OrderItemStatus::Pending, OrderItemStatus::Preparing])
             ->selectRaw('status, COUNT(*) as c')
             ->groupBy('status')
             ->pluck('c', 'status')
             ->all();
+            
         return [
-            'pending' => (int) ($kitchenQueue['pending'] ?? 0),
-            'preparing' => (int) ($kitchenQueue['preparing'] ?? 0),
+            'pending' => (int) ($kitchenQueue[OrderItemStatus::Pending->value] ?? 0),
+            'preparing' => (int) ($kitchenQueue[OrderItemStatus::Preparing->value] ?? 0),
         ];
     }
 }

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('table_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // waiter
-            $table->enum('status', ['pending', 'in_preparation', 'ready', 'delivered', 'paid', 'cancelled'])->default('pending');
+            $table->enum('status', ['open', 'paid', 'cancelled'])->default('open');
             $table->decimal('total_price', 10, 2)->default(0);
             $table->timestamp('ordered_at')->useCurrent();
             $table->timestamp('paid_at')->nullable();

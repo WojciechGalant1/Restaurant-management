@@ -33,12 +33,13 @@
 
                         <div>
                             <x-input-label for="category" :value="__('Category')" />
-                            <select id="category" name="category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="starter" {{ old('category', $dish->category) === 'starter' ? 'selected' : '' }}>Starter</option>
-                                <option value="main" {{ old('category', $dish->category) === 'main' ? 'selected' : '' }}>Main Course</option>
-                                <option value="dessert" {{ old('category', $dish->category) === 'dessert' ? 'selected' : '' }}>Dessert</option>
-                                <option value="drink" {{ old('category', $dish->category) === 'drink' ? 'selected' : '' }}>Drink</option>
-                                <option value="side" {{ old('category', $dish->category) === 'side' ? 'selected' : '' }}>Side Dish</option>
+                             <select id="category" name="category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                @php $current = old('category', $dish->category instanceof \App\Enums\DishCategory ? $dish->category->value : $dish->category); @endphp
+                                <option value="{{ \App\Enums\DishCategory::Starter->value }}" {{ $current === \App\Enums\DishCategory::Starter->value ? 'selected' : '' }}>Starter</option>
+                                <option value="{{ \App\Enums\DishCategory::Main->value }}" {{ $current === \App\Enums\DishCategory::Main->value ? 'selected' : '' }}>Main Course</option>
+                                <option value="{{ \App\Enums\DishCategory::Dessert->value }}" {{ $current === \App\Enums\DishCategory::Dessert->value ? 'selected' : '' }}>Dessert</option>
+                                <option value="{{ \App\Enums\DishCategory::Drink->value }}" {{ $current === \App\Enums\DishCategory::Drink->value ? 'selected' : '' }}>Drink</option>
+                                <option value="{{ \App\Enums\DishCategory::Side->value }}" {{ $current === \App\Enums\DishCategory::Side->value ? 'selected' : '' }}>Side Dish</option>
                             </select>
                             <x-input-error :messages="$errors->get('category')" class="mt-2" />
                         </div>

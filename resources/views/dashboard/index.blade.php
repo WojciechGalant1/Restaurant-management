@@ -240,7 +240,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500 mb-2">{{ __('Most used payment') }}</p>
-                            <p class="font-medium capitalize">{{ $mostUsedPaymentMethod ?? __('No data') }}</p>
+                            <p class="font-medium capitalize">{{ $mostUsedPaymentMethod?->value ?? __('No data') }}</p>
                         </div>
                     </div>
                 </div>

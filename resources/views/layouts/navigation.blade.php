@@ -1,3 +1,7 @@
+@php
+    use App\Enums\UserRole;
+@endphp
+
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,11 +20,11 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    @if(in_array(auth()->user()->role, ['manager', 'waiter']))
+                    @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter]))
                         <x-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
                             {{ __('Orders') }}
                         </x-nav-link>
-                        @if(auth()->user()->role === 'manager')
+                        @if(auth()->user()->role === UserRole::Manager)
                             <x-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
                                 {{ __('Tables') }}
                             </x-nav-link>
@@ -33,13 +37,13 @@
                         </x-nav-link>
                     @endif
 
-                    @if(in_array(auth()->user()->role, ['manager', 'chef']))
+                    @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Chef]))
                         <x-nav-link :href="route('kitchen.index')" :active="request()->is('kitchen*')">
                             {{ __('Kitchen') }}
                         </x-nav-link>
                     @endif
 
-                    @if(auth()->user()->role === 'manager')
+                    @if(auth()->user()->role === UserRole::Manager)
                         <x-nav-link :href="route('dishes.index')" :active="request()->is('dishes*')">
                             {{ __('Dishes') }}
                         </x-nav-link>
@@ -112,11 +116,11 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            @if(in_array(auth()->user()->role, ['manager', 'waiter']))
+            @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter]))
                 <x-responsive-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
                     {{ __('Orders') }}
                 </x-responsive-nav-link>
-                @if(auth()->user()->role === 'manager')
+                @if(auth()->user()->role === UserRole::Manager)
                     <x-responsive-nav-link :href="route('tables.index')" :active="request()->is('tables*')">
                         {{ __('Tables') }}
                     </x-responsive-nav-link>
@@ -129,13 +133,13 @@
                 </x-responsive-nav-link>
             @endif
 
-            @if(in_array(auth()->user()->role, ['manager', 'chef']))
+            @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Chef]))
                 <x-responsive-nav-link :href="route('kitchen.index')" :active="request()->is('kitchen*')">
                     {{ __('Kitchen') }}
                 </x-responsive-nav-link>
             @endif
 
-            @if(auth()->user()->role === 'manager')
+            @if(auth()->user()->role === UserRole::Manager)
                 <x-responsive-nav-link :href="route('dishes.index')" :active="request()->is('dishes*')">
                     {{ __('Dishes') }}
                 </x-responsive-nav-link>

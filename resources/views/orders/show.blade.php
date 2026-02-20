@@ -10,7 +10,7 @@
                         {{ __('Edit Order') }}
                     </a>
                 @endcan
-                @if($order->status !== 'paid')
+                @if($order->status !== \App\Enums\OrderStatus::Paid)
                     <a href="{{ route('invoices.create', ['order_id' => $order->id]) }}" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
                         {{ __('Generate Invoice') }}
                     </a>
@@ -83,12 +83,12 @@
                             </div>
                             <div>
                                 <span class="text-xs text-gray-500 block">Status</span>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                    {{ $order->status === 'paid' ? 'bg-green-100 text-green-800' : '' }}
-                                    {{ $order->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
-                                    {{ ucfirst($order->status) }}
-                                </span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {{ $order->status === \App\Enums\OrderStatus::Open ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                        {{ $order->status === \App\Enums\OrderStatus::Paid ? 'bg-green-100 text-green-800' : '' }}
+                                        {{ $order->status === \App\Enums\OrderStatus::Cancelled ? 'bg-red-100 text-red-800' : '' }}">
+                                        {{ $order->status->label() }}
+                                    </span>
                             </div>
                             <div>
                                 <span class="text-xs text-gray-500 block">Created At</span>

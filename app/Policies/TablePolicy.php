@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\Table;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -10,7 +11,7 @@ class TablePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     public function view(User $user, Table $table): bool
@@ -20,17 +21,17 @@ class TablePolicy
 
     public function create(User $user): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     public function update(User $user, Table $table): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     public function delete(User $user, Table $table): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     /**

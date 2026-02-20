@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -20,17 +21,17 @@ class ReservationPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['manager', 'waiter']);
+        return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
     }
 
     public function update(User $user, Reservation $reservation): bool
     {
-        return in_array($user->role, ['manager', 'waiter']);
+        return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
     }
 
     public function delete(User $user, Reservation $reservation): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     /**

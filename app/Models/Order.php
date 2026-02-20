@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,18 +11,15 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'table_id',
-        'user_id',
-        'status',
-        'total_price',
-        'ordered_at',
-        'paid_at',
+    protected $casts = [
+        'status' => \App\Enums\OrderStatus::class,
+        'ordered_at' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function scopeForWaiter($query, User $user)
     {
-        if ($user->role === 'manager') {
+        if ($user->role === UserRole::Manager) {
             return $query;
         }
 

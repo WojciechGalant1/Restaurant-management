@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\MenuItem;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -20,16 +21,16 @@ class MenuItemPolicy
 
     public function create(User $user): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     public function update(User $user, MenuItem $menuItem): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     public function delete(User $user, MenuItem $menuItem): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 }

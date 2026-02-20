@@ -44,10 +44,10 @@
 
                         <div>
                             <x-input-label for="role" :value="__('Role')" />
-                            <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="waiter" {{ old('role', $user->role) === 'waiter' ? 'selected' : '' }}>Waiter</option>
-                                <option value="chef" {{ old('role', $user->role) === 'chef' ? 'selected' : '' }}>Chef</option>
-                                <option value="manager" {{ old('role', $user->role) === 'manager' ? 'selected' : '' }}>Manager</option>
+                             <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required autocomplete="off">
+                                <option value="{{ \App\Enums\UserRole::Waiter->value }}" {{ old('role', $user->role->value) === \App\Enums\UserRole::Waiter->value ? 'selected' : '' }}>Waiter</option>
+                                <option value="{{ \App\Enums\UserRole::Chef->value }}" {{ old('role', $user->role->value) === \App\Enums\UserRole::Chef->value ? 'selected' : '' }}>Chef</option>
+                                <option value="{{ \App\Enums\UserRole::Manager->value }}" {{ old('role', $user->role->value) === \App\Enums\UserRole::Manager->value ? 'selected' : '' }}>Manager</option>
                             </select>
                             <x-input-error :messages="$errors->get('role')" class="mt-2" />
                         </div>

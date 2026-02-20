@@ -83,7 +83,7 @@
                         </div>
                         <div class="mt-4 text-right">
                             <span class="text-xs font-bold uppercase text-gray-400 block mb-1">Paid via:</span>
-                            <span class="px-2 py-1 bg-gray-100 rounded text-xs font-bold">{{ strtoupper($invoice->payment_method) }}</span>
+                            <span class="px-2 py-1 bg-gray-100 rounded text-xs font-bold">{{ strtoupper($invoice->payment_method->value) }}</span>
                         </div>
                     </div>
                 </div>

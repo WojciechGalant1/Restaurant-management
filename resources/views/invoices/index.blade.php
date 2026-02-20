@@ -49,7 +49,7 @@
                                         {{ number_format($invoice->amount, 2) }} PLN
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ ucfirst($invoice->payment_method) }}
+                                        {{ ucfirst($invoice->payment_method->value) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $invoice->issued_at->format('d.m.Y H:i') }}

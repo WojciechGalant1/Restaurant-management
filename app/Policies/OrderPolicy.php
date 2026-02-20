@@ -2,6 +2,8 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -20,21 +22,21 @@ class OrderPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['manager', 'waiter']);
+        return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
     }
 
     public function update(User $user, Order $order): bool
     {
-        if ($user->role === 'manager') return true;
-        if ($user->role === 'chef') return in_array($order->status, ['pending', 'in_preparation']);
-        if ($user->role === 'waiter') return $order->user_id === $user->id;
+        if ($user->role === UserRole::Manager) return true;
+        if ($user->role === UserRole::Chef) return $order->status === OrderStatus::Open;
+        if ($user->role === UserRole::Waiter) return $order->user_id === $user->id;
         
         return false;
     }
 
     public function delete(User $user, Order $order): bool
     {
-        return $user->role === 'manager';
+        return $user->role === UserRole::Manager;
     }
 
     /**

@@ -22,9 +22,13 @@
                        class="px-3 py-1.5 text-xs sm:text-sm font-medium border-l border-gray-200 {{ $currentFilter === 'today' ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
                         {{ __('Today') }}
                     </a>
-                    <a href="{{ route('orders.index', ['filter' => 'pending']) }}"
-                       class="px-3 py-1.5 text-xs sm:text-sm font-medium border-l border-gray-200 {{ $currentFilter === 'pending' ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
-                        {{ __('Pending') }}
+                    <a href="{{ route('orders.index', ['status' => \App\Enums\OrderStatus::Open->value]) }}" 
+                       class="px-3 py-1.5 text-xs sm:text-sm font-medium border-l border-gray-200 {{ $currentFilter === \App\Enums\OrderStatus::Open->value ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        {{ __('Open') }}
+                    </a>
+                    <a href="{{ route('orders.index', ['status' => \App\Enums\OrderStatus::Paid->value]) }}" 
+                       class="px-3 py-1.5 text-xs sm:text-sm font-medium border-l border-gray-200 {{ $currentFilter === \App\Enums\OrderStatus::Paid->value ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                        {{ __('Paid') }}
                     </a>
                 </div>
             </div>
@@ -62,10 +66,10 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                            {{ $order->status === 'paid' ? 'bg-green-100 text-green-800' : '' }}
-                                            {{ $order->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
-                                            {{ ucfirst($order->status) }}
+                                            {{ $order->status === \App\Enums\OrderStatus::Open ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                            {{ $order->status === \App\Enums\OrderStatus::Paid ? 'bg-green-100 text-green-800' : '' }}
+                                            {{ $order->status === \App\Enums\OrderStatus::Cancelled ? 'bg-red-100 text-red-800' : '' }}">
+                                            {{ $order->status->label() }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
@@ -77,7 +81,7 @@
                                                 <x-heroicon-o-pencil class="w-5 h-5" />
                                             </a>
                                         @endcan
-                                        @if($order->status !== 'paid')
+                                        @if($order->status !== \App\Enums\OrderStatus::Paid)
                                             <a href="{{ route('invoices.create', ['order_id' => $order->id]) }}" class="text-green-600 hover:text-green-900" title="Generate Invoice">
                                                 <x-heroicon-o-credit-card class="w-5 h-5" />
                                             </a>

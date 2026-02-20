@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\OrderItem;
 use App\Models\User;
 
@@ -12,7 +13,7 @@ class WaiterPolicy
      */
     public function view(User $user): bool
     {
-        return in_array($user->role, ['manager', 'waiter']);
+        return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
     }
 
     /**
@@ -21,7 +22,7 @@ class WaiterPolicy
     public function serveItem(User $user, OrderItem $orderItem): bool
     {
         // Role check only; status validation remains in controller/domain logic
-        return in_array($user->role, ['manager', 'waiter']);
+        return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
     }
 }
 

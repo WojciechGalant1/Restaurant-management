@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\OrderItem;
 use App\Models\User;
 
@@ -12,7 +13,7 @@ class KitchenPolicy
      */
     public function view(User $user): bool
     {
-        return in_array($user->role, ['manager', 'chef']);
+        return in_array($user->role, [UserRole::Manager, UserRole::Chef]);
     }
 
     /**
@@ -21,7 +22,7 @@ class KitchenPolicy
     public function updateItemStatus(User $user, OrderItem $orderItem): bool
     {
         // Same role check for now; business rules can evolve here later
-        return in_array($user->role, ['manager', 'chef']);
+        return in_array($user->role, [UserRole::Manager, UserRole::Chef]);
     }
 }
 

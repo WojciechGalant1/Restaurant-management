@@ -38,14 +38,14 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $shift->user->first_name ?? 'Unknown' }} {{ $shift->user->last_name ?? '' }}
-                                        <div class="text-xs text-gray-500">{{ ucfirst($shift->user->role ?? 'N/A') }}</div>
+                                        <div class="text-xs text-gray-500">{{ ucfirst($shift->user->role->value ?? 'N/A') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $shift->shift_type === 'morning' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                            {{ $shift->shift_type === 'evening' ? 'bg-indigo-100 text-indigo-800' : '' }}
-                                            {{ $shift->shift_type === 'full_day' ? 'bg-green-100 text-green-800' : '' }}">
-                                            {{ str_replace('_', ' ', ucfirst($shift->shift_type)) }}
+                                            {{ $shift->shift_type === \App\Enums\ShiftType::Morning ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                            {{ $shift->shift_type === \App\Enums\ShiftType::Evening ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                            {{ $shift->shift_type === \App\Enums\ShiftType::FullDay ? 'bg-green-100 text-green-800' : '' }}">
+                                            {{ str_replace('_', ' ', ucfirst($shift->shift_type->value)) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

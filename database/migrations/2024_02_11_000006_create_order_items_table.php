@@ -15,7 +15,8 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('unit_price', 8, 2);
             $table->text('notes')->nullable();
-            $table->enum('status', ['pending', 'preparing', 'ready', 'served'])->default('pending');
+            $table->enum('status', ['pending', 'preparing', 'ready', 'served', 'cancelled'])->default('pending');
+            $table->timestamp('ready_at')->nullable();
             $table->timestamps();
         });
     }

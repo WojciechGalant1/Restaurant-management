@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Table;
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -21,8 +22,8 @@ class TableController extends Controller
             ->get();
 
         $waiters = [];
-        if ($user->role === 'manager') {
-            $waiters = User::where('role', 'waiter')
+        if ($user->role === UserRole::Manager) {
+            $waiters = User::where('role', UserRole::Waiter)
                 ->orderBy('first_name')
                 ->orderBy('last_name')
                 ->get();
@@ -47,7 +48,7 @@ class TableController extends Controller
         $validated = $request->validate([
             'table_number' => 'required|integer|unique:tables',
             'capacity' => 'required|integer|min:1',
-            'status' => 'required|in:available,occupied,reserved',
+            'status' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\TableStatus::class)],
         ]);
 
         Table::create($validated);
@@ -65,11 +66,11 @@ class TableController extends Controller
         $this->authorize('update', $table);
         $validated = $request->validate([
             'capacity' => 'sometimes|integer|min:1',
-            'status' => 'sometimes|in:available,occupied,reserved',
+            'status' => ['sometimes', \Illuminate\Validation\Rule::enum(\App\Enums\TableStatus::class)],
             'waiter_id' => [
                 'sometimes',
                 'nullable',
-                Rule::exists('users', 'id')->where('role', 'waiter'),
+                Rule::exists('users', 'id')->where('role', UserRole::Waiter->value),
             ],
         ]);
 

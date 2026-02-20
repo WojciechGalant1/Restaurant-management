@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,6 +21,7 @@ class OrderItem extends Model
     ];
 
     protected $casts = [
+        'status' => \App\Enums\OrderItemStatus::class,
         'ready_at' => 'datetime',
     ];
 

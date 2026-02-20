@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrderItem;
+use App\Enums\OrderItemStatus;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class KitchenController extends Controller
 {
@@ -12,7 +14,7 @@ class KitchenController extends Controller
         $this->authorize('kitchen.view');
 
         $items = OrderItem::with(['order.table', 'menuItem.dish'])
-            ->whereIn('status', ['pending', 'preparing', 'ready'])
+            ->whereIn('status', [OrderItemStatus::Pending, OrderItemStatus::Preparing, OrderItemStatus::Ready])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -24,11 +26,13 @@ class KitchenController extends Controller
         $this->authorize('kitchen.update-item-status', $orderItem);
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,preparing,ready,served',
+            'status' => ['required', Rule::enum(OrderItemStatus::class)],
         ]);
 
-        $data = ['status' => $validated['status']];
-        if (in_array($validated['status'], ['ready', 'served']) && !$orderItem->ready_at) {
+        $status = $validated['status'];
+        $data = ['status' => $status];
+
+        if (in_array($status, [OrderItemStatus::Ready->value, OrderItemStatus::Served->value]) && !$orderItem->ready_at) {
             $data['ready_at'] = now();
         }
         $orderItem->update($data);

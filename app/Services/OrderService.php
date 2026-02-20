@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\OrderItemStatus;
+use App\Enums\OrderStatus;
+use App\Events\OrderCreated;
+use App\Events\OrderItemCreated;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +18,7 @@ class OrderService
             $order = Order::create([
                 'table_id' => $data['table_id'],
                 'user_id' => $waiter->id,
-                'status' => 'pending',
+                'status' => OrderStatus::Open,
                 'total_price' => 0,
             ]);
 
@@ -24,18 +28,18 @@ class OrderService
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                     'notes' => $item['notes'] ?? null,
-                    'status' => 'pending',
+                    'status' => OrderItemStatus::Pending,
                 ]);
 
                 // Refresh to ensure we have the latest data
                 $orderItem->refresh();
 
-                event(new \App\Events\OrderItemCreated($orderItem));
+                event(new OrderItemCreated($orderItem));
             }
 
             $order->update(['total_price' => $order->orderItems->sum(fn($i) => $i->quantity * $i->unit_price)]);
 
-            event(new \App\Events\OrderCreated($order->load('table')));
+            event(new OrderCreated($order->load('table')));
 
             return $order;
         });
@@ -60,16 +64,13 @@ class OrderService
                         'notes' => $item['notes'] ?? null,
                     ];
                     if (!empty($item['id']) && (int) $item['id'] > 0) {
-                        $orderItem = $order->orderItems()->find($item['id']);
-                        if ($orderItem) {
-                            $orderItem->update($payload);
                             $submittedIds[] = $orderItem->id;
-                        }
+                        
                     } else {
-                        $orderItem = $order->orderItems()->create(array_merge($payload, ['status' => 'pending']));
+                        $orderItem = $order->orderItems()->create(array_merge($payload, ['status' => OrderItemStatus::Pending]));
                         $orderItem->refresh();
                         $submittedIds[] = $orderItem->id;
-                        event(new \App\Events\OrderItemCreated($orderItem));
+                        event(new OrderItemCreated($orderItem));
                     }
                 }
                 $order->orderItems()->whereNotIn('id', $submittedIds)->delete();

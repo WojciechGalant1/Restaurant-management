@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\TableStatus;
+use App\Enums\UserRole;
+use App\Enums\OrderStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -59,7 +61,7 @@ class Table extends Model
     // Scopes
     public function scopeForWaiter($query, User $user)
     {
-        if ($user->role === 'manager') {
+        if ($user->role === UserRole::Manager) {
             return $query;
         }
 
@@ -70,7 +72,7 @@ class Table extends Model
     public function getIsOccupiedAttribute(): bool
     {
         return $this->orders()
-            ->whereIn('status', ['pending', 'preparing'])
+            ->where('status', OrderStatus::Open)
             ->exists();
     }
 }

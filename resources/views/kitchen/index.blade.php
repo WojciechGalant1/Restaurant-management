@@ -19,7 +19,7 @@
         'name' => $item->menuItem->dish->name,
         'quantity' => $item->quantity,
         'notes' => $item->notes,
-        'status' => $item->status,
+        'status' => $item->status->value,
         'created_at_human' => $item->created_at->diffForHumans(),
         'updated_at_human' => $item->updated_at->diffForHumans(),
         'update_url' => route('kitchen.update-status', $item->id),
@@ -33,7 +33,7 @@
                         {{ __('New Orders') }}
                     </h3>
                     <div class="space-y-4">
-                        <template x-for="item in items.filter(i => i.status === 'pending')" :key="item.id">
+                        <template x-for="item in items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Pending->value }}')" :key="item.id">
                             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500 animate-fade-in-down">
                                 <div class="flex justify-between items-start mb-2">
                                     <span class="font-bold text-sm" x-text="`#${item.order_id} - Table ${item.table_number}`"></span>
@@ -46,27 +46,27 @@
                                 <form :action="item.update_url" method="POST">
                                     @csrf
                                     @method('PATCH')
-                                    <input type="hidden" name="status" value="preparing">
+                                    <input type="hidden" name="status" value="{{ \App\Enums\OrderItemStatus::Preparing->value }}">
                                     <button type="submit" class="w-full bg-orange-500 text-white py-2 rounded-md hover:bg-orange-600 transition font-bold">
-                                        {{ __('Start Preparing') }}
+                                        {{ __('Start In Preparation') }}
                                     </button>
                                 </form>
                             </div>
                         </template>
-                        <div x-show="items.filter(i => i.status === 'pending').length === 0" class="text-gray-500 italic text-sm text-center py-4 bg-gray-50 rounded-lg">
+                        <div x-show="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Pending->value }}').length === 0" class="text-gray-500 italic text-sm text-center py-4 bg-gray-50 rounded-lg">
                             {{ __('No new orders.') }}
                         </div>
                     </div>
                 </div>
 
-                <!-- Column: Currently Preparing -->
+                <!-- Column: Currently In Preparation -->
                 <div>
                     <h3 class="font-bold text-lg mb-4 text-orange-600 flex items-center">
                         <x-heroicon-o-clock class="w-5 h-5 mr-2" />
-                        {{ __('Preparing') }}
+                        {{ __('In Preparation') }}
                     </h3>
                     <div class="space-y-4">
-                        <template x-for="item in items.filter(i => i.status === 'preparing')" :key="item.id">
+                        <template x-for="item in items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Preparing->value }}')" :key="item.id">
                             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
                                 <div class="flex justify-between items-start mb-2">
                                     <span class="font-bold text-sm" x-text="`#${item.order_id} - Table ${item.table_number}`"></span>
@@ -76,14 +76,14 @@
                                 <form :action="item.update_url" method="POST">
                                     @csrf
                                     @method('PATCH')
-                                    <input type="hidden" name="status" value="ready">
+                                    <input type="hidden" name="status" value="{{ \App\Enums\OrderItemStatus::Ready->value }}">
                                     <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition font-bold">
                                         {{ __('Mark as Ready') }}
                                     </button>
                                 </form>
                             </div>
                         </template>
-                        <div x-show="items.filter(i => i.status === 'preparing').length === 0" class="text-gray-500 italic text-sm text-center py-4 bg-gray-50 rounded-lg">
+                        <div x-show="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Preparing->value }}').length === 0" class="text-gray-500 italic text-sm text-center py-4 bg-gray-50 rounded-lg">
                             {{ __('Nothing being prepared.') }}
                         </div>
                     </div>
@@ -96,7 +96,7 @@
                         {{ __('Ready to Serve') }}
                     </h3>
                     <div class="space-y-4">
-                        <template x-for="item in items.filter(i => i.status === 'ready')" :key="item.id">
+                        <template x-for="item in items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}')" :key="item.id">
                             <div class="bg-green-50 p-4 rounded-lg shadow-sm border-l-4 border-green-500">
                                 <div class="flex justify-between items-start mb-2">
                                     <span class="font-bold text-sm" x-text="`#${item.order_id} - Table ${item.table_number}`"></span>
@@ -109,14 +109,14 @@
                                 <form :action="item.update_url" method="POST" class="mt-2">
                                     @csrf
                                     @method('PATCH')
-                                    <input type="hidden" name="status" value="preparing">
+                                    <input type="hidden" name="status" value="{{ \App\Enums\OrderItemStatus::Preparing->value }}">
                                     <button type="submit" class="w-full bg-gray-200 text-gray-700 py-1 rounded-md hover:bg-gray-300 transition text-xs">
-                                        {{ __('Move back to Preparing') }}
+                                        {{ __('Move back to In Preparation') }}
                                     </button>
                                 </form>
                             </div>
                         </template>
-                        <div x-show="items.filter(i => i.status === 'ready').length === 0" class="text-gray-500 italic text-sm text-center py-4 bg-gray-50 rounded-lg">
+                        <div x-show="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').length === 0" class="text-gray-500 italic text-sm text-center py-4 bg-gray-50 rounded-lg">
                             {{ __('No items ready.') }}
                         </div>
                     </div>
@@ -166,14 +166,13 @@
                                 console.log('OrderItemStatusUpdated event received:', e);
                                 const index = this.items.findIndex(i => i.id === e.id);
                                 if (index !== -1) {
-                                    if (e.status === 'served') {
-                                        // Remove item if status is served
-                                        this.items.splice(index, 1);
+                                    if (e.status === '{{ \App\Enums\OrderItemStatus::Served->value }}' || e.status === '{{ \App\Enums\OrderItemStatus::Cancelled->value }}') {
+                                        this.items = this.items.filter(i => i.id !== e.id);
                                     } else {
                                         // Update existing item with new data
                                         this.items[index] = { ...this.items[index], ...e };
                                     }
-                                } else if (e.status !== 'served') {
+                                    } else if (e.status !== '{{ \App\Enums\OrderItemStatus::Served->value }}' && e.status !== '{{ \App\Enums\OrderItemStatus::Cancelled->value }}') {
                                     // If item doesn't exist and status is not served, add it
                                     // This handles cases where item was created before page load
                                     this.items.unshift(e);

@@ -22,7 +22,7 @@
                             <select id="user_id" name="user_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required autofocus>
                                 <option value="">-- Select Staff --</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->first_name }} {{ $user->last_name }} ({{ ucfirst($user->role) }})</option>
+                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->first_name }} {{ $user->last_name }} ({{ ucfirst($user->role->value) }})</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('user_id')" class="mt-2" />
@@ -36,10 +36,10 @@
 
                         <div>
                             <x-input-label for="shift_type" :value="__('Shift Type')" />
-                            <select id="shift_type" name="shift_type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="morning" {{ old('shift_type') === 'morning' ? 'selected' : '' }}>Morning (e.g. 08:00 - 16:00)</option>
-                                <option value="evening" {{ old('shift_type') === 'evening' ? 'selected' : '' }}>Evening (e.g. 16:00 - 24:00)</option>
-                                <option value="full_day" {{ old('shift_type') === 'full_day' ? 'selected' : '' }}>Full Day</option>
+                             <select id="shift_type" name="shift_type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="{{ \App\Enums\ShiftType::Morning->value }}" {{ old('shift_type') === \App\Enums\ShiftType::Morning->value ? 'selected' : '' }}>Morning (e.g. 08:00 - 16:00)</option>
+                                <option value="{{ \App\Enums\ShiftType::Evening->value }}" {{ old('shift_type') === \App\Enums\ShiftType::Evening->value ? 'selected' : '' }}>Evening (e.g. 16:00 - 24:00)</option>
+                                <option value="{{ \App\Enums\ShiftType::FullDay->value }}" {{ old('shift_type') === \App\Enums\ShiftType::FullDay->value ? 'selected' : '' }}>Full Day</option>
                             </select>
                             <x-input-error :messages="$errors->get('shift_type')" class="mt-2" />
                         </div>

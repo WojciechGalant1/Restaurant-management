@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Data\DashboardFeedPayload;
 use App\Models\OrderItem;
+use App\Enums\OrderItemStatus;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -35,9 +36,9 @@ class OrderItemStatusUpdated implements ShouldBroadcast
     public function broadcastWith(): array
     {
         $name = $this->orderItem->menuItem->dish->name ?? __('Item');
-        $statusLabel = $this->orderItem->status === 'ready'
+        $statusLabel = $this->orderItem->status === OrderItemStatus::Ready
             ? __('READY')
-            : ($this->orderItem->status === 'served' ? __('Served') : $this->orderItem->status);
+            : ($this->orderItem->status === OrderItemStatus::Served ? __('Served') : $this->orderItem->status->label());
         $feedPayload = new DashboardFeedPayload(
             type: 'order_item_status',
             message: "{$name} – {$statusLabel}",

@@ -32,10 +32,10 @@
 
                         <div>
                             <x-input-label for="payment_method" :value="__('Payment Method')" />
-                            <select id="payment_method" name="payment_method" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="cash" {{ old('payment_method') === 'cash' ? 'selected' : '' }}>Cash</option>
-                                <option value="card" {{ old('payment_method') === 'card' ? 'selected' : '' }}>Payment Card</option>
-                                <option value="online" {{ old('payment_method') === 'online' ? 'selected' : '' }}>Online Payment</option>
+                             <select id="payment_method" name="payment_method" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <option value="{{ \App\Enums\PaymentMethod::Cash->value }}" {{ old('payment_method') === \App\Enums\PaymentMethod::Cash->value ? 'selected' : '' }}>Cash</option>
+                                <option value="{{ \App\Enums\PaymentMethod::Card->value }}" {{ old('payment_method') === \App\Enums\PaymentMethod::Card->value ? 'selected' : '' }}>Payment Card</option>
+                                <option value="{{ \App\Enums\PaymentMethod::Online->value }}" {{ old('payment_method') === \App\Enums\PaymentMethod::Online->value ? 'selected' : '' }}>Online Payment</option>
                             </select>
                             <x-input-error :messages="$errors->get('payment_method')" class="mt-2" />
                         </div>

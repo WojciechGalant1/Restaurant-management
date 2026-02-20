@@ -22,7 +22,7 @@
                             <select id="dish_id" name="dish_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required autofocus>
                                 <option value="">-- Choose a Dish --</option>
                                 @foreach($dishes as $dish)
-                                    <option value="{{ $dish->id }}" {{ old('dish_id') == $dish->id ? 'selected' : '' }}>{{ $dish->name }} ({{ ucfirst($dish->category) }})</option>
+                                    <option value="{{ $dish->id }}" {{ old('dish_id') == $dish->id ? 'selected' : '' }}>{{ $dish->name }} ({{ ucfirst($dish->category->value) }})</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('dish_id')" class="mt-2" />
