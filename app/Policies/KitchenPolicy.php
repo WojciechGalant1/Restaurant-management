@@ -18,11 +18,19 @@ class KitchenPolicy
 
     /**
      * Update status of order items from the kitchen screen.
+     * User must have kitchen role and the item's dish category must be in their visible categories.
      */
     public function updateItemStatus(User $user, OrderItem $orderItem): bool
     {
-        // Same role check for now; business rules can evolve here later
-        return in_array($user->role, [UserRole::Manager, UserRole::Chef, UserRole::Bartender]);
+        if (!in_array($user->role, [UserRole::Manager, UserRole::Chef, UserRole::Bartender])) {
+            return false;
+        }
+        $orderItem->loadMissing('menuItem.dish');
+        $dish = $orderItem->menuItem?->dish;
+        if (!$dish) {
+            return false;
+        }
+        return in_array($dish->category, $user->role->visibleCategories());
     }
 }
 

@@ -11,7 +11,12 @@ class ShiftPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::Manager;
+        return in_array($user->role, [
+            UserRole::Manager,
+            UserRole::Waiter,
+            UserRole::Chef,
+            UserRole::Bartender,
+        ]);
     }
 
     public function view(User $user, Shift $shift): bool

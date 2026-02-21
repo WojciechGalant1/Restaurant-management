@@ -35,12 +35,20 @@ Route::middleware('auth')->group(function () {
     // Restaurant Management
     Route::resource('orders', OrderController::class);
     Route::resource('tables', TableController::class);
+    Route::post('tables/{table}/assign', [TableController::class, 'assign'])->name('tables.assign');
     Route::resource('reservations', ReservationController::class);
     Route::resource('dishes', DishController::class);
     Route::resource('menu-items', MenuItemController::class);
-    Route::get('shifts-calendar-events', [ShiftController::class, 'calendarEvents'])->name('shifts.calendar-events');
-    Route::get('shifts/availability', [ShiftController::class, 'availability'])->name('shifts.availability');
-    Route::get('shifts/coverage', [ShiftController::class, 'coverage'])->name('shifts.coverage');
+
+    // JSON endpoints (same middleware as web, under /api prefix)
+    Route::prefix('api')->group(function () {
+        Route::get('shifts/calendar-events', [ShiftController::class, 'calendarEvents'])->name('shifts.calendar-events');
+        Route::get('shifts/availability', [ShiftController::class, 'availability'])->name('shifts.availability');
+        Route::get('shifts/coverage', [ShiftController::class, 'coverage'])->name('shifts.coverage');
+        Route::get('reservations/calendar-events', [ReservationController::class, 'calendarEvents'])->name('reservations.calendar-events');
+        Route::get('tables/floor-data', [TableController::class, 'floorData'])->name('tables.floor-data');
+    });
+
     Route::resource('shifts', ShiftController::class);
     Route::resource('users', UserController::class);
     Route::resource('invoices', InvoiceController::class);

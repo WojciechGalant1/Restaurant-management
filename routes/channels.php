@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -18,9 +19,13 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('kitchen', function ($user) {
-    return in_array($user->role, ['chef', 'manager', 'waiter']);
+    return in_array($user->role, [UserRole::Chef, UserRole::Manager, UserRole::Waiter]);
 });
 
 Broadcast::channel('dashboard', function ($user) {
-    return in_array($user->role, ['manager', 'chef', 'waiter']);
+    return in_array($user->role, [UserRole::Manager, UserRole::Chef, UserRole::Waiter]);
+});
+
+Broadcast::channel('tables', function ($user) {
+    return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
 });

@@ -23,6 +23,7 @@
         "@fullcalendar/interaction": "^6.1.20",
         "@fullcalendar/timegrid": "^6.1.20",
         "apexcharts": "^5.4.0",
+        "sortablejs": "^1.15.7",
         "tippy.js": "^6.3.7"
     }
 }

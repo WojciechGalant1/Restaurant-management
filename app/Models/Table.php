@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Enums\TableStatus;
 use App\Enums\UserRole;
 use App\Enums\OrderStatus;
-use App\Models\User;
+use App\Events\TableStatusUpdated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,12 +17,13 @@ class Table extends Model
         'table_number',
         'capacity',
         'status',
-        'waiter_id',
     ];
 
     protected $casts = [
         'status' => TableStatus::class,
     ];
+
+    // --- Relationships ---
 
     public function reservations()
     {
@@ -34,45 +35,89 @@ class Table extends Model
         return $this->hasMany(Order::class);
     }
 
-    public function waiter()
+    public function assignments()
     {
-        return $this->belongsTo(User::class, 'waiter_id');
+        return $this->hasMany(TableAssignment::class);
     }
 
-    // Domain methods
-    public function assignTo(User $waiter): void
+    /**
+     * The active assignment (shift currently in progress).
+     */
+    public function activeAssignment()
     {
-        $this->update(['waiter_id' => $waiter->id]);
+        return $this->hasOne(TableAssignment::class)
+            ->whereHas('shift', fn ($q) => $q->activeNow());
+    }
+
+    // --- Accessors ---
+
+    /**
+     * The waiter currently assigned via an active shift, or null.
+     */
+    public function getCurrentWaiterAttribute(): ?User
+    {
+        $assignment = $this->relationLoaded('activeAssignment')
+            ? $this->activeAssignment
+            : $this->activeAssignment()->with('user')->first();
+
+        return $assignment?->user;
+    }
+
+    public function getIsOccupiedAttribute(): bool
+    {
+        return $this->orders()
+            ->where('status', OrderStatus::Open)
+            ->exists();
+    }
+
+    // --- Domain methods ---
+
+    public function assignTo(User $waiter, Shift $shift): TableAssignment
+    {
+        return TableAssignment::updateOrCreate(
+            ['table_id' => $this->id, 'shift_id' => $shift->id],
+            ['user_id' => $waiter->id, 'assigned_at' => now()]
+        );
+    }
+
+    public function unassignFromShift(Shift $shift): void
+    {
+        $this->assignments()->where('shift_id', $shift->id)->delete();
     }
 
     public function markAsOccupied(): void
     {
         $this->update(['status' => TableStatus::Occupied]);
+        event(new TableStatusUpdated($this));
     }
 
     public function markAsAvailable(): void
     {
-        $this->update([
-            'status' => TableStatus::Available,
-            'waiter_id' => null,
-        ]);
+        $this->update(['status' => TableStatus::Available]);
+        event(new TableStatusUpdated($this));
     }
 
-    // Scopes
+    public function markAsReserved(): void
+    {
+        $this->update(['status' => TableStatus::Reserved]);
+        event(new TableStatusUpdated($this));
+    }
+
+    // --- Scopes ---
+
+    /**
+     * Filter tables to only those assigned to $user via an active shift.
+     * Managers see all tables.
+     */
     public function scopeForWaiter($query, User $user)
     {
         if ($user->role === UserRole::Manager) {
             return $query;
         }
 
-        return $query->where('waiter_id', $user->id);
-    }
-
-    // Accessors
-    public function getIsOccupiedAttribute(): bool
-    {
-        return $this->orders()
-            ->where('status', OrderStatus::Open)
-            ->exists();
+        return $query->whereHas('assignments', function ($q) use ($user) {
+            $q->where('user_id', $user->id)
+              ->whereHas('shift', fn ($sq) => $sq->activeNow());
+        });
     }
 }

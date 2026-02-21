@@ -55,8 +55,8 @@ class User extends Authenticatable
         return $this->hasMany(Shift::class);
     }
 
-    public function tables()
+    public function tableAssignments()
     {
-        return $this->hasMany(Table::class, 'waiter_id');
+        return $this->hasMany(TableAssignment::class);
     }
 }

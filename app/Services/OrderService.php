@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Events\OrderCreated;
 use App\Events\OrderItemCreated;
 use App\Models\Order;
+use App\Models\Table;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -38,6 +39,11 @@ class OrderService
             }
 
             $order->update(['total_price' => $order->orderItems->sum(fn($i) => $i->quantity * $i->unit_price)]);
+
+            $table = Table::find($data['table_id']);
+            if ($table) {
+                $table->markAsOccupied();
+            }
 
             event(new OrderCreated($order->load('table')));
 
@@ -86,6 +92,29 @@ class OrderService
 
     public function updateStatus(Order $order, string $status): bool
     {
-        return $order->update(['status' => $status]);
+        $result = $order->update(['status' => $status]);
+
+        if ($result && in_array($status, [OrderStatus::Paid->value, OrderStatus::Cancelled->value])) {
+            $this->releaseTableIfFree($order);
+        }
+
+        return $result;
+    }
+
+    private function releaseTableIfFree(Order $order): void
+    {
+        $table = $order->table;
+        if (!$table) {
+            return;
+        }
+
+        $hasOtherOpenOrders = Order::where('table_id', $table->id)
+            ->where('id', '!=', $order->id)
+            ->where('status', OrderStatus::Open)
+            ->exists();
+
+        if (!$hasOtherOpenOrders) {
+            $table->markAsAvailable();
+        }
     }
 }

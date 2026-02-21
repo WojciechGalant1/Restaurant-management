@@ -19,6 +19,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
+                        {{ __('Shifts') }}
+                    </x-nav-link>
 
                     @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter]))
                         <x-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
@@ -50,9 +53,7 @@
                         <x-nav-link :href="route('menu-items.index')" :active="request()->is('menu-items*')">
                             {{ __('Menu') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
-                            {{ __('Shifts') }}
-                        </x-nav-link>
+                        
                         <x-nav-link :href="route('users.index')" :active="request()->is('users*')">
                             {{ __('Staff') }}
                         </x-nav-link>
@@ -115,6 +116,9 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
+                {{ __('Shifts') }}
+            </x-responsive-nav-link>
 
             @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter]))
                 <x-responsive-nav-link :href="route('orders.index')" :active="request()->is('orders*')">
@@ -145,9 +149,6 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('menu-items.index')" :active="request()->is('menu-items*')">
                     {{ __('Menu') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('shifts.index')" :active="request()->is('shifts*')">
-                    {{ __('Shifts') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->is('users*')">
                     {{ __('Staff') }}

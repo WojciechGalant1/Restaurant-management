@@ -44,6 +44,7 @@ class InvoiceService
             ]);
 
             $this->autoCompleteReservations($order);
+            $this->releaseTableIfFree($order);
             $this->clearRevenueCaches();
 
             event(new InvoiceIssued($invoice));
@@ -60,6 +61,27 @@ class InvoiceService
 
         $orderDate = Carbon::parse($order->ordered_at ?? $order->created_at)->toDateString();
         $this->reservationService->autoCompleteForTable($order->table_id, $orderDate);
+    }
+
+    private function releaseTableIfFree(Order $order): void
+    {
+        $table = $order->table;
+        if (!$table) {
+            return;
+        }
+
+        $hasOtherOpenOrders = Order::where('table_id', $table->id)
+            ->where('id', '!=', $order->id)
+            ->where('status', OrderStatus::Open)
+            ->exists();
+
+        $hasActiveReservations = Reservation::where('table_id', $table->id)
+            ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::Seated])
+            ->exists();
+
+        if (!$hasOtherOpenOrders && !$hasActiveReservations) {
+            $table->markAsAvailable();
+        }
     }
 
     public function clearRevenueCaches(): void

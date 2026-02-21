@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Table;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +18,6 @@ class TableFactory extends Factory
             'table_number' => $this->faker->unique()->numberBetween(1, 100),
             'capacity' => $this->faker->numberBetween(2, 8),
             'status' => $this->faker->randomElement(['available', 'occupied', 'reserved']),
-            'waiter_id' => User::factory(), // Creates a new user if not provided
         ];
     }
 }
