@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KitchenController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\WaiterController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('orders', OrderController::class);
     Route::resource('tables', TableController::class);
     Route::post('tables/{table}/assign', [TableController::class, 'assign'])->name('tables.assign');
+    Route::resource('rooms', RoomController::class);
     Route::resource('reservations', ReservationController::class);
     Route::resource('dishes', DishController::class);
     Route::resource('menu-items', MenuItemController::class);
@@ -47,6 +49,7 @@ Route::middleware('auth')->group(function () {
         Route::get('shifts/coverage', [ShiftController::class, 'coverage'])->name('shifts.coverage');
         Route::get('reservations/calendar-events', [ReservationController::class, 'calendarEvents'])->name('reservations.calendar-events');
         Route::get('tables/floor-data', [TableController::class, 'floorData'])->name('tables.floor-data');
+        Route::post('tables/reorder', [TableController::class, 'reorder'])->name('tables.reorder');
     });
 
     Route::resource('shifts', ShiftController::class);

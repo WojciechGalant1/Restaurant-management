@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservation;
 use App\Models\Table;
+use App\Services\CalendarRangeService;
 use App\Services\ReservationService;
 use App\Services\ReservationCalendarService;
 use App\Enums\ReservationStatus;
@@ -11,11 +12,10 @@ use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Carbon\Carbon;
-
 class ReservationController extends Controller
 {
     public function __construct(
+        private CalendarRangeService $calendarRangeService,
         private ReservationService $reservationService,
         private ReservationCalendarService $calendarService
     ) {}
@@ -31,8 +31,7 @@ class ReservationController extends Controller
     {
         $this->authorize('viewAny', Reservation::class);
 
-        $viewStart = $request->filled('start') ? Carbon::parse($request->input('start')) : null;
-        $viewEnd = $request->filled('end') ? Carbon::parse($request->input('end')) : null;
+        [$viewStart, $viewEnd] = $this->calendarRangeService->fromRequest($request);
 
         if (!$viewStart || !$viewEnd) {
             $reservations = Reservation::with('table')->orderBy('reservation_date')->orderBy('reservation_time')->get();

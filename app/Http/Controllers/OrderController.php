@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\MenuItem;
@@ -94,20 +93,7 @@ class OrderController extends Controller
     {
         $this->authorize('delete', $order);
 
-        $table = $order->table;
-        $wasOpen = $order->status === OrderStatus::Open;
-
-        $order->delete();
-
-        if ($wasOpen && $table) {
-            $hasOtherOpenOrders = Order::where('table_id', $table->id)
-                ->where('status', OrderStatus::Open)
-                ->exists();
-
-            if (!$hasOtherOpenOrders) {
-                $table->markAsAvailable();
-            }
-        }
+        $this->orderService->deleteOrder($order);
 
         return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
     }

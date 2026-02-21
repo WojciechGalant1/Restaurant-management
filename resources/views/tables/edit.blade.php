@@ -1,14 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Edit Table') }} #{{ $table->table_number }}
-            </h2>
-            <a href="{{ route('tables.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition flex items-center">
-                <x-heroicon-o-arrow-left class="w-4 h-4 mr-2" />
-                {{ __('Back to List') }}
-            </a>
-        </div>
+        <x-page-header :title="__('Edit Table') . ' #' . $table->table_number">
+            <x-slot name="action">
+                <a href="{{ route('tables.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition flex items-center">
+                    <x-heroicon-o-arrow-left class="w-4 h-4 mr-2" />
+                    {{ __('Back to List') }}
+                </a>
+            </x-slot>
+        </x-page-header>
     </x-slot>
 
     <div class="py-12">
@@ -18,12 +17,12 @@
                     @csrf
                     @method('PATCH')
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div>
                             <x-input-label for="table_number" :value="__('Table Number')" />
                             <x-text-input id="table_number" name="table_number" type="number" class="mt-1 block w-full bg-gray-100" :value="$table->table_number" readonly />
                             <x-input-error :messages="$errors->get('table_number')" class="mt-2" />
-                            <p class="text-xs text-gray-500 mt-1">Table number cannot be changed.</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('Table number cannot be changed.') }}</p>
                         </div>
 
                         <div>
@@ -40,6 +39,17 @@
                                 <option value="{{ \App\Enums\TableStatus::Reserved->value }}" {{ old('status', $table->status instanceof \App\Enums\TableStatus ? $table->status->value : $table->status) === \App\Enums\TableStatus::Reserved->value ? 'selected' : '' }}>Reserved</option>
                             </select>
                             <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="room_id" :value="__('Room')" />
+                            <select id="room_id" name="room_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="">{{ __('— No room —') }}</option>
+                                @foreach($rooms as $room)
+                                    <option value="{{ $room->id }}" {{ old('room_id', $table->room_id) == $room->id ? 'selected' : '' }}>{{ $room->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('room_id')" class="mt-2" />
                         </div>
                     </div>
 

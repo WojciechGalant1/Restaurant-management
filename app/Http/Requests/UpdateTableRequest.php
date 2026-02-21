@@ -18,6 +18,7 @@ class UpdateTableRequest extends FormRequest
         return [
             'capacity' => 'sometimes|integer|min:1',
             'status' => ['sometimes', Rule::enum(TableStatus::class)],
+            'room_id' => 'nullable|exists:rooms,id',
         ];
     }
 }

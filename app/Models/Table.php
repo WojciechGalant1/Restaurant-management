@@ -17,13 +17,21 @@ class Table extends Model
         'table_number',
         'capacity',
         'status',
+        'room_id',
+        'sort_order',
     ];
 
     protected $casts = [
         'status' => TableStatus::class,
+        'sort_order' => 'integer',
     ];
 
     // --- Relationships ---
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class);
+    }
 
     public function reservations()
     {

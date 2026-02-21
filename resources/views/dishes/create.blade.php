@@ -1,14 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Add New Dish') }}
-            </h2>
-            <a href="{{ route('dishes.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition flex items-center">
-                <x-heroicon-o-arrow-left class="w-4 h-4 mr-2" />
-                {{ __('Back to List') }}
-            </a>
-        </div>
+        <x-page-header :title="__('Add New Dish')">
+            <x-slot name="action">
+                <a href="{{ route('dishes.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition flex items-center">
+                    <x-heroicon-o-arrow-left class="w-4 h-4 mr-2" />
+                    {{ __('Back to List') }}
+                </a>
+            </x-slot>
+        </x-page-header>
     </x-slot>
 
     <div class="py-12">

@@ -41,6 +41,7 @@ class TableStatusUpdated implements ShouldBroadcast
             'waiter_name' => $this->table->activeAssignment?->user?->name,
             'waiter_id' => $this->table->activeAssignment?->user_id,
             'shift_id' => $this->table->activeAssignment?->shift_id,
+            'room_id' => $this->table->room_id,
         ];
     }
 }

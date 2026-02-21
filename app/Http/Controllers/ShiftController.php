@@ -10,13 +10,14 @@ use App\Http\Requests\StoreShiftRequest;
 use App\Http\Requests\UpdateShiftRequest;
 use App\Services\ShiftCreationService;
 use App\Services\ShiftAnalyticsService;
+use App\Services\CalendarRangeService;
 use App\Services\ShiftCalendarService;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class ShiftController extends Controller
 {
     public function __construct(
+        private CalendarRangeService $calendarRangeService,
         private ShiftCreationService $creationService,
         private ShiftAnalyticsService $analyticsService,
         private ShiftCalendarService $calendarService
@@ -174,8 +175,7 @@ class ShiftController extends Controller
         $user = $request->user();
         $isManager = $user->role === UserRole::Manager;
 
-        $viewStart = $request->filled('start') ? Carbon::parse($request->input('start')) : null;
-        $viewEnd = $request->filled('end') ? Carbon::parse($request->input('end')) : null;
+        [$viewStart, $viewEnd] = $this->calendarRangeService->fromRequest($request);
         $role = $isManager ? $request->input('role') : null;
         $userId = $isManager ? null : $user->id;
 

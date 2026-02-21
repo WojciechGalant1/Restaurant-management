@@ -101,6 +101,27 @@ class OrderService
         return $result;
     }
 
+    /**
+     * Delete an order and release its table if it was open and no other open orders remain.
+     */
+    public function deleteOrder(Order $order): void
+    {
+        $table = $order->table;
+        $wasOpen = $order->status === OrderStatus::Open;
+
+        $order->delete();
+
+        if ($wasOpen && $table) {
+            $hasOtherOpenOrders = Order::where('table_id', $table->id)
+                ->where('status', OrderStatus::Open)
+                ->exists();
+
+            if (!$hasOtherOpenOrders) {
+                $table->markAsAvailable();
+            }
+        }
+    }
+
     private function releaseTableIfFree(Order $order): void
     {
         $table = $order->table;

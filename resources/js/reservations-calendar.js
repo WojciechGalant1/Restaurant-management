@@ -1,10 +1,4 @@
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import tippy from 'tippy.js';
-import 'tippy.js/dist/tippy.css';
-import 'tippy.js/themes/light-border.css';
+import { initFullCalendar } from './fullcalendar-common.js';
 
 function buildTooltipContent(info) {
     const props = info.event.extendedProps;
@@ -34,72 +28,13 @@ function initReservationsCalendar() {
     const el = document.getElementById('reservations-calendar');
     if (!el) return;
 
-    const eventsUrl = el.dataset.eventsUrl;
-    const createUrl = el.dataset.createUrl || '';
-
-    const calendar = new Calendar(el, {
-        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-        initialView: 'dayGridMonth',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay',
-        },
-        timeZone: 'local',
-        height: 'auto',
-        firstDay: 1,
-        nowIndicator: true,
-        editable: false,
-        selectable: false,
+    initFullCalendar({
+        elementId: 'reservations-calendar',
+        eventsUrl: el.dataset.eventsUrl,
+        createUrl: el.dataset.createUrl || '',
+        buildTooltipContent,
+        headerToolbarRight: 'dayGridMonth,timeGridWeek,timeGridDay',
         dayMaxEvents: 6,
-
-        events: {
-            url: eventsUrl,
-            method: 'GET',
-            failure: () => {
-                console.error('Failed to load reservation events');
-            },
-        },
-
-        eventClick: (info) => {
-            const props = info.event.extendedProps;
-            if (props.editUrl) {
-                window.location.href = props.editUrl;
-            }
-        },
-
-        eventDidMount: (info) => {
-            info.el.style.cursor = 'pointer';
-
-            tippy(info.el, {
-                content: buildTooltipContent(info),
-                allowHTML: true,
-                theme: 'light-border',
-                placement: 'top',
-                interactive: true,
-                delay: [200, 0],
-                maxWidth: 280,
-                appendTo: document.body,
-            });
-        },
-
-        dateClick: (info) => {
-            if (createUrl) {
-                window.location.href = `${createUrl}?date=${info.dateStr}`;
-            }
-        },
-    });
-
-    calendar.render();
-
-    const tabObserver = new MutationObserver(() => {
-        if (el.offsetParent !== null) {
-            calendar.updateSize();
-        }
-    });
-    tabObserver.observe(el.closest('[x-data]') || document.body, {
-        attributes: true,
-        subtree: true,
     });
 }
 

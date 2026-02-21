@@ -1,23 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Staff Management') }}
-            </h2>
-            <a href="{{ route('users.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
-                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
-                {{ __('Add New Staff') }}
-            </a>
-        </div>
+        <x-page-header :title="__('Staff Management')" :actionUrl="route('users.create')" :actionLabel="__('Add New Staff')" />
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if (session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm sm:rounded-r-lg" role="alert">
-                    <p>{{ session('success') }}</p>
-                </div>
-            @endif
+            <x-flash-message type="success" />
+            <x-flash-message type="error" />
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="overflow-x-auto">
@@ -51,13 +40,7 @@
                                         <a href="{{ route('users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition">
                                             <x-heroicon-o-pencil class="w-5 h-5" />
                                         </a>
-                                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to remove this staff member?') }}')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded transition">
-                                                <x-heroicon-o-trash class="w-5 h-5" />
-                                            </button>
-                                        </form>
+                                        <x-delete-button :route="route('users.destroy', $user)" :confirmMessage="__('Are you sure you want to remove this staff member?')" />
                                     </td>
                                 </tr>
                             @empty

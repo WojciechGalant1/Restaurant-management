@@ -1,41 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Reservations') }}
-            </h2>
-            <a href="{{ route('reservations.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
-                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
-                {{ __('New Reservation') }}
-            </a>
-        </div>
+        <x-page-header :title="__('Reservations')" :actionUrl="route('reservations.create')" :actionLabel="__('New Reservation')" />
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="{ tab: 'calendar' }">
-            @if (session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm sm:rounded-r-lg" role="alert">
-                    <p>{{ session('success') }}</p>
-                </div>
-            @endif
+            <x-flash-message type="success" />
+            <x-flash-message type="error" />
 
-            {{-- Tab navigation --}}
-            <div class="mb-4 border-b border-gray-200">
-                <nav class="flex space-x-4" aria-label="Tabs">
-                    <button @click="tab = 'calendar'"
-                        :class="tab === 'calendar' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                        class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm flex items-center transition">
-                        <x-heroicon-o-calendar-days class="w-4 h-4 mr-2" />
-                        {{ __('Calendar View') }}
-                    </button>
-                    <button @click="tab = 'table'"
-                        :class="tab === 'table' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                        class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm flex items-center transition">
-                        <x-heroicon-o-table-cells class="w-4 h-4 mr-2" />
-                        {{ __('Table View') }}
-                    </button>
-                </nav>
-            </div>
+            <x-tabs
+                :tabs="['calendar' => __('Calendar View'), 'table' => __('Table View')]"
+                default="calendar"
+                :icons="['calendar' => 'heroicon-o-calendar-days', 'table' => 'heroicon-o-table-cells']"
+            />
 
             {{-- Calendar view --}}
             <div x-show="tab === 'calendar'" x-cloak>
@@ -85,13 +62,7 @@
                                             <a href="{{ route('reservations.edit', $reservation) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition">
                                                 <x-heroicon-o-pencil class="w-5 h-5" />
                                             </a>
-                                            <form action="{{ route('reservations.destroy', $reservation) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this reservation?') }}')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded transition">
-                                                    <x-heroicon-o-trash class="w-5 h-5" />
-                                                </button>
-                                            </form>
+                                            <x-delete-button :route="route('reservations.destroy', $reservation)" :confirmMessage="__('Are you sure you want to delete this reservation?')" />
                                         </td>
                                     </tr>
                                 @empty

@@ -1,10 +1,4 @@
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import tippy from 'tippy.js';
-import 'tippy.js/dist/tippy.css';
-import 'tippy.js/themes/light-border.css';
+import { initFullCalendar } from './fullcalendar-common.js';
 
 function buildTooltipContent(info) {
     const props = info.event.extendedProps;
@@ -33,98 +27,37 @@ function initShiftsCalendar() {
     const el = document.getElementById('shifts-calendar');
     if (!el) return;
 
-    const eventsUrl = el.dataset.eventsUrl;
-    const createUrl = el.dataset.createUrl;
-
     let activeRole = '';
 
-    const calendar = new Calendar(el, {
-        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-        initialView: 'dayGridMonth',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek',
-        },
-        timeZone: 'local',
-        height: 'auto',
-        firstDay: 1,
-        nowIndicator: true,
-        editable: false,
-        selectable: false,
+    const { calendar } = initFullCalendar({
+        elementId: 'shifts-calendar',
+        eventsUrl: el.dataset.eventsUrl,
+        createUrl: el.dataset.createUrl,
+        buildTooltipContent,
+        extraParams: () => (activeRole ? { role: activeRole } : {}),
+        headerToolbarRight: 'dayGridMonth,timeGridWeek',
         dayMaxEvents: 4,
-
-        events: {
-            url: eventsUrl,
-            method: 'GET',
-            extraParams: () => {
-                const params = {};
-                if (activeRole) params.role = activeRole;
-                return params;
-            },
-            failure: () => {
-                console.error('Failed to load shift events');
-            },
-        },
-
-        eventClick: (info) => {
-            const props = info.event.extendedProps;
-            if (props.editUrl) {
-                window.location.href = props.editUrl;
-            }
-        },
-
-        eventDidMount: (info) => {
-            info.el.style.cursor = 'pointer';
-
-            tippy(info.el, {
-                content: buildTooltipContent(info),
-                allowHTML: true,
-                theme: 'light-border',
-                placement: 'top',
-                interactive: true,
-                delay: [200, 0],
-                maxWidth: 260,
-                appendTo: document.body,
-            });
-        },
-
-        dateClick: (info) => {
-            if (createUrl) {
-                window.location.href = `${createUrl}?date=${info.dateStr}`;
-            }
-        },
     });
 
-    calendar.render();
+    if (calendar) {
+        const filterButtons = document.querySelectorAll('[data-role-filter]');
+        filterButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const role = btn.dataset.roleFilter;
+                activeRole = activeRole === role ? '' : role;
 
-    const filterButtons = document.querySelectorAll('[data-role-filter]');
-    filterButtons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const role = btn.dataset.roleFilter;
-            activeRole = activeRole === role ? '' : role;
+                filterButtons.forEach((b) => {
+                    const isActive = b.dataset.roleFilter === activeRole;
+                    b.classList.toggle('bg-indigo-600', isActive);
+                    b.classList.toggle('text-white', isActive);
+                    b.classList.toggle('bg-gray-100', !isActive);
+                    b.classList.toggle('text-gray-700', !isActive);
+                });
 
-            filterButtons.forEach((b) => {
-                const isActive = b.dataset.roleFilter === activeRole;
-                b.classList.toggle('bg-indigo-600', isActive);
-                b.classList.toggle('text-white', isActive);
-                b.classList.toggle('bg-gray-100', !isActive);
-                b.classList.toggle('text-gray-700', !isActive);
+                calendar.refetchEvents();
             });
-
-            calendar.refetchEvents();
         });
-    });
-
-    const tabObserver = new MutationObserver(() => {
-        if (el.offsetParent !== null) {
-            calendar.updateSize();
-        }
-    });
-    tabObserver.observe(el.closest('[x-data]') || document.body, {
-        attributes: true,
-        subtree: true,
-    });
+    }
 }
 
 if (document.readyState === 'loading') {

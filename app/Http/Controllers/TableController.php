@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Room;
 use App\Models\Shift;
 use App\Models\Table;
 use App\Models\User;
 use App\Enums\UserRole;
 use App\Events\TableStatusUpdated;
+use App\Http\Requests\AssignTableRequest;
+use App\Http\Requests\ReorderTablesRequest;
 use App\Http\Requests\StoreTableRequest;
 use App\Http\Requests\UpdateTableRequest;
 use App\Services\TableService;
@@ -26,10 +29,13 @@ class TableController extends Controller
         $user = $request->user();
         $isManager = $user->role === UserRole::Manager;
 
-        $tables = Table::with('activeAssignment.user')
+        $tables = Table::with(['activeAssignment.user', 'room'])
             ->forWaiter($user)
+            ->orderBy('sort_order')
             ->orderBy('table_number')
             ->get();
+
+        $rooms = Room::orderBy('sort_order')->get();
 
         $activeShifts = $isManager
             ? $this->tableService->getActiveWaiterShifts()
@@ -37,6 +43,7 @@ class TableController extends Controller
 
         return view('tables.index', [
             'tables' => $tables,
+            'rooms' => $rooms,
             'activeShifts' => $activeShifts,
             'currentUser' => $user,
             'isManager' => $isManager,
@@ -50,15 +57,9 @@ class TableController extends Controller
         return response()->json($this->tableService->getFloorData());
     }
 
-    public function assign(Request $request, Table $table)
+    public function assign(AssignTableRequest $request, Table $table)
     {
-        $this->authorize('update', $table);
-
-        $validated = $request->validate([
-            'shift_id' => ['required', 'exists:shifts,id'],
-            'user_id' => ['nullable', 'exists:users,id'],
-        ]);
-
+        $validated = $request->validated();
         $shift = Shift::findOrFail($validated['shift_id']);
 
         if (!empty($validated['user_id'])) {
@@ -74,10 +75,17 @@ class TableController extends Controller
         return redirect()->route('tables.index')->with('success', __('Table assignment updated.'));
     }
 
+    public function reorder(ReorderTablesRequest $request): JsonResponse
+    {
+        $this->tableService->reorderRoomsAndTables($request->validated());
+        return response()->json(['success' => true]);
+    }
+
     public function create()
     {
         $this->authorize('create', Table::class);
-        return view('tables.create');
+        $rooms = Room::orderBy('sort_order')->get();
+        return view('tables.create', compact('rooms'));
     }
 
     public function store(StoreTableRequest $request)
@@ -91,7 +99,8 @@ class TableController extends Controller
     public function edit(Table $table)
     {
         $this->authorize('update', $table);
-        return view('tables.edit', compact('table'));
+        $rooms = Room::orderBy('sort_order')->get();
+        return view('tables.edit', compact('table', 'rooms'));
     }
 
     public function update(UpdateTableRequest $request, Table $table)

@@ -1,23 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Invoices & Bills') }}
-            </h2>
-            <a href="{{ route('invoices.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
-                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
-                {{ __('New Invoice') }}
-            </a>
-        </div>
+        <x-page-header :title="__('Invoices & Bills')" :actionUrl="route('invoices.create')" :actionLabel="__('New Invoice')" />
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if (session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm sm:rounded-r-lg" role="alert">
-                    <p>{{ session('success') }}</p>
-                </div>
-            @endif
+            <x-flash-message type="success" />
+            <x-flash-message type="error" />
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="overflow-x-auto">

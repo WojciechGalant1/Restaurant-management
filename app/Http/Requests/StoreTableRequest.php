@@ -19,6 +19,7 @@ class StoreTableRequest extends FormRequest
             'table_number' => 'required|integer|unique:tables,table_number',
             'capacity' => 'required|integer|min:1',
             'status' => ['required', Rule::enum(TableStatus::class)],
+            'room_id' => 'nullable|exists:rooms,id',
         ];
     }
 }
