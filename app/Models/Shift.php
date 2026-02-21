@@ -6,6 +6,7 @@ use App\Enums\ShiftType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 /**
  * Represents a scheduled work shift.
@@ -40,23 +41,21 @@ class Shift extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Whether this shift's end_time is before its start_time,
-     * meaning it crosses midnight into the next calendar day.
-     */
+    public function tableAssignments()
+    {
+        return $this->hasMany(TableAssignment::class);
+    }
+
     public function crossesMidnight(): bool
     {
         return $this->end_time < $this->start_time;
     }
 
-    /**
-     * Duration of the shift in hours (fractional).
-     */
     public function durationInHours(): float
     {
         $date = $this->date->format('Y-m-d');
-        $start = \Carbon\Carbon::parse($date . ' ' . $this->start_time);
-        $end = \Carbon\Carbon::parse($date . ' ' . $this->end_time);
+        $start = Carbon::parse($date . ' ' . $this->start_time);
+        $end = Carbon::parse($date . ' ' . $this->end_time);
         if ($end <= $start) {
             $end->addDay();
         }
@@ -125,7 +124,7 @@ class Shift extends Model
      */
     public function scopeActiveAt(Builder $query, string $date, string $time): Builder
     {
-        $previousDay = \Carbon\Carbon::parse($date)->subDay()->toDateString();
+        $previousDay = Carbon::parse($date)->subDay()->toDateString();
 
         return $query->where(function (Builder $q) use ($date, $previousDay, $time) {
             $q->where(function (Builder $q) use ($date, $time) {

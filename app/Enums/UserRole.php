@@ -35,4 +35,43 @@ enum UserRole: string
             default => [],
         };
     }
+
+    /**
+     * Which dashboard sections to show for this role.
+     */
+    public function dashboardSections(): array
+    {
+        return match ($this) {
+            self::Manager => [
+                'kpis' => true,
+                'charts' => true,
+                'kitchen' => true,
+                'staff' => true,
+                'alerts' => true,
+                'top_performers' => true,
+                'live_feed' => true,
+                'quick_actions' => true,
+            ],
+            self::Chef, self::Bartender => [
+                'kpis' => true,
+                'charts' => false,
+                'kitchen' => true,
+                'staff' => false,
+                'alerts' => false,
+                'top_performers' => false,
+                'live_feed' => true,
+                'quick_actions' => true,
+            ],
+            self::Waiter => [
+                'kpis' => true,
+                'charts' => false,
+                'kitchen' => false,
+                'staff' => false,
+                'alerts' => false,
+                'top_performers' => false,
+                'live_feed' => true,
+                'quick_actions' => true,
+            ],
+        };
+    }
 }

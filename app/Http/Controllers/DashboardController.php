@@ -29,8 +29,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $role = $user->role ?? UserRole::Waiter;
-
-        $sections = $this->sectionsForRole($role);
+        $sections = $role->dashboardSections();
         $data = ['sections' => $sections];
 
         if ($sections['kpis']) {
@@ -60,57 +59,10 @@ class DashboardController extends Controller
             $data['mostUsedPaymentMethod'] = $this->dashboard->mostUsedPaymentMethodToday();
         }
 
-        // Prevent browser caching of dashboard HTML (data changes frequently)
         return response()
             ->view('dashboard.index', $data)
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
-    }
-
-    private function sectionsForRole(UserRole $role): array
-    {
-        return match ($role) {
-            UserRole::Manager => [
-                'kpis' => true,
-                'charts' => true,
-                'kitchen' => true,
-                'staff' => true,
-                'alerts' => true,
-                'top_performers' => true,
-                'live_feed' => true,
-                'quick_actions' => true,
-            ],
-            UserRole::Chef => [
-                'kpis' => true,
-                'charts' => false,
-                'kitchen' => true,
-                'staff' => false,
-                'alerts' => false,
-                'top_performers' => false,
-                'live_feed' => true,
-                'quick_actions' => true,
-            ],
-            UserRole::Bartender => [
-                'kpis' => true,
-                'charts' => false,
-                'kitchen' => true,
-                'staff' => false,
-                'alerts' => false,
-                'top_performers' => false,
-                'live_feed' => true,
-                'quick_actions' => true,
-            ],
-            UserRole::Waiter => [
-                'kpis' => true,
-                'charts' => false,
-                'kitchen' => false,
-                'staff' => false,
-                'alerts' => false,
-                'top_performers' => false,
-                'live_feed' => true,
-                'quick_actions' => true,
-            ],
-        };
     }
 }

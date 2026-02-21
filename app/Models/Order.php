@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use App\Models\User;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,8 +12,17 @@ class Order extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'table_id',
+        'user_id',
+        'status',
+        'total_price',
+        'ordered_at',
+        'paid_at',
+    ];
+
     protected $casts = [
-        'status' => \App\Enums\OrderStatus::class,
+        'status' => OrderStatus::class,
         'ordered_at' => 'datetime',
         'paid_at' => 'datetime',
     ];

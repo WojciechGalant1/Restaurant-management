@@ -6,39 +6,72 @@ use App\Models\Shift;
 use App\Models\Table;
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Events\TableStatusUpdated;
 use App\Http\Requests\StoreTableRequest;
 use App\Http\Requests\UpdateTableRequest;
+use App\Services\TableService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class TableController extends Controller
 {
+    public function __construct(
+        private TableService $tableService
+    ) {}
+
     public function index(Request $request)
     {
         $this->authorize('viewAny', Table::class);
 
         $user = $request->user();
+        $isManager = $user->role === UserRole::Manager;
 
-        $tables = Table::with('waiter')
+        $tables = Table::with('activeAssignment.user')
             ->forWaiter($user)
             ->orderBy('table_number')
             ->get();
 
-        $waiters = [];
-        if ($user->role === UserRole::Manager) {
-            $activeWaiterIds = Shift::activeNow()->pluck('user_id');
-            $waiters = User::where('role', UserRole::Waiter)
-                ->whereIn('id', $activeWaiterIds)
-                ->orderBy('first_name')
-                ->orderBy('last_name')
-                ->get();
-        }
+        $activeShifts = $isManager
+            ? $this->tableService->getActiveWaiterShifts()
+            : collect();
 
         return view('tables.index', [
             'tables' => $tables,
-            'waiters' => $waiters,
+            'activeShifts' => $activeShifts,
             'currentUser' => $user,
+            'isManager' => $isManager,
         ]);
+    }
+
+    public function floorData(): JsonResponse
+    {
+        $this->authorize('viewAny', Table::class);
+
+        return response()->json($this->tableService->getFloorData());
+    }
+
+    public function assign(Request $request, Table $table)
+    {
+        $this->authorize('update', $table);
+
+        $validated = $request->validate([
+            'shift_id' => ['required', 'exists:shifts,id'],
+            'user_id' => ['nullable', 'exists:users,id'],
+        ]);
+
+        $shift = Shift::findOrFail($validated['shift_id']);
+
+        if (!empty($validated['user_id'])) {
+            $waiter = User::findOrFail($validated['user_id']);
+            $this->tableService->assignTableToShift($table, $waiter, $shift);
+        } else {
+            $this->tableService->unassignTableFromShift($table, $shift);
+        }
+
+        $table->refresh();
+        event(new TableStatusUpdated($table));
+
+        return redirect()->route('tables.index')->with('success', __('Table assignment updated.'));
     }
 
     public function create()
@@ -66,20 +99,14 @@ class TableController extends Controller
         $this->authorize('update', $table);
         $validated = $request->validated();
 
-        if (array_key_exists('waiter_id', $validated)) {
-            if ($validated['waiter_id']) {
-                $waiter = User::find($validated['waiter_id']);
-                if ($waiter) {
-                    $table->assignTo($waiter);
-                }
-            } else {
-                $table->markAsAvailable();
-            }
-            unset($validated['waiter_id']);
-        }
+        $hadStatusChange = isset($validated['status']);
 
         if (!empty($validated)) {
             $table->update($validated);
+        }
+
+        if ($hadStatusChange) {
+            event(new TableStatusUpdated($table));
         }
 
         return redirect()->route('tables.index')->with('success', 'Table updated successfully.');
