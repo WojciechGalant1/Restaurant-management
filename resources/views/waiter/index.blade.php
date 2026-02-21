@@ -168,7 +168,7 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('Ready to Serve') }}</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <template x-for="item in items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}')" :key="item.id">
-                        <div class="bg-green-50 border-l-4 border-green-500 rounded-lg shadow-sm p-4">
+                        <div class="bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm p-4">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="font-bold text-gray-900" x-text="`Table ${item.table_number}`"></span>
                                 <span class="text-xs text-gray-500" x-text="item.updated_at_human"></span>

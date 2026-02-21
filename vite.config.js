@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/dashboard-chart.js',
                 'resources/js/shifts-calendar.js',
+                'resources/js/reservations-calendar.js',
             ],
             refresh: true,
         }),

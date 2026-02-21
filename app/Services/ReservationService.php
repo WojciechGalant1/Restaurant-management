@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Reservation;
-use App\Models\Order;
+use App\Enums\OrderStatus;
 use App\Enums\ReservationStatus;
 use App\Events\ReservationCreated;
 use App\Events\ReservationUpdated;
+use App\Models\Order;
+use App\Models\Reservation;
+use App\Models\Table;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -18,6 +20,11 @@ class ReservationService
         $data['status'] = ReservationStatus::Pending;
 
         $reservation = Reservation::create($data);
+
+        if ($reservation->table) {
+            $reservation->table->markAsReserved();
+        }
+
         event(new ReservationCreated($reservation));
 
         return $reservation;
@@ -36,7 +43,40 @@ class ReservationService
         }
 
         $reservation->update(['status' => $newStatus]);
+        $this->syncTableStatusAfterReservation($reservation, $newStatus);
         event(new ReservationUpdated($reservation));
+    }
+
+    private function syncTableStatusAfterReservation(Reservation $reservation, ReservationStatus $newStatus): void
+    {
+        $table = $reservation->table;
+        if (!$table) {
+            return;
+        }
+
+        match ($newStatus) {
+            ReservationStatus::Confirmed => $table->markAsReserved(),
+            ReservationStatus::Seated => $table->markAsOccupied(),
+            ReservationStatus::Completed,
+            ReservationStatus::Cancelled,
+            ReservationStatus::NoShow => $this->releaseTableIfFree($table),
+            default => null,
+        };
+    }
+
+    private function releaseTableIfFree(Table $table): void
+    {
+        $hasOpenOrders = Order::where('table_id', $table->id)
+            ->where('status', OrderStatus::Open)
+            ->exists();
+
+        $hasActiveReservations = Reservation::where('table_id', $table->id)
+            ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::Seated])
+            ->exists();
+
+        if (!$hasOpenOrders && !$hasActiveReservations) {
+            $table->markAsAvailable();
+        }
     }
 
     public function autoCompleteForTable(int $tableId, string $date): void

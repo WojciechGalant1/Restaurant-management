@@ -12,70 +12,106 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="{ tab: 'calendar' }">
             @if (session('success'))
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm sm:rounded-r-lg" role="alert">
                     <p>{{ session('success') }}</p>
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Table</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guests</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($reservations as $reservation)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div class="font-bold">{{ $reservation->reservation_date }}</div>
-                                        <div class="text-gray-500">{{ $reservation->reservation_time }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div class="font-bold">{{ $reservation->customer_name }}</div>
-                                        <div class="text-gray-500">{{ $reservation->phone_number }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        #{{ $reservation->table->table_number ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $reservation->party_size }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
-                                        <a href="{{ route('reservations.edit', $reservation) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition">
-                                            <x-heroicon-o-pencil class="w-5 h-5" />
-                                        </a>
-                                        <form action="{{ route('reservations.destroy', $reservation) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this reservation?') }}')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded transition">
-                                                <x-heroicon-o-trash class="w-5 h-5" />
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
-                                        {{ __('No reservations found.') }}
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+            {{-- Tab navigation --}}
+            <div class="mb-4 border-b border-gray-200">
+                <nav class="flex space-x-4" aria-label="Tabs">
+                    <button @click="tab = 'calendar'"
+                        :class="tab === 'calendar' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm flex items-center transition">
+                        <x-heroicon-o-calendar-days class="w-4 h-4 mr-2" />
+                        {{ __('Calendar View') }}
+                    </button>
+                    <button @click="tab = 'table'"
+                        :class="tab === 'table' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm flex items-center transition">
+                        <x-heroicon-o-table-cells class="w-4 h-4 mr-2" />
+                        {{ __('Table View') }}
+                    </button>
+                </nav>
+            </div>
 
-                <div class="mt-4">
-                    {{ $reservations->links() }}
+            {{-- Calendar view --}}
+            <div x-show="tab === 'calendar'" x-cloak>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="flex flex-wrap gap-4 mb-4 text-sm">
+                        <span class="text-gray-400 text-xs">{{ __('Click an event to edit · Click a date to create') }}</span>
+                    </div>
+                    <div id="reservations-calendar"
+                         data-events-url="{{ route('reservations.calendar-events') }}"
+                         data-create-url="{{ route('reservations.create') }}">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Table view --}}
+            <div x-show="tab === 'table'" x-cloak>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Table</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guests</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse ($reservations as $reservation)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <div class="font-bold">{{ $reservation->reservation_date }}</div>
+                                            <div class="text-gray-500">{{ $reservation->reservation_time }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <div class="font-bold">{{ $reservation->customer_name }}</div>
+                                            <div class="text-gray-500">{{ $reservation->phone_number }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            #{{ $reservation->table->table_number ?? 'N/A' }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $reservation->party_size }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
+                                            <a href="{{ route('reservations.edit', $reservation) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1 rounded transition">
+                                                <x-heroicon-o-pencil class="w-5 h-5" />
+                                            </a>
+                                            <form action="{{ route('reservations.destroy', $reservation) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this reservation?') }}')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-1 rounded transition">
+                                                    <x-heroicon-o-trash class="w-5 h-5" />
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
+                                            {{ __('No reservations found.') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        {{ $reservations->links() }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @vite('resources/js/reservations-calendar.js')
 </x-app-layout>

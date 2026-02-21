@@ -29,6 +29,26 @@ class ReservationPolicy
         return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
     }
 
+    /**
+     * Whether the user can update this reservation in the waiter context (e.g. mark seated, no-show).
+     * Manager: always. Waiter: only if the reservation's table is assigned to them via an active shift.
+     */
+    public function updateAsWaiter(User $user, Reservation $reservation): bool
+    {
+        if ($user->role === UserRole::Manager) {
+            return true;
+        }
+        if ($user->role !== UserRole::Waiter) {
+            return false;
+        }
+        $reservation->loadMissing('table');
+        if (!$reservation->table) {
+            return false;
+        }
+        $currentWaiter = $reservation->table->currentWaiter;
+        return $currentWaiter && $currentWaiter->id === $user->id;
+    }
+
     public function delete(User $user, Reservation $reservation): bool
     {
         return $user->role === UserRole::Manager;
