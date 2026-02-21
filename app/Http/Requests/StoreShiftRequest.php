@@ -13,9 +13,6 @@ class StoreShiftRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Auto-fill start_time/end_time from ShiftType defaults if not provided.
-     */
     protected function prepareForValidation(): void
     {
         $shiftType = ShiftType::tryFrom($this->input('shift_type'));
@@ -26,20 +23,26 @@ class StoreShiftRequest extends FormRequest
         if ($shiftType && !$this->filled('end_time')) {
             $this->merge(['end_time' => $shiftType->endTime()]);
         }
+
+        if ($this->has('user_id') && !$this->has('user_ids')) {
+            $this->merge(['user_ids' => [$this->input('user_id')]]);
+        }
+        if (is_string($this->input('user_ids'))) {
+            $this->merge(['user_ids' => array_filter(explode(',', $this->input('user_ids')))]);
+        }
     }
 
     public function rules(): array
     {
         return [
-            'user_id' => 'required|exists:users,id',
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => 'required|exists:users,id',
             'date' => 'required|date',
+            'replicate_days' => 'nullable|array',
+            'replicate_days.*' => 'integer|min:1|max:7',
             'shift_type' => [
                 'required',
                 Rule::enum(ShiftType::class),
-                Rule::unique('shifts')->where(fn ($query) => $query
-                    ->where('user_id', $this->input('user_id'))
-                    ->where('date', $this->input('date'))
-                ),
             ],
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i',
@@ -50,7 +53,7 @@ class StoreShiftRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'shift_type.unique' => 'This user already has this shift type scheduled for the selected date.',
+            'user_ids.required' => __('Select at least one staff member.'),
         ];
     }
 }

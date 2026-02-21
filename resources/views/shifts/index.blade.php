@@ -105,6 +105,23 @@
             {{-- Calendar view --}}
             <div x-show="tab === 'calendar'" x-cloak>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    {{-- Role filter --}}
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                        <span class="text-sm font-medium text-gray-500 mr-1">{{ __('Filter:') }}</span>
+                        <button data-role-filter="waiter" class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                            {{ __('Waiters') }}
+                        </button>
+                        <button data-role-filter="chef" class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                            {{ __('Chefs') }}
+                        </button>
+                        <button data-role-filter="bartender" class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                            {{ __('Bartenders') }}
+                        </button>
+                        <button data-role-filter="manager" class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                            {{ __('Managers') }}
+                        </button>
+                    </div>
+
                     {{-- Legend --}}
                     <div class="flex flex-wrap gap-4 mb-4 text-sm">
                         <span class="flex items-center">

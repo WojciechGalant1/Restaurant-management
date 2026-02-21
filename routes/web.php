@@ -38,8 +38,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('reservations', ReservationController::class);
     Route::resource('dishes', DishController::class);
     Route::resource('menu-items', MenuItemController::class);
-    Route::resource('shifts', ShiftController::class);
     Route::get('shifts-calendar-events', [ShiftController::class, 'calendarEvents'])->name('shifts.calendar-events');
+    Route::get('shifts/availability', [ShiftController::class, 'availability'])->name('shifts.availability');
+    Route::get('shifts/coverage', [ShiftController::class, 'coverage'])->name('shifts.coverage');
+    Route::resource('shifts', ShiftController::class);
     Route::resource('users', UserController::class);
     Route::resource('invoices', InvoiceController::class);
 

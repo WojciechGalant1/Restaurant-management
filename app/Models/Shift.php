@@ -50,6 +50,20 @@ class Shift extends Model
     }
 
     /**
+     * Duration of the shift in hours (fractional).
+     */
+    public function durationInHours(): float
+    {
+        $date = $this->date->format('Y-m-d');
+        $start = \Carbon\Carbon::parse($date . ' ' . $this->start_time);
+        $end = \Carbon\Carbon::parse($date . ' ' . $this->end_time);
+        if ($end <= $start) {
+            $end->addDay();
+        }
+        return round($start->diffInMinutes($end) / 60, 2);
+    }
+
+    /**
      * Whether this shift is currently active.
      */
     public function isActive(): bool

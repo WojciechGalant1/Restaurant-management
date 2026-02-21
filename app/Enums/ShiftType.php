@@ -17,6 +17,15 @@ enum ShiftType: string
         };
     }
 
+    public function color(): array
+    {
+        return match($this) {
+            self::Morning => ['bg' => '#f59e0b', 'border' => '#d97706', 'text' => '#78350f'],
+            self::Evening => ['bg' => '#6366f1', 'border' => '#4f46e5', 'text' => '#ffffff'],
+            self::FullDay => ['bg' => '#10b981', 'border' => '#059669', 'text' => '#ffffff'],
+        };
+    }
+
     public function hours(): array
     {
         return match($this) {
