@@ -40,6 +40,9 @@ class KitchenController extends Controller
 
         event(new \App\Events\OrderItemStatusUpdated($orderItem));
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
         return back()->with('success', 'Item status updated.');
     }
 }

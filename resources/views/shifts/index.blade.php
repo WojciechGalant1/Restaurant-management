@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-page-header :title="$isManager ?? false ? __('Staff Shifts') : __('My Shifts')">
+        <x-page-header :title="($seesAllShifts ?? $isManager ?? false) ? __('Staff Shifts') : __('My Shifts')">
             @can('create', App\Models\Shift::class)
                 <x-slot name="action">
                     <a href="{{ route('shifts.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition flex items-center">
@@ -58,13 +58,13 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    @if ($isManager ?? false)
+                                    @if ($seesAllShifts ?? false)
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Member</th>
                                     @endif
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift Type</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
                                     @if ($isManager ?? false)
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
                                     @endif
                                 </tr>
                             </thead>
@@ -74,7 +74,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                                             {{ $shift->date->format('Y-m-d') }}
                                         </td>
-                                        @if ($isManager ?? false)
+                                        @if ($seesAllShifts ?? false)
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ $shift->user->first_name ?? 'Unknown' }} {{ $shift->user->last_name ?? '' }}
                                             <div class="text-xs text-gray-500">{{ ucfirst($shift->user->role->value ?? 'N/A') }}</div>

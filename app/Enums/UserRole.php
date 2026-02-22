@@ -8,6 +8,7 @@ enum UserRole: string
     case Chef = 'chef';
     case Waiter = 'waiter';
     case Bartender = 'bartender';
+    case Host = 'host';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum UserRole: string
             self::Chef => 'Chef',
             self::Waiter => 'Waiter',
             self::Bartender => 'Bartender',
+            self::Host => 'Host',
         };
     }
 
@@ -62,7 +64,7 @@ enum UserRole: string
                 'live_feed' => true,
                 'quick_actions' => true,
             ],
-            self::Waiter => [
+            self::Waiter, self::Host => [
                 'kpis' => true,
                 'charts' => false,
                 'kitchen' => false,

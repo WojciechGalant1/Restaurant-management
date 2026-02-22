@@ -12,6 +12,7 @@ use App\Http\Requests\AssignTableRequest;
 use App\Http\Requests\ReorderTablesRequest;
 use App\Http\Requests\StoreTableRequest;
 use App\Http\Requests\UpdateTableRequest;
+use App\Http\Requests\UpdateTableStatusRequest;
 use App\Services\TableService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ class TableController extends Controller
 
         $user = $request->user();
         $isManager = $user->role === UserRole::Manager;
+        $isHost = $user->role === UserRole::Host;
 
         $tables = Table::with(['activeAssignment.user', 'room'])
             ->forWaiter($user)
@@ -47,6 +49,7 @@ class TableController extends Controller
             'activeShifts' => $activeShifts,
             'currentUser' => $user,
             'isManager' => $isManager,
+            'isHost' => $isHost,
         ]);
     }
 
@@ -55,6 +58,17 @@ class TableController extends Controller
         $this->authorize('viewAny', Table::class);
 
         return response()->json($this->tableService->getFloorData());
+    }
+
+    public function updateStatus(UpdateTableStatusRequest $request, Table $table): JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        $table->update(['status' => $request->validated()['status']]);
+        event(new TableStatusUpdated($table));
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+        return redirect()->route('tables.index')->with('success', __('Table status updated.'));
     }
 
     public function assign(AssignTableRequest $request, Table $table)

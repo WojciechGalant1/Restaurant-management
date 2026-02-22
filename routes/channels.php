@@ -23,9 +23,9 @@ Broadcast::channel('kitchen', function ($user) {
 });
 
 Broadcast::channel('dashboard', function ($user) {
-    return in_array($user->role, [UserRole::Manager, UserRole::Chef, UserRole::Waiter]);
+    return in_array($user->role, [UserRole::Manager, UserRole::Chef, UserRole::Waiter, UserRole::Host]);
 });
 
 Broadcast::channel('tables', function ($user) {
-    return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
+    return in_array($user->role, [UserRole::Manager, UserRole::Waiter, UserRole::Host]);
 });

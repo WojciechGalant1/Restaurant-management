@@ -13,6 +13,7 @@ class ShiftPolicy
     {
         return in_array($user->role, [
             UserRole::Manager,
+            UserRole::Host,
             UserRole::Waiter,
             UserRole::Chef,
             UserRole::Bartender,
@@ -21,7 +22,7 @@ class ShiftPolicy
 
     public function view(User $user, Shift $shift): bool
     {
-        return $user->role === UserRole::Manager || $user->id === $shift->user_id;
+        return in_array($user->role, [UserRole::Manager, UserRole::Host]) || $user->id === $shift->user_id;
     }
 
     public function create(User $user): bool

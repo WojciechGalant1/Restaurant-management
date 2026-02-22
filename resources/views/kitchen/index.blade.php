@@ -43,10 +43,8 @@
                                 <template x-if="item.notes">
                                     <div class="bg-yellow-50 p-2 rounded text-sm text-yellow-800 mb-4 italic" x-text="`&quot;${item.notes}&quot;`"></div>
                                 </template>
-                                <form :action="item.update_url" method="POST">
+                                <form @submit.prevent="updateStatus(item, '{{ \App\Enums\OrderItemStatus::Preparing->value }}')">
                                     @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="status" value="{{ \App\Enums\OrderItemStatus::Preparing->value }}">
                                     <button type="submit" class="w-full bg-orange-500 text-white py-2 rounded-md hover:bg-orange-600 transition font-bold">
                                         {{ __('Start In Preparation') }}
                                     </button>
@@ -73,10 +71,8 @@
                                     <span class="text-xs text-gray-500" x-text="item.updated_at_human"></span>
                                 </div>
                                 <div class="text-lg font-bold text-gray-900 mb-2" x-text="`${item.quantity}x ${item.name}`"></div>
-                                <form :action="item.update_url" method="POST">
+                                <form @submit.prevent="updateStatus(item, '{{ \App\Enums\OrderItemStatus::Ready->value }}')">
                                     @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="status" value="{{ \App\Enums\OrderItemStatus::Ready->value }}">
                                     <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition font-bold">
                                         {{ __('Mark as Ready') }}
                                     </button>
@@ -106,10 +102,8 @@
                                 <div class="text-center font-bold text-green-700">
                                     {{ __('Wait for Staff pickup') }}
                                 </div>
-                                <form :action="item.update_url" method="POST" class="mt-2">
+                                <form @submit.prevent="updateStatus(item, '{{ \App\Enums\OrderItemStatus::Preparing->value }}')" class="mt-2">
                                     @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="status" value="{{ \App\Enums\OrderItemStatus::Preparing->value }}">
                                     <button type="submit" class="w-full bg-gray-200 text-gray-700 py-1 rounded-md hover:bg-gray-300 transition text-xs">
                                         {{ __('Move back to In Preparation') }}
                                     </button>
@@ -136,8 +130,30 @@
                 items: initialItems,
 
                 init() {
-                    // Wait for Echo to be available
                     this.setupEcho();
+                },
+
+                async updateStatus(item, newStatus) {
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                    if (!csrf) return;
+                    try {
+                        const res = await fetch(item.update_url, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                            },
+                            body: JSON.stringify({ status: newStatus }),
+                        });
+                        if (!res.ok) throw new Error('Request failed');
+                        const idx = this.items.findIndex(i => i.id === item.id);
+                        if (idx !== -1) {
+                            this.items[idx] = { ...this.items[idx], status: newStatus, updated_at_human: '{{ __("just now") }}' };
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
                 },
 
                 setupEcho() {

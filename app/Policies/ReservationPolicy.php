@@ -21,21 +21,21 @@ class ReservationPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
+        return in_array($user->role, [UserRole::Manager, UserRole::Waiter, UserRole::Host]);
     }
 
     public function update(User $user, Reservation $reservation): bool
     {
-        return in_array($user->role, [UserRole::Manager, UserRole::Waiter]);
+        return in_array($user->role, [UserRole::Manager, UserRole::Waiter, UserRole::Host]);
     }
 
     /**
      * Whether the user can update this reservation in the waiter context (e.g. mark seated, no-show).
-     * Manager: always. Waiter: only if the reservation's table is assigned to them via an active shift.
+     * Manager, Host: always. Waiter: only if the reservation's table is assigned to them via an active shift.
      */
     public function updateAsWaiter(User $user, Reservation $reservation): bool
     {
-        if ($user->role === UserRole::Manager) {
+        if (in_array($user->role, [UserRole::Manager, UserRole::Host])) {
             return true;
         }
         if ($user->role !== UserRole::Waiter) {
@@ -51,7 +51,7 @@ class ReservationPolicy
 
     public function delete(User $user, Reservation $reservation): bool
     {
-        return $user->role === UserRole::Manager;
+        return in_array($user->role, [UserRole::Manager, UserRole::Host]);
     }
 
     /**

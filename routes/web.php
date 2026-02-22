@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('orders', OrderController::class);
     Route::resource('tables', TableController::class);
     Route::post('tables/{table}/assign', [TableController::class, 'assign'])->name('tables.assign');
+    Route::patch('tables/{table}/status', [TableController::class, 'updateStatus'])->name('tables.update-status');
     Route::resource('rooms', RoomController::class);
     Route::resource('reservations', ReservationController::class);
     Route::resource('dishes', DishController::class);

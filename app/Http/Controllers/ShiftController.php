@@ -29,6 +29,7 @@ class ShiftController extends Controller
 
         $user = $request->user();
         $isManager = $user->role === UserRole::Manager;
+        $seesAllShifts = in_array($user->role, [UserRole::Manager, UserRole::Host]);
 
         $roleFilter = null;
         if ($isManager) {
@@ -51,7 +52,7 @@ class ShiftController extends Controller
         }
         $shifts = $query->paginate(20)->withQueryString();
 
-        return view('shifts.index', compact('shifts', 'roleFilter', 'isManager'));
+        return view('shifts.index', compact('shifts', 'roleFilter', 'isManager', 'seesAllShifts'));
     }
 
     public function create()
@@ -174,16 +175,17 @@ class ShiftController extends Controller
 
         $user = $request->user();
         $isManager = $user->role === UserRole::Manager;
+        $seesAllShifts = in_array($user->role, [UserRole::Manager, UserRole::Host]);
 
         [$viewStart, $viewEnd] = $this->calendarRangeService->fromRequest($request);
         $role = $isManager ? $request->input('role') : null;
-        $userId = $isManager ? null : $user->id;
+        $userId = $seesAllShifts ? null : $user->id;
 
         if ($viewStart && $viewEnd) {
             $shifts = $this->calendarService->getShiftsInRange($viewStart, $viewEnd, $role, $userId);
         } else {
             $query = Shift::with('user');
-            if (!$isManager) {
+            if (!$seesAllShifts) {
                 $query->where('user_id', $user->id);
             }
             $shifts = $query->get();

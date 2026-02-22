@@ -5,9 +5,14 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Tables Management') }}
                 </h2>
-                @if(!($isManager ?? false))
+                @if(!($isManager ?? false) && !($isHost ?? false))
                     <p class="text-sm text-gray-500 mt-1">
                         {{ __('You are viewing tables assigned to you.') }}
+                    </p>
+                @endif
+                @if($isHost ?? false)
+                    <p class="text-sm text-gray-500 mt-1">
+                        {{ __('Floor plan and guest seating.') }}
                     </p>
                 @endif
             </div>
@@ -270,6 +275,28 @@
                                     <p class="text-sm font-semibold mt-0.5" :class="modalTable.waiter_name ? 'text-indigo-700' : 'text-gray-400'" x-text="modalTable.waiter_name || '{{ __('Unassigned') }}'"></p>
                                 </div>
 
+                                @if(($isHost ?? false))
+                                <div class="space-y-3">
+                                    <label class="text-xs font-medium text-gray-500 uppercase tracking-wider block">{{ __('Change status') }}</label>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button type="button" @click="updateTableStatus(modalTable, 'available')"
+                                                :disabled="modalTable.status === 'available'"
+                                                class="px-3 py-2 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-100 text-emerald-800 hover:bg-emerald-200">
+                                            {{ __('Available') }}
+                                        </button>
+                                        <button type="button" @click="updateTableStatus(modalTable, 'occupied')"
+                                                :disabled="modalTable.status === 'occupied'"
+                                                class="px-3 py-2 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-red-100 text-red-800 hover:bg-red-200">
+                                            {{ __('Occupied') }}
+                                        </button>
+                                        <button type="button" @click="updateTableStatus(modalTable, 'reserved')"
+                                                :disabled="modalTable.status === 'reserved'"
+                                                class="px-3 py-2 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-amber-100 text-amber-800 hover:bg-amber-200">
+                                            {{ __('Reserved') }}
+                                        </button>
+                                    </div>
+                                </div>
+                                @endif
                                 @if($isManager ?? false)
                                 <form :action="`{{ url('tables') }}/${modalTable.id}/assign`" method="POST" class="space-y-3">
                                     @csrf
@@ -401,12 +428,15 @@
             };
 
             const isManager = @js($isManager ?? false);
+            const isHost = @js($isHost ?? false);
             const reorderUrl = @js(route('tables.reorder'));
+            const updateStatusUrl = @js(route('tables.update-status', ['table' => ':id']));
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
             return {
                 tab: 'grid',
                 isManager,
+                isHost,
                 modalOpen: false,
                 modalTable: null,
                 selectedShiftId: '',
@@ -442,6 +472,34 @@
 
                 closeModal() {
                     this.modalOpen = false;
+                },
+
+                async updateTableStatus(table, newStatus) {
+                    if (!csrfToken) return;
+                    try {
+                        const url = updateStatusUrl.replace(':id', table.id);
+                        const res = await fetch(url, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                            },
+                            body: JSON.stringify({ status: newStatus }),
+                        });
+                        if (!res.ok) throw new Error('Request failed');
+                        const statusLabels = { available: '{{ __("Available") }}', occupied: '{{ __("Occupied") }}', reserved: '{{ __("Reserved") }}' };
+                        const newLabel = statusLabels[newStatus] || newStatus;
+                        const idx = this.allTables.findIndex(t => t.id === table.id);
+                        if (idx !== -1) {
+                            this.allTables[idx] = { ...this.allTables[idx], status: newStatus, status_label: newLabel };
+                        }
+                        if (this.modalTable && this.modalTable.id === table.id) {
+                            this.modalTable = { ...this.modalTable, status: newStatus, status_label: newLabel };
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
                 },
 
                 editRoom(room) {

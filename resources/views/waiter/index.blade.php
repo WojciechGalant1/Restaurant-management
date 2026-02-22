@@ -175,9 +175,8 @@
                             </div>
                             <p class="text-lg font-bold text-gray-900 mb-1" x-text="`${item.quantity}x ${item.name}`"></p>
                             <p class="text-sm text-gray-600 mb-3" x-text="`${item.total_price} PLN`"></p>
-                            <form :action="item.mark_served_url" method="POST">
+                            <form @submit.prevent="markServed(item)">
                                 @csrf
-                                @method('PATCH')
                                 <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
                                     {{ __('Mark as Delivered') }}
                                 </button>
@@ -262,6 +261,27 @@
 
                 init() {
                     this.setupEcho();
+                },
+
+                async markServed(item) {
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                    if (!csrf) return;
+                    try {
+                        const res = await fetch(item.mark_served_url, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                            },
+                            body: JSON.stringify({}),
+                        });
+                        if (!res.ok) throw new Error('Request failed');
+                        const idx = this.items.findIndex(i => i.id === item.id);
+                        if (idx !== -1) this.items.splice(idx, 1);
+                    } catch (e) {
+                        console.error(e);
+                    }
                 },
 
                 setupEcho() {

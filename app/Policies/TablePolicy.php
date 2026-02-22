@@ -11,7 +11,7 @@ class TablePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->role === UserRole::Manager;
+        return in_array($user->role, [UserRole::Manager, UserRole::Host]);
     }
 
     public function view(User $user, Table $table): bool
@@ -32,6 +32,14 @@ class TablePolicy
     public function delete(User $user, Table $table): bool
     {
         return $user->role === UserRole::Manager;
+    }
+
+    /**
+     * Whether the user can change table status only (e.g. Host seating guests).
+     */
+    public function updateStatus(User $user, Table $table): bool
+    {
+        return in_array($user->role, [UserRole::Manager, UserRole::Host]);
     }
 
     /**

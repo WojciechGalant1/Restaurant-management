@@ -34,13 +34,13 @@
         </div>
 
         {{-- Service --}}
-        @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter]))
+        @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter, UserRole::Host]))
         <div class="space-y-1">
             <p x-show="!collapsed" class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Service') }}</p>
             <x-sidebar-link :href="route('orders.index')" :active="request()->is('orders*')" icon="heroicon-o-clipboard-document-list">
                 {{ __('Orders') }}
             </x-sidebar-link>
-            @if(auth()->user()->role === UserRole::Manager)
+            @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter, UserRole::Host]))
             <x-sidebar-link :href="route('tables.index')" :active="request()->is('tables*')" icon="heroicon-o-squares-2x2">
                 {{ __('Tables') }}
             </x-sidebar-link>
@@ -48,9 +48,11 @@
             <x-sidebar-link :href="route('reservations.index')" :active="request()->is('reservations*')" icon="heroicon-o-calendar-days">
                 {{ __('Reservations') }}
             </x-sidebar-link>
+            @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter]))
             <x-sidebar-link :href="route('waiter.index')" :active="request()->is('waiter*')" icon="heroicon-o-bell-alert">
                 {{ __('Waiter') }}
             </x-sidebar-link>
+            @endif
         </div>
         @endif
 

@@ -115,11 +115,11 @@ class Table extends Model
 
     /**
      * Filter tables to only those assigned to $user via an active shift.
-     * Managers see all tables.
+     * Managers and Hosts see all tables.
      */
     public function scopeForWaiter($query, User $user)
     {
-        if ($user->role === UserRole::Manager) {
+        if (in_array($user->role, [UserRole::Manager, UserRole::Host])) {
             return $query;
         }
 
