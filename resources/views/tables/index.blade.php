@@ -28,7 +28,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="tablesPage()" x-cloak>
             <x-flash-message type="success" />
             <x-flash-message type="error" />
@@ -489,35 +489,69 @@
                     this.allTables.forEach(t => { if (t.room_id === room.id) { t.room_id = null; t.room_name = null; t.room_color = null; } });
                 },
 
-                saveOrder() {
-                    const roomSections = document.querySelectorAll('#rooms-container .room-section');
-                    const roomsPayload = [];
+                applyTableMove({ fromRoomId, toRoomId, tableId, oldIndex, newIndex }) {
+                    const parseId = (id) => id === 'unassigned' ? null : parseInt(id);
+                    const fromId = parseId(fromRoomId);
+                    const toId = parseId(toRoomId);
 
-                    roomSections.forEach((section, rIdx) => {
-                        const roomId = parseInt(section.dataset.roomId);
-                        const tableCards = section.querySelectorAll('.tables-sortable .table-card');
-                        const tables = [];
-                        tableCards.forEach((card, tIdx) => {
-                            const tableId = parseInt(card.dataset.tableId);
-                            tables.push({ id: tableId, sort_order: tIdx });
-                            const t = this.allTables.find(x => x.id === tableId);
-                            if (t) { t.room_id = roomId; t.sort_order = tIdx; const r = this.rooms.find(x => x.id === roomId); if (r) { t.room_name = r.name; t.room_color = r.color; } }
-                        });
-                        roomsPayload.push({ id: roomId, sort_order: rIdx, tables });
+                    const getTablesFor = (rid) => this.allTables
+                        .filter(t => t.room_id === rid)
+                        .sort((a, b) => a.sort_order - b.sort_order);
+
+                    const fromTables = getTablesFor(fromId);
+
+                    if (fromId === toId) {
+                        const [moved] = fromTables.splice(oldIndex, 1);
+                        fromTables.splice(newIndex, 0, moved);
+                        fromTables.forEach((t, i) => { t.sort_order = i; });
+                    } else {
+                        const [moved] = fromTables.splice(oldIndex, 1);
+                        fromTables.forEach((t, i) => { t.sort_order = i; });
+
+                        const toTables = getTablesFor(toId);
+                        toTables.splice(newIndex, 0, moved);
+                        toTables.forEach((t, i) => { t.sort_order = i; });
+
+                        moved.room_id = toId;
+                        if (toId !== null) {
+                            const r = this.rooms.find(x => x.id === toId);
+                            if (r) { moved.room_name = r.name; moved.room_color = r.color; }
+                        } else {
+                            moved.room_name = null; moved.room_color = null;
+                        }
+                    }
+
+                    this.persistOrder();
+                    this.$nextTick(() => {
+                        if (window.reinitTableSortables) window.reinitTableSortables(this);
                     });
+                },
 
-                    const unassignedCards = document.querySelectorAll('[data-room-id="unassigned"] .table-card');
-                    const unassigned = [];
-                    unassignedCards.forEach((card, idx) => {
-                        const tableId = parseInt(card.dataset.tableId);
-                        unassigned.push({ id: tableId, sort_order: idx });
-                        const t = this.allTables.find(x => x.id === tableId);
-                        if (t) { t.room_id = null; t.room_name = null; t.room_color = null; t.sort_order = idx; }
+                applyRoomMove(oldIndex, newIndex) {
+                    const [moved] = this.rooms.splice(oldIndex, 1);
+                    this.rooms.splice(newIndex, 0, moved);
+                    this.rooms.forEach((r, i) => { r.sort_order = i; });
+
+                    this.persistOrder();
+                    this.$nextTick(() => {
+                        if (window.initTablesSortables) window.initTablesSortables(this);
                     });
+                },
 
-                    // Update room sort orders locally
-                    roomsPayload.forEach(rp => { const r = this.rooms.find(x => x.id === rp.id); if (r) r.sort_order = rp.sort_order; });
-                    this.rooms.sort((a, b) => a.sort_order - b.sort_order);
+                persistOrder() {
+                    const roomsPayload = this.rooms.map((r, rIdx) => ({
+                        id: r.id,
+                        sort_order: rIdx,
+                        tables: this.tablesInRoom(r.id).map((t, tIdx) => ({
+                            id: t.id,
+                            sort_order: tIdx,
+                        })),
+                    }));
+
+                    const unassigned = this.unassignedTables.map((t, idx) => ({
+                        id: t.id,
+                        sort_order: idx,
+                    }));
 
                     fetch(reorderUrl, {
                         method: 'POST',

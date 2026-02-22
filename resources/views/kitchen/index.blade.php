@@ -12,7 +12,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="kitchenDisplay(@js($items->map(fn($item) => [
+    <div class="py-6" x-data="kitchenDisplay(@js($items->map(fn($item) => [
         'id' => $item->id,
         'order_id' => $item->order_id,
         'table_number' => $item->order->table->table_number ?? 'N/A',

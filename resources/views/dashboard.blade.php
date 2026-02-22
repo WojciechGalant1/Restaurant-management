@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="mb-8">
                 <p class="text-gray-600">Welcome back, <span class="font-bold">{{ Auth::user()->name }}</span>! Here is your restaurant overview.</p>

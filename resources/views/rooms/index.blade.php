@@ -3,7 +3,7 @@
         <x-page-header :title="__('Rooms Management')" :actionUrl="route('rooms.create')" :actionLabel="__('Add Room')" />
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <x-flash-message type="success" />
             <x-flash-message type="error" />
