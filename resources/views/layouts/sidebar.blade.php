@@ -48,6 +48,11 @@
             <x-sidebar-link :href="route('reservations.index')" :active="request()->is('reservations*')" icon="heroicon-o-calendar-days">
                 {{ __('Reservations') }}
             </x-sidebar-link>
+            @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Host]))
+            <x-sidebar-link :href="route('host.today')" :active="request()->routeIs('host.today')" icon="heroicon-o-calendar">
+                {{ __('Today') }}
+            </x-sidebar-link>
+            @endif
             @if(in_array(auth()->user()->role, [UserRole::Manager, UserRole::Waiter]))
             <x-sidebar-link :href="route('waiter.index')" :active="request()->is('waiter*')" icon="heroicon-o-bell-alert">
                 {{ __('Waiter') }}

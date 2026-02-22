@@ -74,10 +74,20 @@
                                 </span>
                                 @endif
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-bold text-gray-800 truncate" x-text="room.name"></h3>
+                                    <h3 class="text-sm font-bold text-gray-800 truncate flex items-center gap-2">
+                                        <span x-text="room.name"></span>
+                                        <span x-show="roomHasNoWaiter(room.id)" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300" title="{{ __('No waiter assigned to this room') }}">
+                                            <x-heroicon-o-exclamation-triangle class="w-3.5 h-3.5 flex-shrink-0" />
+                                            <span>{{ __('No waiter') }}</span>
+                                        </span>
+                                    </h3>
                                     <p class="text-xs text-gray-500 truncate" x-show="room.description" x-text="room.description"></p>
                                 </div>
                                 <span class="text-xs text-gray-400 ml-2" x-text="tablesInRoom(room.id).length + ' {{ __('tables') }}'"></span>
+                                <span class="text-xs ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" :title="waiterCountInRoom(room.id) === 0 ? '{{ __('No waiter assigned') }}' : '{{ __('Waiters assigned to tables in this room') }}'">
+                                    <x-heroicon-o-user class="w-3.5 h-3.5 flex-shrink-0" />
+                                    <span x-text="waiterCountInRoom(room.id) + ' ' + (waiterCountInRoom(room.id) === 1 ? '{{ __('waiter') }}' : '{{ __('waiters') }}')"></span>
+                                </span>
                                 @if($isManager ?? false)
                                 <button @click="editRoom(room)" class="ml-2 text-gray-400 hover:text-indigo-600 transition">
                                     <x-heroicon-o-pencil class="w-4 h-4" />
@@ -454,6 +464,17 @@
 
                 tablesInRoom(roomId) {
                     return this.allTables.filter(t => t.room_id === roomId).sort((a, b) => a.sort_order - b.sort_order);
+                },
+
+                roomHasNoWaiter(roomId) {
+                    const tables = this.tablesInRoom(roomId);
+                    return tables.length > 0 && tables.every(t => !t.waiter_name);
+                },
+
+                waiterCountInRoom(roomId) {
+                    const tables = this.tablesInRoom(roomId);
+                    const ids = new Set(tables.filter(t => t.waiter_id).map(t => t.waiter_id));
+                    return ids.size;
                 },
 
                 get selectedWaiterId() {

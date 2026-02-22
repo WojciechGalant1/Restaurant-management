@@ -1,4 +1,4 @@
-@props(['title'])
+@props(['title', 'actionUrl', 'actionLabel'])
 
 <div class="flex justify-between items-center">
     <h2 class="font-semibold text-xl text-gray-800 leading-tight">

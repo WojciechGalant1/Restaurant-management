@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\WaiterController;
+use App\Http\Controllers\HostController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -60,6 +61,9 @@ Route::middleware('auth')->group(function () {
     // Kitchen
     Route::get('/kitchen', [KitchenController::class, 'index'])->name('kitchen.index');
     Route::patch('/kitchen/items/{orderItem}/status', [KitchenController::class, 'updateStatus'])->name('kitchen.update-status');
+
+    // Host — today's timeline (reservations by room)
+    Route::get('/host/today', [HostController::class, 'today'])->name('host.today');
 
     // Waiter
     Route::get('/waiter', [WaiterController::class, 'index'])->name('waiter.index');

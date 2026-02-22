@@ -29,7 +29,7 @@ class ShiftController extends Controller
 
         $user = $request->user();
         $isManager = $user->role === UserRole::Manager;
-        $seesAllShifts = in_array($user->role, [UserRole::Manager, UserRole::Host]);
+        $seesAllShifts = $isManager;
 
         $roleFilter = null;
         if ($isManager) {
@@ -175,17 +175,16 @@ class ShiftController extends Controller
 
         $user = $request->user();
         $isManager = $user->role === UserRole::Manager;
-        $seesAllShifts = in_array($user->role, [UserRole::Manager, UserRole::Host]);
 
         [$viewStart, $viewEnd] = $this->calendarRangeService->fromRequest($request);
         $role = $isManager ? $request->input('role') : null;
-        $userId = $seesAllShifts ? null : $user->id;
+        $userId = $isManager ? null : $user->id;
 
         if ($viewStart && $viewEnd) {
             $shifts = $this->calendarService->getShiftsInRange($viewStart, $viewEnd, $role, $userId);
         } else {
             $query = Shift::with('user');
-            if (!$seesAllShifts) {
+            if (!$isManager) {
                 $query->where('user_id', $user->id);
             }
             $shifts = $query->get();
