@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\MenuItem;
+use App\Enums\TableStatus;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreOrderRequest;
@@ -48,8 +49,8 @@ class OrderController extends Controller
     {
         $this->authorize('create', Order::class);
         $preselectedTableId = $request->query('table_id') ? (int) $request->query('table_id') : null;
-        $tables = Table::where('status', 'available')
-            ->orWhere('id', $preselectedTableId)
+        $tables = Table::where('status', TableStatus::Occupied->value)
+            ->when($preselectedTableId, fn ($q) => $q->orWhere('id', $preselectedTableId))
             ->orderBy('table_number')
             ->get();
         $menuItems = MenuItem::with('dish')->where('is_available', true)->get();
@@ -60,7 +61,18 @@ class OrderController extends Controller
     {
         $this->authorize('create', Order::class);
 
-        $order = $this->orderService->createOrder($request->validated(), auth()->user());
+        $validated = $request->validated();
+        $table = Table::findOrFail($validated['table_id']);
+
+        if ($table->status !== TableStatus::Occupied) {
+            return back()->with('error', __('Orders can only be created for occupied tables.'));
+        }
+
+        try {
+            $order = $this->orderService->createOrder($validated, auth()->user());
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('orders.show', $order)->with('success', 'Order created successfully.');
     }

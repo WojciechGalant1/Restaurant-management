@@ -8,7 +8,6 @@ use App\Models\OrderItem;
 use App\Models\Reservation;
 use App\Services\ReservationService;
 use App\Services\WaiterDashboardService;
-use App\Http\Requests\UpdateReservationStatusRequest;
 use Illuminate\Http\Request;
 
 class WaiterController extends Controller
@@ -61,33 +60,5 @@ class WaiterController extends Controller
         }
 
         return back()->with('success', 'Reservation marked as seated.');
-    }
-
-    public function markReservationAsNoShow(Request $request, Reservation $reservation)
-    {
-        $this->authorize('updateAsWaiter', $reservation);
-
-        try {
-            $this->reservationService->updateStatus($reservation, ReservationStatus::NoShow);
-        } catch (\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return back()->with('success', 'Reservation marked as no show.');
-    }
-
-    public function updateReservationStatus(UpdateReservationStatusRequest $request, Reservation $reservation)
-    {
-        $this->authorize('updateAsWaiter', $reservation);
-
-        $validated = $request->validated();
-
-        try {
-            $this->reservationService->updateStatus($reservation, $validated['status']);
-        } catch (\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return back()->with('success', "Reservation status updated.");
     }
 }

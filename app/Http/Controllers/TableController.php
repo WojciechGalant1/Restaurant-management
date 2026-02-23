@@ -6,13 +6,17 @@ use App\Models\Room;
 use App\Models\Shift;
 use App\Models\Table;
 use App\Models\User;
+use App\Enums\OrderStatus;
+use App\Enums\TableStatus;
 use App\Enums\UserRole;
 use App\Events\TableStatusUpdated;
 use App\Http\Requests\AssignTableRequest;
 use App\Http\Requests\ReorderTablesRequest;
 use App\Http\Requests\StoreTableRequest;
 use App\Http\Requests\UpdateTableRequest;
-use App\Http\Requests\UpdateTableStatusRequest;
+use App\Models\Order;
+use App\Services\OrderService;
+use App\Services\ReservationService;
 use App\Services\TableService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +24,9 @@ use Illuminate\Http\Request;
 class TableController extends Controller
 {
     public function __construct(
-        private TableService $tableService
+        private TableService $tableService,
+        private ReservationService $reservationService,
+        private OrderService $orderService,
     ) {}
 
     public function index(Request $request)
@@ -31,7 +37,11 @@ class TableController extends Controller
         $isManager = $user->role === UserRole::Manager;
         $isHost = $user->role === UserRole::Host;
 
-        $tables = Table::with(['activeAssignment.user', 'room'])
+        $tables = Table::with([
+                'activeAssignment.user',
+                'room',
+                'reservations',
+            ])
             ->forWaiter($user)
             ->orderBy('sort_order')
             ->orderBy('table_number')
@@ -58,17 +68,6 @@ class TableController extends Controller
         $this->authorize('viewAny', Table::class);
 
         return response()->json($this->tableService->getFloorData());
-    }
-
-    public function updateStatus(UpdateTableStatusRequest $request, Table $table): JsonResponse|\Illuminate\Http\RedirectResponse
-    {
-        $table->update(['status' => $request->validated()['status']]);
-        event(new TableStatusUpdated($table));
-
-        if ($request->wantsJson()) {
-            return response()->json(['success' => true]);
-        }
-        return redirect()->route('tables.index')->with('success', __('Table status updated.'));
     }
 
     public function assign(AssignTableRequest $request, Table $table)
@@ -140,5 +139,34 @@ class TableController extends Controller
         $this->authorize('delete', $table);
         $table->delete();
         return redirect()->route('tables.index')->with('success', 'Table deleted successfully.');
+    }
+
+    /**
+     * Seat walk-in guests (Host/Manager): creates a WalkInSeated reservation and an empty order.
+     */
+    public function seatWalkIn(Table $table)
+    {
+        $this->authorize('updateStatus', $table);
+
+        if ($table->status !== TableStatus::Available) {
+            return back()->with('error', __('Only available tables can be seated as walk-in.'));
+        }
+
+        $hasOpenOrder = Order::where('table_id', $table->id)
+            ->where('status', OrderStatus::Open)
+            ->exists();
+
+        if ($hasOpenOrder) {
+            return back()->with('error', __('This table already has an open order.'));
+        }
+
+        try {
+            $this->reservationService->seatWalkIn($table);
+            $this->orderService->createEmptyOrderForTable($table);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('tables.index')->with('success', __('Walk-in guests seated.'));
     }
 }

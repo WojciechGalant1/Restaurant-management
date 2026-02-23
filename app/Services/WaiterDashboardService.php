@@ -24,28 +24,34 @@ class WaiterDashboardService
             ? Table::forWaiter($user)->orderBy('table_number')->get()
             : collect();
 
+        $tableIds = $tables->pluck('id');
+
         $readyItemsQuery = OrderItem::with(['order.table', 'menuItem.dish'])
             ->where('status', OrderItemStatus::Ready)
             ->orderBy('updated_at', 'asc');
 
         if ($user->role === UserRole::Waiter) {
-            $readyItemsQuery->whereHas('order', fn ($q) => $q->where('user_id', $user->id));
+            $readyItemsQuery->whereHas('order', fn ($q) => $q->whereIn('table_id', $tableIds));
         }
 
         $readyItems = $readyItemsQuery->get();
 
-        $activeOrders = Order::forWaiter($user)
-            ->where('status', OrderStatus::Open)
-            ->with(['table', 'orderItems'])
-            ->latest()
-            ->get();
+        $activeOrders = $user->role === UserRole::Waiter
+            ? Order::where('status', OrderStatus::Open)
+                ->whereIn('table_id', $tableIds)
+                ->with(['table', 'orderItems'])
+                ->latest()
+                ->get()
+            : collect();
 
-        $todayClosed = Order::forWaiter($user)
-            ->whereDate('ordered_at', today())
-            ->where('status', OrderStatus::Paid)
-            ->with('table')
-            ->latest()
-            ->get();
+        $todayClosed = $user->role === UserRole::Waiter
+            ? Order::whereDate('ordered_at', today())
+                ->where('status', OrderStatus::Paid)
+                ->whereIn('table_id', $tableIds)
+                ->with('table')
+                ->latest()
+                ->get()
+            : collect();
 
         $reservationsByTable = $this->getReservationsByTableForUser($user, $tables);
 
@@ -66,7 +72,7 @@ class WaiterDashboardService
 
         $tableIds = $tables->pluck('id');
         $reservations = Reservation::whereIn('table_id', $tableIds)
-            ->whereIn('status', [ReservationStatus::Pending, ReservationStatus::Confirmed, ReservationStatus::Seated])
+            ->whereIn('status', [ReservationStatus::Pending, ReservationStatus::Confirmed, ReservationStatus::WalkInSeated, ReservationStatus::Seated])
             ->whereDate('reservation_date', '>=', today())
             ->with('table')
             ->orderBy('reservation_date')

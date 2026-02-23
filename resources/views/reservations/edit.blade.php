@@ -17,6 +17,38 @@
                     @csrf
                     @method('PATCH')
                     
+                    @php
+                        $status = $reservation->status;
+                        $isPending = $status === \App\Enums\ReservationStatus::Pending;
+                        $isConfirmed = $status === \App\Enums\ReservationStatus::Confirmed;
+                    @endphp
+                    @if($isPending || $isConfirmed)
+                        <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <x-input-label class="mb-2 block" :value="__('Reservation actions')" />
+                            <div class="flex flex-wrap gap-2">
+                                @if($isPending)
+                                    <form action="{{ route('reservations.confirm', $reservation) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition">{{ __('Confirm reservation') }}</button>
+                                    </form>
+                                    <form action="{{ route('reservations.cancel', $reservation) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Cancel this reservation?') }}');">
+                                        @csrf
+                                        <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition">{{ __('Cancel reservation') }}</button>
+                                    </form>
+                                @elseif($isConfirmed)
+                                    <form action="{{ route('reservations.seat', $reservation) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition">{{ __('Seat guests') }}</button>
+                                    </form>
+                                    <form action="{{ route('reservations.cancel', $reservation) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Cancel this reservation?') }}');">
+                                        @csrf
+                                        <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition">{{ __('Cancel reservation') }}</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <x-input-label for="customer_name" :value="__('Customer Name')" />

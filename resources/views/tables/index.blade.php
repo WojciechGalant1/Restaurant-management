@@ -285,28 +285,44 @@
                                     <p class="text-sm font-semibold mt-0.5" :class="modalTable.waiter_name ? 'text-indigo-700' : 'text-gray-400'" x-text="modalTable.waiter_name || '{{ __('Unassigned') }}'"></p>
                                 </div>
 
-                                @if(($isHost ?? false))
-                                <div class="space-y-3">
-                                    <label class="text-xs font-medium text-gray-500 uppercase tracking-wider block">{{ __('Change status') }}</label>
-                                    <div class="flex gap-2 flex-wrap">
-                                        <button type="button" @click="updateTableStatus(modalTable, 'available')"
-                                                :disabled="modalTable.status === 'available'"
-                                                class="px-3 py-2 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-100 text-emerald-800 hover:bg-emerald-200">
-                                            {{ __('Available') }}
-                                        </button>
-                                        <button type="button" @click="updateTableStatus(modalTable, 'occupied')"
-                                                :disabled="modalTable.status === 'occupied'"
-                                                class="px-3 py-2 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-red-100 text-red-800 hover:bg-red-200">
-                                            {{ __('Occupied') }}
-                                        </button>
-                                        <button type="button" @click="updateTableStatus(modalTable, 'reserved')"
-                                                :disabled="modalTable.status === 'reserved'"
-                                                class="px-3 py-2 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-amber-100 text-amber-800 hover:bg-amber-200">
-                                            {{ __('Reserved') }}
-                                        </button>
-                                    </div>
+                                @if(($isHost ?? false) || ($isManager ?? false))
+                                <div x-show="modalTable.reservations && modalTable.reservations.length" class="border-t pt-3 mt-3">
+                                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('Reservations') }}</h4>
+                                    <template x-for="reservation in modalTable.reservations" :key="reservation.id">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-600">
+                                                <span x-text="reservation.date"></span>
+                                                &middot;
+                                                <span x-text="reservation.time"></span>
+                                                &middot;
+                                                <span x-text="reservation.status_label"></span>
+                                            </div>
+                                            <form :action="`{{ url('reservations') }}/${reservation.id}/seat`" method="POST">
+                                                @csrf
+                                                <button type="submit"
+                                                        class="px-3 py-1.5 text-xs rounded-md font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        :disabled="reservation.status !== 'confirmed'">
+                                                    {{ __('Seat guests') }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </template>
                                 </div>
                                 @endif
+
+                                @if($isHost ?? false)
+                                <div class="border-t pt-3 mt-3">
+                                    <form :action="`{{ url('tables') }}/${modalTable.id}/seat-walk-in`" method="POST">
+                                        @csrf
+                                        <button type="submit"
+                                                class="w-full px-3 py-2 mt-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                                :disabled="modalTable.status !== 'available'">
+                                            {{ __('Seat Walk-in') }}
+                                        </button>
+                                    </form>
+                                </div>
+                                @endif
+
                                 @if($isManager ?? false)
                                 <form :action="`{{ url('tables') }}/${modalTable.id}/assign`" method="POST" class="space-y-3">
                                     @csrf
@@ -393,8 +409,8 @@
 
     @vite('resources/js/tables-sortable.js')
     <script>
-        function tablesPage() {
-            const allTablesData = @js($tables->map(fn ($t) => [
+        window.__TABLES_PAGE__ = @js([
+            'allTables' => $tables->map(fn ($t) => [
                 'id' => $t->id,
                 'table_number' => $t->table_number,
                 'capacity' => $t->capacity,
@@ -407,259 +423,28 @@
                 'room_name' => $t->room?->name,
                 'room_color' => $t->room?->color,
                 'sort_order' => $t->sort_order,
-            ]));
-
-            const roomsData = @js($rooms->map(fn ($r) => [
+                'reservations' => $t->reservations->map(fn ($r) => [
+                    'id' => $r->id,
+                    'date' => optional($r->reservation_date)->toDateString(),
+                    'time' => optional($r->reservation_time)->format('H:i'),
+                    'status' => $r->status->value,
+                    'status_label' => $r->status->label(),
+                    'party_size' => $r->party_size,
+                    'customer_name' => $r->customer_name,
+                ]),
+            ]),
+            'rooms' => $rooms->map(fn ($r) => [
                 'id' => $r->id,
                 'name' => $r->name,
                 'description' => $r->description,
                 'color' => $r->color,
                 'sort_order' => $r->sort_order,
-            ]));
-
-            const shiftsMap = @js(($activeShifts ?? collect())->mapWithKeys(fn ($s) => [$s->id => $s->user_id]));
-
-            const statusStyles = {
-                available: {
-                    cardBg: 'bg-emerald-50 border-emerald-300 hover:border-emerald-500',
-                    dot: 'bg-emerald-500',
-                    text: 'text-emerald-700',
-                },
-                occupied: {
-                    cardBg: 'bg-red-50 border-red-300 hover:border-red-500',
-                    dot: 'bg-red-500',
-                    text: 'text-red-700',
-                },
-                reserved: {
-                    cardBg: 'bg-amber-50 border-amber-300 hover:border-amber-500',
-                    dot: 'bg-amber-500',
-                    text: 'text-amber-700',
-                },
-            };
-
-            const isManager = @js($isManager ?? false);
-            const isHost = @js($isHost ?? false);
-            const reorderUrl = @js(route('tables.reorder'));
-            const updateStatusUrl = @js(route('tables.update-status', ['table' => ':id']));
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-            return {
-                tab: 'grid',
-                isManager,
-                isHost,
-                modalOpen: false,
-                modalTable: null,
-                selectedShiftId: '',
-                allTables: [...allTablesData],
-                rooms: [...roomsData],
-
-                showAddRoom: false,
-                editingRoom: null,
-                roomForm: { name: '', description: '', color: '#6366f1' },
-                roomError: '',
-
-                get unassignedTables() {
-                    return this.allTables.filter(t => !t.room_id).sort((a, b) => a.sort_order - b.sort_order);
-                },
-
-                tablesInRoom(roomId) {
-                    return this.allTables.filter(t => t.room_id === roomId).sort((a, b) => a.sort_order - b.sort_order);
-                },
-
-                roomHasNoWaiter(roomId) {
-                    const tables = this.tablesInRoom(roomId);
-                    return tables.length > 0 && tables.every(t => !t.waiter_name);
-                },
-
-                waiterCountInRoom(roomId) {
-                    const tables = this.tablesInRoom(roomId);
-                    const ids = new Set(tables.filter(t => t.waiter_id).map(t => t.waiter_id));
-                    return ids.size;
-                },
-
-                get selectedWaiterId() {
-                    return this.selectedShiftId ? (shiftsMap[this.selectedShiftId] || '') : '';
-                },
-
-                statusStyle(status, prop) {
-                    return (statusStyles[status] || statusStyles.available)[prop] || '';
-                },
-
-                openModal(tableId) {
-                    this.modalTable = this.allTables.find(t => t.id === tableId) || null;
-                    this.selectedShiftId = this.modalTable?.shift_id || '';
-                    this.modalOpen = true;
-                },
-
-                closeModal() {
-                    this.modalOpen = false;
-                },
-
-                async updateTableStatus(table, newStatus) {
-                    if (!csrfToken) return;
-                    try {
-                        const url = updateStatusUrl.replace(':id', table.id);
-                        const res = await fetch(url, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': csrfToken,
-                            },
-                            body: JSON.stringify({ status: newStatus }),
-                        });
-                        if (!res.ok) throw new Error('Request failed');
-                        const statusLabels = { available: '{{ __("Available") }}', occupied: '{{ __("Occupied") }}', reserved: '{{ __("Reserved") }}' };
-                        const newLabel = statusLabels[newStatus] || newStatus;
-                        const idx = this.allTables.findIndex(t => t.id === table.id);
-                        if (idx !== -1) {
-                            this.allTables[idx] = { ...this.allTables[idx], status: newStatus, status_label: newLabel };
-                        }
-                        if (this.modalTable && this.modalTable.id === table.id) {
-                            this.modalTable = { ...this.modalTable, status: newStatus, status_label: newLabel };
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    }
-                },
-
-                editRoom(room) {
-                    this.editingRoom = room;
-                    this.roomForm = { name: room.name, description: room.description || '', color: room.color };
-                    this.roomError = '';
-                },
-
-                closeRoomModal() {
-                    this.showAddRoom = false;
-                    this.editingRoom = null;
-                    this.roomForm = { name: '', description: '', color: '#6366f1' };
-                    this.roomError = '';
-                },
-
-                async submitRoom() {
-                    this.roomError = '';
-                    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken };
-                    try {
-                        if (this.editingRoom) {
-                            const res = await fetch(`/rooms/${this.editingRoom.id}`, { method: 'PATCH', headers, body: JSON.stringify(this.roomForm) });
-                            if (!res.ok) { const d = await res.json(); this.roomError = d.message || 'Error'; return; }
-                            const updated = await res.json();
-                            const idx = this.rooms.findIndex(r => r.id === updated.id);
-                            if (idx !== -1) this.rooms[idx] = { ...this.rooms[idx], ...updated };
-                            this.allTables.forEach(t => { if (t.room_id === updated.id) { t.room_name = updated.name; t.room_color = updated.color; } });
-                        } else {
-                            const res = await fetch('/rooms', { method: 'POST', headers, body: JSON.stringify(this.roomForm) });
-                            if (!res.ok) { const d = await res.json(); this.roomError = d.message || 'Error'; return; }
-                            const created = await res.json();
-                            this.rooms.push({ id: created.id, name: created.name, description: created.description, color: created.color, sort_order: created.sort_order });
-                            this.$nextTick(() => { if (window.reinitTableSortables) window.reinitTableSortables(this); });
-                        }
-                        this.closeRoomModal();
-                    } catch (e) {
-                        this.roomError = e.message;
-                    }
-                },
-
-                async deleteRoom(room) {
-                    if (!confirm('{{ __('Tables in this room will become unassigned. Continue?') }}')) return;
-                    const headers = { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken };
-                    await fetch(`/rooms/${room.id}`, { method: 'DELETE', headers });
-                    this.rooms = this.rooms.filter(r => r.id !== room.id);
-                    this.allTables.forEach(t => { if (t.room_id === room.id) { t.room_id = null; t.room_name = null; t.room_color = null; } });
-                },
-
-                applyTableMove({ fromRoomId, toRoomId, tableId, oldIndex, newIndex }) {
-                    const parseId = (id) => id === 'unassigned' ? null : parseInt(id);
-                    const fromId = parseId(fromRoomId);
-                    const toId = parseId(toRoomId);
-
-                    const getTablesFor = (rid) => this.allTables
-                        .filter(t => t.room_id === rid)
-                        .sort((a, b) => a.sort_order - b.sort_order);
-
-                    const fromTables = getTablesFor(fromId);
-
-                    if (fromId === toId) {
-                        const [moved] = fromTables.splice(oldIndex, 1);
-                        fromTables.splice(newIndex, 0, moved);
-                        fromTables.forEach((t, i) => { t.sort_order = i; });
-                    } else {
-                        const [moved] = fromTables.splice(oldIndex, 1);
-                        fromTables.forEach((t, i) => { t.sort_order = i; });
-
-                        const toTables = getTablesFor(toId);
-                        toTables.splice(newIndex, 0, moved);
-                        toTables.forEach((t, i) => { t.sort_order = i; });
-
-                        moved.room_id = toId;
-                        if (toId !== null) {
-                            const r = this.rooms.find(x => x.id === toId);
-                            if (r) { moved.room_name = r.name; moved.room_color = r.color; }
-                        } else {
-                            moved.room_name = null; moved.room_color = null;
-                        }
-                    }
-
-                    this.persistOrder();
-                    this.$nextTick(() => {
-                        if (window.reinitTableSortables) window.reinitTableSortables(this);
-                    });
-                },
-
-                applyRoomMove(oldIndex, newIndex) {
-                    const [moved] = this.rooms.splice(oldIndex, 1);
-                    this.rooms.splice(newIndex, 0, moved);
-                    this.rooms.forEach((r, i) => { r.sort_order = i; });
-
-                    this.persistOrder();
-                    this.$nextTick(() => {
-                        if (window.initTablesSortables) window.initTablesSortables(this);
-                    });
-                },
-
-                persistOrder() {
-                    const roomsPayload = this.rooms.map((r, rIdx) => ({
-                        id: r.id,
-                        sort_order: rIdx,
-                        tables: this.tablesInRoom(r.id).map((t, tIdx) => ({
-                            id: t.id,
-                            sort_order: tIdx,
-                        })),
-                    }));
-
-                    const unassigned = this.unassignedTables.map((t, idx) => ({
-                        id: t.id,
-                        sort_order: idx,
-                    }));
-
-                    fetch(reorderUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                        body: JSON.stringify({ rooms: roomsPayload, unassigned }),
-                    });
-                },
-
-                init() {
-                    if (window.Echo) {
-                        window.Echo.private('tables')
-                            .listen('.TableStatusUpdated', (e) => {
-                                const idx = this.allTables.findIndex(t => t.id === e.id);
-                                if (idx !== -1) {
-                                    this.allTables[idx] = { ...this.allTables[idx], ...e };
-                                }
-                                if (this.modalTable && this.modalTable.id === e.id) {
-                                    this.modalTable = { ...this.modalTable, ...e };
-                                }
-                            });
-                    }
-
-                    this.$nextTick(() => {
-                        if (window.initTablesSortables) {
-                            window.initTablesSortables(this);
-                        }
-                    });
-                },
-            };
-        }
+            ]),
+            'shiftsMap' => ($activeShifts ?? collect())->mapWithKeys(fn ($s) => [$s->id => $s->user_id]),
+            'isManager' => $isManager ?? false,
+            'isHost' => $isHost ?? false,
+            'reorderUrl' => route('tables.reorder'),
+            'confirmDeleteRoom' => __('Tables in this room will become unassigned. Continue?'),
+        ]);
     </script>
 </x-app-layout>

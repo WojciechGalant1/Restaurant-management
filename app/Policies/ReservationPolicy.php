@@ -21,16 +21,20 @@ class ReservationPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, [UserRole::Manager, UserRole::Waiter, UserRole::Host]);
-    }
-
-    public function update(User $user, Reservation $reservation): bool
-    {
-        return in_array($user->role, [UserRole::Manager, UserRole::Waiter, UserRole::Host]);
+        return in_array($user->role, [UserRole::Manager, UserRole::Host]);
     }
 
     /**
-     * Whether the user can update this reservation in the waiter context (e.g. mark seated, no-show).
+     * Edit reservation data and use status actions (confirm, seat, cancel). Host and Manager only.
+     * Waiter uses updateAsWaiter for "mark as seated" only.
+     */
+    public function update(User $user, Reservation $reservation): bool
+    {
+        return in_array($user->role, [UserRole::Manager, UserRole::Host]);
+    }
+
+    /**
+     * Whether the user can update this reservation in the waiter context (e.g. mark seated).
      * Manager, Host: always. Waiter: only if the reservation's table is assigned to them via an active shift.
      */
     public function updateAsWaiter(User $user, Reservation $reservation): bool

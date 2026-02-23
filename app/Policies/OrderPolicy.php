@@ -29,7 +29,31 @@ class OrderPolicy
     {
         if ($user->role === UserRole::Manager) return true;
         if (in_array($user->role, [UserRole::Chef, UserRole::Bartender])) return $order->status === OrderStatus::Open;
-        if ($user->role === UserRole::Waiter) return $order->user_id === $user->id;
+        if ($user->role === UserRole::Waiter) {
+            if ($order->user_id === $user->id) {
+                return true;
+            }
+
+            // Allow taking over an unclaimed (user_id NULL) open order
+            // if the table is assigned to this waiter via an active shift.
+            if ($order->status !== OrderStatus::Open) {
+                return false;
+            }
+
+            if ($order->user_id !== null) {
+                return false;
+            }
+
+            $table = $order->table;
+            if (!$table) {
+                return false;
+            }
+
+            return $table->assignments()
+                ->where('user_id', $user->id)
+                ->whereHas('shift', fn ($q) => $q->activeNow())
+                ->exists();
+        }
         
         return false;
     }

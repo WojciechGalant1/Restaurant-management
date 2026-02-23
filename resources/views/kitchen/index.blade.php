@@ -12,18 +12,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="kitchenDisplay(@js($items->map(fn($item) => [
-        'id' => $item->id,
-        'order_id' => $item->order_id,
-        'table_number' => $item->order->table->table_number ?? 'N/A',
-        'name' => $item->menuItem->dish->name,
-        'quantity' => $item->quantity,
-        'notes' => $item->notes,
-        'status' => $item->status->value,
-        'created_at_human' => $item->created_at->diffForHumans(),
-        'updated_at_human' => $item->updated_at->diffForHumans(),
-        'update_url' => route('kitchen.update-status', $item->id),
-    ])))">
+    <div class="py-6" x-data="kitchenDisplay()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Column: New Orders (Pending) -->
@@ -120,103 +109,23 @@
     </div>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            // Global store for Echo connection status
-            Alpine.store('echo', {
-                connected: false
-            });
-
-            Alpine.data('kitchenDisplay', (initialItems) => ({
-                items: initialItems,
-
-                init() {
-                    this.setupEcho();
-                },
-
-                async updateStatus(item, newStatus) {
-                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-                    if (!csrf) return;
-                    try {
-                        const res = await fetch(item.update_url, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': csrf,
-                            },
-                            body: JSON.stringify({ status: newStatus }),
-                        });
-                        if (!res.ok) throw new Error('Request failed');
-                        const idx = this.items.findIndex(i => i.id === item.id);
-                        if (idx !== -1) {
-                            this.items[idx] = { ...this.items[idx], status: newStatus, updated_at_human: '{{ __("just now") }}' };
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    }
-                },
-
-                setupEcho() {
-                    // Check if Echo is available, if not wait a bit
-                    if (window.Echo) {
-                        this.connectEcho();
-                    } else {
-                        // Retry after a short delay
-                        setTimeout(() => this.setupEcho(), 100);
-                    }
-                },
-
-                connectEcho() {
-                    try {
-                        const channel = window.Echo.private('kitchen');
-                        
-                        channel
-                            .listen('.OrderItemCreated', (e) => {
-                                console.log('OrderItemCreated event received:', e);
-                                // Check if item already exists (avoid duplicates)
-                                if (!this.items.find(i => i.id === e.id)) {
-                                    this.items.unshift(e);
-                                }
-                            })
-                            .listen('.OrderItemStatusUpdated', (e) => {
-                                console.log('OrderItemStatusUpdated event received:', e);
-                                const index = this.items.findIndex(i => i.id === e.id);
-                                if (index !== -1) {
-                                    if (e.status === '{{ \App\Enums\OrderItemStatus::Served->value }}' || e.status === '{{ \App\Enums\OrderItemStatus::Cancelled->value }}') {
-                                        this.items = this.items.filter(i => i.id !== e.id);
-                                    } else {
-                                        // Update existing item with new data
-                                        this.items[index] = { ...this.items[index], ...e };
-                                    }
-                                    } else if (e.status !== '{{ \App\Enums\OrderItemStatus::Served->value }}' && e.status !== '{{ \App\Enums\OrderItemStatus::Cancelled->value }}') {
-                                    // If item doesn't exist and status is not served, add it
-                                    // This handles cases where item was created before page load
-                                    this.items.unshift(e);
-                                }
-                            });
-
-                        // Listen for connection events
-                        window.Echo.connector.pusher.connection.bind('connected', () => {
-                            console.log('Echo connected to Reverb');
-                            Alpine.store('echo').connected = true;
-                        });
-
-                        window.Echo.connector.pusher.connection.bind('disconnected', () => {
-                            console.log('Echo disconnected from Reverb');
-                            Alpine.store('echo').connected = false;
-                        });
-
-                        // Set initial connection status
-                        Alpine.store('echo').connected = true;
-                    } catch (error) {
-                        console.error('Error setting up Echo:', error);
-                        Alpine.store('echo').connected = false;
-                        // Retry after delay
-                        setTimeout(() => this.setupEcho(), 1000);
-                    }
-                }
-            }));
-        });
+        window.__KITCHEN__ = @js([
+            'items' => $items->map(fn($item) => [
+                'id' => $item->id,
+                'order_id' => $item->order_id,
+                'table_number' => $item->order->table->table_number ?? 'N/A',
+                'name' => $item->menuItem->dish->name,
+                'quantity' => $item->quantity,
+                'notes' => $item->notes,
+                'status' => $item->status->value,
+                'created_at_human' => $item->created_at->diffForHumans(),
+                'updated_at_human' => $item->updated_at->diffForHumans(),
+                'update_url' => route('kitchen.update-status', $item->id),
+            ]),
+            'servedStatus' => \App\Enums\OrderItemStatus::Served->value,
+            'cancelledStatus' => \App\Enums\OrderItemStatus::Cancelled->value,
+            'justNowLabel' => __('just now'),
+        ]);
     </script>
 
     <style>

@@ -71,21 +71,50 @@ class ReservationController extends Controller
         $this->authorize('update', $reservation);
 
         $validated = $request->validated();
-
-        if (isset($validated['status'])) {
-            try {
-                $this->reservationService->updateStatus($reservation, $validated['status']);
-                unset($validated['status']); // Avoid mass assignment in case of direct update below
-            } catch (\InvalidArgumentException $e) {
-                return back()->with('error', $e->getMessage());
-            }
-        }
-
         if (!empty($validated)) {
             $reservation->update($validated);
         }
 
         return redirect()->route('reservations.index')->with('success', 'Reservation updated successfully.');
+    }
+
+    public function confirm(Reservation $reservation)
+    {
+        $this->authorize('update', $reservation);
+
+        try {
+            $this->reservationService->updateStatus($reservation, ReservationStatus::Confirmed);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', __('Reservation confirmed.'));
+    }
+
+    public function seat(Reservation $reservation)
+    {
+        $this->authorize('update', $reservation);
+
+        try {
+            $this->reservationService->updateStatus($reservation, ReservationStatus::Seated);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', __('Guests seated.'));
+    }
+
+    public function cancel(Reservation $reservation)
+    {
+        $this->authorize('update', $reservation);
+
+        try {
+            $this->reservationService->updateStatus($reservation, ReservationStatus::Cancelled);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', __('Reservation cancelled.'));
     }
 
     public function destroy(Reservation $reservation)

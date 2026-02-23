@@ -15,20 +15,7 @@
         </x-page-header>
     </x-slot>
 
-    <div class="py-8" x-data="shiftCreateForm({
-        availabilityUrl: @js($availabilityUrl),
-        coverageUrl: @js($coverageUrl),
-        usersByRole: @js($usersByRole),
-        hoursPerUser: @js($hoursPerUser),
-        maxHoursPerWeek: {{ $maxHoursPerWeek }},
-        weekdayLabels: @js($weekdayLabels),
-        initialDate: @js(old('date', request('date', date('Y-m-d')))),
-        initialShiftType: @js(old('shift_type', 'morning')),
-        initialStartTime: @js(old('start_time', \App\Enums\ShiftType::Morning->startTime())),
-        initialEndTime: @js(old('end_time', \App\Enums\ShiftType::Morning->endTime())),
-        initialNotes: @js(old('notes', '')),
-        shiftTypeTimes: @js(collect(\App\Enums\ShiftType::cases())->mapWithKeys(fn ($t) => [$t->value => ['start' => $t->startTime(), 'end' => $t->endTime()]])->all()),
-    })">
+    <div class="py-8" x-data="shiftCreateForm()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <form method="POST" action="{{ route('shifts.store') }}" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 @csrf
@@ -183,122 +170,23 @@
     </div>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('shiftCreateForm', (config) => ({
-                availabilityUrl: config.availabilityUrl,
-                coverageUrl: config.coverageUrl,
-                usersByRole: config.usersByRole,
-                hoursPerUser: config.hoursPerUser || {},
-                maxHoursPerWeek: config.maxHoursPerWeek || 40,
-                weekdayLabels: config.weekdayLabels || {},
-                baseDate: config.initialDate,
-                shiftType: config.initialShiftType,
-                startTime: config.initialStartTime,
-                endTime: config.initialEndTime,
-                notes: config.initialNotes,
-                shiftTypeTimes: config.shiftTypeTimes || {},
-                selectedUserIds: @js((array) old('user_ids', [])),
-                replicateDays: @js((array) old('replicate_days', [])),
-                availability: {},
-                availabilityLoading: false,
-                coverage: {},
-                coverageLoading: false,
-
-                get coverageDates() {
-                    if (!this.baseDate) return [];
-                    const base = new Date(this.baseDate + 'T12:00:00');
-                    const day = base.getDay();
-                    const monday = new Date(base);
-                    monday.setDate(base.getDate() - (day === 0 ? 6 : day - 1));
-                    const dates = [];
-                    if (this.replicateDays.length === 0) {
-                        dates.push(this.baseDate);
-                    } else {
-                        this.replicateDays.forEach(d => {
-                            const d2 = new Date(monday);
-                            d2.setDate(monday.getDate() + (Number(d) - 1));
-                            dates.push(d2.toISOString().slice(0, 10));
-                        });
-                    }
-                    return dates.sort();
-                },
-
-                get alertMessages() {
-                    const msg = [];
-                    if (this.coverageDates.length === 0) return msg;
-                    this.coverageDates.forEach(date => {
-                        const c = this.coverage[date];
-                        if (!c) return;
-                        if (c.chef === 0) msg.push(this.formatDate(date) + ': {{ __("No chef assigned") }}');
-                    });
-                    return msg;
-                },
-
-                formatDate(iso) {
-                    const d = new Date(iso + 'T12:00:00');
-                    return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
-                },
-
-                getUserName(uid) {
-                    const id = String(uid);
-                    for (const role of Object.values(this.usersByRole)) {
-                        for (const u of role) {
-                            if (String(u.id) === id) return (u.first_name || '') + ' ' + (u.last_name || '');
-                        }
-                    }
-                    return id;
-                },
-
-                applyShiftTypeTimes() {
-                    const t = this.shiftTypeTimes[this.shiftType];
-                    if (t) {
-                        this.startTime = t.start;
-                        this.endTime = t.end;
-                    }
-                },
-
-                async fetchAvailability() {
-                    if (this.selectedUserIds.length === 0 || !this.baseDate) {
-                        this.availability = {};
-                        return;
-                    }
-                    this.availabilityLoading = true;
-                    try {
-                        const url = this.availabilityUrl + '?date=' + encodeURIComponent(this.baseDate) + '&user_ids[]=' + this.selectedUserIds.join('&user_ids[]=');
-                        const r = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
-                        const data = await r.json();
-                        this.availability = r.ok && data && typeof data === 'object' && !data.message ? data : {};
-                    } catch (e) {
-                        this.availability = {};
-                    }
-                    this.availabilityLoading = false;
-                },
-
-                async fetchCoverage() {
-                    if (this.coverageDates.length === 0) {
-                        this.coverage = {};
-                        return;
-                    }
-                    this.coverageLoading = true;
-                    try {
-                        const url = this.coverageUrl + '?dates=' + this.coverageDates.join(',');
-                        const r = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
-                        const data = await r.json();
-                        this.coverage = r.ok && data && typeof data === 'object' && !data.message ? data : {};
-                    } catch (e) {
-                        this.coverage = {};
-                    }
-                    this.coverageLoading = false;
-                },
-
-                init() {
-                    this.$watch('baseDate', () => { this.fetchAvailability(); this.fetchCoverage(); });
-                    this.$watch('replicateDays', () => this.fetchCoverage(), { deep: true });
-                    this.$watch('selectedUserIds', () => this.fetchAvailability(), { deep: true });
-                    this.fetchCoverage();
-                    this.fetchAvailability();
-                },
-            }));
-        });
+        window.__SHIFT_CREATE__ = @js([
+            'availabilityUrl' => $availabilityUrl,
+            'coverageUrl' => $coverageUrl,
+            'usersByRole' => $usersByRole,
+            'hoursPerUser' => $hoursPerUser,
+            'maxHoursPerWeek' => $maxHoursPerWeek,
+            'weekdayLabels' => $weekdayLabels,
+            'initialDate' => old('date', request('date', date('Y-m-d'))),
+            'initialShiftType' => old('shift_type', 'morning'),
+            'initialStartTime' => old('start_time', \App\Enums\ShiftType::Morning->startTime()),
+            'initialEndTime' => old('end_time', \App\Enums\ShiftType::Morning->endTime()),
+            'initialNotes' => old('notes', ''),
+            'shiftTypeTimes' => collect(\App\Enums\ShiftType::cases())->mapWithKeys(fn ($t) => [
+                $t->value => ['start' => $t->startTime(), 'end' => $t->endTime()],
+            ])->all(),
+            'selectedUserIds' => (array) old('user_ids', []),
+            'replicateDays' => (array) old('replicate_days', []),
+        ]);
     </script>
 </x-app-layout>

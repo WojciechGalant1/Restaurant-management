@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([
         App\Providers\BroadcastServiceProvider::class,
     ])
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('reservations:mark-no-show')->everyFiveMinutes();
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

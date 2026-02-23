@@ -93,6 +93,10 @@ class Table extends Model
         $this->assignments()->where('shift_id', $shift->id)->delete();
     }
 
+    /**
+     * Status is updated by domain services (ReservationService, OrderService, InvoiceService).
+     * Do not call from controllers; use reservation/order actions instead.
+     */
     public function markAsOccupied(): void
     {
         $this->update(['status' => TableStatus::Occupied]);

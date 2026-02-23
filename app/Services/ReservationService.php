@@ -17,7 +17,7 @@ class ReservationService
 
     public function createReservation(array $data): Reservation
     {
-        $data['status'] = ReservationStatus::Pending;
+        $data['status'] = ReservationStatus::Confirmed;
 
         $reservation = Reservation::create($data);
 
@@ -28,6 +28,32 @@ class ReservationService
         event(new ReservationCreated($reservation));
 
         return $reservation;
+    }
+
+    /**
+     * Seat walk-in guests (no prior reservation): create a reservation in WalkInSeated
+     * status so the table status is driven by ReservationService.
+     */
+    public function seatWalkIn(Table $table, int $partySize = 1): Reservation
+    {
+        return DB::transaction(function () use ($table, $partySize) {
+            $now = now();
+
+            $reservation = Reservation::create([
+                'table_id' => $table->id,
+                'customer_name' => 'Walk-in',
+                'phone_number' => 'walk-in',
+                'reservation_date' => $now->toDateString(),
+                'reservation_time' => $now->format('H:i:s'),
+                'party_size' => max(1, $partySize),
+                'status' => ReservationStatus::WalkInSeated,
+            ]);
+
+            $this->syncTableStatusAfterReservation($reservation, ReservationStatus::WalkInSeated);
+            event(new ReservationCreated($reservation));
+
+            return $reservation;
+        });
     }
 
     public function updateStatus(Reservation $reservation, ReservationStatus|string $newStatus): void
@@ -56,6 +82,7 @@ class ReservationService
 
         match ($newStatus) {
             ReservationStatus::Confirmed => $table->markAsReserved(),
+            ReservationStatus::WalkInSeated => $table->markAsOccupied(),
             ReservationStatus::Seated => $table->markAsOccupied(),
             ReservationStatus::Completed,
             ReservationStatus::Cancelled,
@@ -71,7 +98,7 @@ class ReservationService
             ->exists();
 
         $hasActiveReservations = Reservation::where('table_id', $table->id)
-            ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::Seated])
+            ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::WalkInSeated, ReservationStatus::Seated])
             ->exists();
 
         if (!$hasOpenOrders && !$hasActiveReservations) {
@@ -79,10 +106,14 @@ class ReservationService
         }
     }
 
+    /**
+     * Mark reservations as Completed when the table is cleared (e.g. after invoice).
+     * Completed must not be set manually from the UI.
+     */
     public function autoCompleteForTable(int $tableId, string $date): void
     {
         $reservations = Reservation::where('table_id', $tableId)
-            ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::Seated])
+            ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::WalkInSeated, ReservationStatus::Seated])
             ->whereDate('reservation_date', $date)
             ->get();
 
@@ -97,6 +128,7 @@ class ReservationService
             ReservationStatus::Pending->value => [ReservationStatus::Confirmed->value, ReservationStatus::Cancelled->value],
             ReservationStatus::Confirmed->value => [ReservationStatus::Seated->value, ReservationStatus::NoShow->value, ReservationStatus::Cancelled->value],
             ReservationStatus::Seated->value => [ReservationStatus::Completed->value, ReservationStatus::Cancelled->value],
+            ReservationStatus::WalkInSeated->value => [ReservationStatus::Completed->value, ReservationStatus::Cancelled->value],
             ReservationStatus::NoShow->value => [], // terminal state
             ReservationStatus::Completed->value => [], // terminal state
             ReservationStatus::Cancelled->value => [], // terminal state

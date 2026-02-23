@@ -12,20 +12,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="waiterDisplay(@js($readyItems->map(fn($item) => [
-        'id' => $item->id,
-        'order_id' => $item->order_id,
-        'table_number' => $item->order->table->table_number ?? 'N/A',
-        'name' => $item->menuItem->dish->name,
-        'quantity' => $item->quantity,
-        'notes' => $item->notes,
-        'status' => $item->status->value,
-        'unit_price' => $item->unit_price,
-        'total_price' => number_format($item->quantity * $item->unit_price, 2),
-        'created_at_human' => $item->created_at->diffForHumans(),
-        'updated_at_human' => $item->updated_at->diffForHumans(),
-        'mark_served_url' => route('waiter.mark-served', $item->id),
-    ])))">
+    <div class="py-6" x-data="waiterDisplay()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
             {{-- 1. Sticky alert: Ready to Serve --}}
             <div x-show="items.filter(i => i.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}').length > 0"
@@ -84,61 +71,21 @@
                                             <p class="text-sm text-gray-700 mb-2">
                                                 {{ \Carbon\Carbon::parse($reservation->reservation_time)->format('H:i') }} · {{ $reservation->party_size }} {{ __('guests') }}
                                             </p>
-                                            
-                                            @php
-                                                $allowedStatuses = [];
-                                                switch($reservation->status) {
-                                                    case \App\Enums\ReservationStatus::Pending:
-                                                        $allowedStatuses = [\App\Enums\ReservationStatus::Confirmed, \App\Enums\ReservationStatus::Cancelled];
-                                                        break;
-                                                    case \App\Enums\ReservationStatus::Confirmed:
-                                                        $allowedStatuses = [\App\Enums\ReservationStatus::Seated, \App\Enums\ReservationStatus::NoShow, \App\Enums\ReservationStatus::Cancelled];
-                                                        break;
-                                                    case \App\Enums\ReservationStatus::Seated:
-                                                        $allowedStatuses = [\App\Enums\ReservationStatus::Completed, \App\Enums\ReservationStatus::Cancelled];
-                                                        break;
-                                                    default:
-                                                        $allowedStatuses = [];
-                                                }
-                                                
-                                                $statusLabels = [
-                                                    \App\Enums\ReservationStatus::Pending->value => __('Pending'),
-                                                    \App\Enums\ReservationStatus::Confirmed->value => __('Confirmed'),
-                                                    \App\Enums\ReservationStatus::Seated->value => __('Seated'),
-                                                    \App\Enums\ReservationStatus::Completed->value => __('Completed'),
-                                                    \App\Enums\ReservationStatus::Cancelled->value => __('Cancelled'),
-                                                    \App\Enums\ReservationStatus::NoShow->value => __('No Show'),
-                                                ];
-                                                
-                                                $statusColors = [
-                                                    \App\Enums\ReservationStatus::Pending->value => 'bg-yellow-100 text-yellow-800',
-                                                    \App\Enums\ReservationStatus::Confirmed->value => 'bg-blue-100 text-blue-800',
-                                                    \App\Enums\ReservationStatus::Seated->value => 'bg-green-100 text-green-800',
-                                                    \App\Enums\ReservationStatus::Completed->value => 'bg-gray-100 text-gray-800',
-                                                    \App\Enums\ReservationStatus::Cancelled->value => 'bg-red-100 text-red-800',
-                                                    \App\Enums\ReservationStatus::NoShow->value => 'bg-red-100 text-red-800',
-                                                ];
-                                            @endphp
-                                            
-                                            @if(!empty($allowedStatuses))
-                                                <form action="{{ route('waiter.reservation.update-status', $reservation) }}" method="POST" class="mt-2">
+                                            @if($reservation->status === \App\Enums\ReservationStatus::Confirmed)
+                                                <form action="{{ route('waiter.reservation.mark-seated', $reservation) }}" method="POST" class="mt-2">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <div class="flex gap-1 flex-wrap">
-                                                        @foreach($allowedStatuses as $status)
-                                                            <button type="submit" name="status" value="{{ $status->value }}" 
-                                                                    class="flex-1 py-1.5 px-2 rounded text-xs font-medium transition
-                                                                    {{ $status === \App\Enums\ReservationStatus::Seated || $status === \App\Enums\ReservationStatus::Completed ? 'bg-green-600 hover:bg-green-700 text-white' : '' }}
-                                                                    {{ $status === \App\Enums\ReservationStatus::NoShow || $status === \App\Enums\ReservationStatus::Cancelled ? 'bg-red-600 hover:bg-red-700 text-white' : '' }}
-                                                                    {{ $status === \App\Enums\ReservationStatus::Confirmed ? 'bg-blue-600 hover:bg-blue-700 text-white' : '' }}">
-                                                                {{ $statusLabels[$status->value] }}
-                                                            </button>
-                                                        @endforeach
-                                                    </div>
+                                                    <button type="submit" class="w-full py-1.5 px-2 rounded text-xs font-medium bg-green-600 hover:bg-green-700 text-white transition">
+                                                        {{ __('Seat guests') }}
+                                                    </button>
                                                 </form>
                                             @else
-                                                <p class="text-xs {{ $statusColors[$reservation->status] ?? 'text-gray-600' }} mt-1 font-medium px-2 py-1 rounded">
-                                                    {{ $statusLabels[$reservation->status->value] ?? ucfirst($reservation->status->value) }}
+                                                <p class="text-xs font-medium px-2 py-1 rounded
+                                                    {{ $reservation->status === \App\Enums\ReservationStatus::Pending ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                                    {{ $reservation->status === \App\Enums\ReservationStatus::WalkInSeated ? 'bg-green-100 text-green-800' : '' }}
+                                                    {{ $reservation->status === \App\Enums\ReservationStatus::Seated ? 'bg-green-100 text-green-800' : '' }}
+                                                    {{ in_array($reservation->status, [\App\Enums\ReservationStatus::Completed, \App\Enums\ReservationStatus::Cancelled, \App\Enums\ReservationStatus::NoShow]) ? 'bg-gray-100 text-gray-800' : '' }}">
+                                                    {{ ucfirst($reservation->status->value) }}
                                                 </p>
                                             @endif
                                         </div>
@@ -151,10 +98,7 @@
                                         <a href="{{ route('orders.show', $activeOrder) }}" class="block w-full text-center py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                                             {{ __('Open Order') }}
                                         </a>
-                                    @else
-                                        <a href="{{ route('orders.create', ['table_id' => $table->id]) }}" class="block w-full text-center py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
-                                            {{ __('Create Order') }}
-                                        </a>
+                                    
                                     @endif
                                 </div>
                             </div>
@@ -251,91 +195,26 @@
     </div>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            if (!Alpine.store('echo')) {
-                Alpine.store('echo', { connected: false });
-            }
-
-            Alpine.data('waiterDisplay', (initialItems) => ({
-                items: initialItems,
-
-                init() {
-                    this.setupEcho();
-                },
-
-                async markServed(item) {
-                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-                    if (!csrf) return;
-                    try {
-                        const res = await fetch(item.mark_served_url, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': csrf,
-                            },
-                            body: JSON.stringify({}),
-                        });
-                        if (!res.ok) throw new Error('Request failed');
-                        const idx = this.items.findIndex(i => i.id === item.id);
-                        if (idx !== -1) this.items.splice(idx, 1);
-                    } catch (e) {
-                        console.error(e);
-                    }
-                },
-
-                setupEcho() {
-                    if (window.Echo) {
-                        this.connectEcho();
-                    } else {
-                        setTimeout(() => this.setupEcho(), 100);
-                    }
-                },
-
-                connectEcho() {
-                    try {
-                        const channel = window.Echo.private('kitchen');
-                        channel
-                            .listen('.OrderItemStatusUpdated', (e) => {
-                                const index = this.items.findIndex(i => i.id === e.id);
-                                if (e.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}') {
-                                    if (index === -1) {
-                                        const markServedUrl = "{{ route('waiter.mark-served', ':id') }}".replace(':id', e.id);
-                                        this.items.unshift({
-                                            ...e,
-                                            total_price: (parseFloat(e.quantity) * parseFloat(e.unit_price || 0)).toFixed(2),
-                                            mark_served_url: markServedUrl
-                                        });
-                                    } else {
-                                        this.items[index] = { ...this.items[index], ...e };
-                                    }
-                                } else if (e.status === '{{ \App\Enums\OrderItemStatus::Served->value }}' || e.status === '{{ \App\Enums\OrderItemStatus::Cancelled->value }}' || e.status !== '{{ \App\Enums\OrderItemStatus::Ready->value }}') {
-                                    if (index !== -1) this.items.splice(index, 1);
-                                }
-                            })
-                            .listen('.OrderItemCreated', (e) => {
-                                if (e.status === '{{ \App\Enums\OrderItemStatus::Ready->value }}' && !this.items.find(i => i.id === e.id)) {
-                                    const markServedUrl = "{{ route('waiter.mark-served', ':id') }}".replace(':id', e.id);
-                                    this.items.unshift({
-                                        ...e,
-                                        total_price: (parseFloat(e.quantity) * parseFloat(e.unit_price || 0)).toFixed(2),
-                                        mark_served_url: markServedUrl
-                                    });
-                                }
-                            });
-
-                        if (window.Echo.connector?.pusher) {
-                            window.Echo.connector.pusher.connection.bind('connected', () => { Alpine.store('echo').connected = true; });
-                            window.Echo.connector.pusher.connection.bind('disconnected', () => { Alpine.store('echo').connected = false; });
-                            Alpine.store('echo').connected = true;
-                        }
-                    } catch (error) {
-                        console.error('Echo:', error);
-                        setTimeout(() => this.setupEcho(), 1000);
-                    }
-                }
-            }));
-        });
+        window.__WAITER__ = @js([
+            'items' => $readyItems->map(fn($item) => [
+                'id' => $item->id,
+                'order_id' => $item->order_id,
+                'table_number' => $item->order->table->table_number ?? 'N/A',
+                'name' => $item->menuItem->dish->name,
+                'quantity' => $item->quantity,
+                'notes' => $item->notes,
+                'status' => $item->status->value,
+                'unit_price' => $item->unit_price,
+                'total_price' => number_format($item->quantity * $item->unit_price, 2),
+                'created_at_human' => $item->created_at->diffForHumans(),
+                'updated_at_human' => $item->updated_at->diffForHumans(),
+                'mark_served_url' => route('waiter.mark-served', $item->id),
+            ]),
+            'readyStatus' => \App\Enums\OrderItemStatus::Ready->value,
+            'servedStatus' => \App\Enums\OrderItemStatus::Served->value,
+            'cancelledStatus' => \App\Enums\OrderItemStatus::Cancelled->value,
+            'markServedUrlTemplate' => route('waiter.mark-served', ':id'),
+        ]);
     </script>
     <style>
         .animate-pulse-subtle { animation: pulseSub 2s ease-in-out infinite; }

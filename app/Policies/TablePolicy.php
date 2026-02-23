@@ -35,11 +35,12 @@ class TablePolicy
     }
 
     /**
-     * Whether the user can change table status only (e.g. Host seating guests).
+     * Table status is normally updated by domain services (reservations, orders).
+     * This policy is reserved for any future internal/admin use.
      */
     public function updateStatus(User $user, Table $table): bool
     {
-        return in_array($user->role, [UserRole::Manager, UserRole::Host]);
+        return in_array($user->role, [UserRole::Manager, UserRole::Host], true);
     }
 
     /**

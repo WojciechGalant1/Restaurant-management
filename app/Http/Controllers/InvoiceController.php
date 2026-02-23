@@ -33,7 +33,11 @@ class InvoiceController extends Controller
     {
         $this->authorize('create', Invoice::class);
 
-        $invoice = $this->invoiceService->createInvoice($request->validated());
+        try {
+            $invoice = $this->invoiceService->createInvoice($request->validated());
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('invoices.show', $invoice)->with('success', 'Invoice generated successfully.');
     }

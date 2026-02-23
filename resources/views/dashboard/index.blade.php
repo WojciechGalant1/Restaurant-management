@@ -268,59 +268,6 @@
                         <li x-show="feedItems.length === 0" class="text-gray-500 text-sm py-4">{{ __('No activity yet.') }}</li>
                     </ul>
                 </div>
-                <script>
-                    document.addEventListener('alpine:init', () => {
-                        if (!Alpine.store('echo')) Alpine.store('echo', { connected: false });
-                        Alpine.data('dashboardLiveFeed', () => ({
-                            feedItems: [],
-                            maxItems: 50,
-                            feedId: 0,
-                            relativeTime(ts) {
-                                if (!ts) return '–';
-                                const sec = Math.floor((Date.now() - ts) / 1000);
-                                if (sec < 60) return 'just now';
-                                if (sec < 3600) return Math.floor(sec / 60) + ' min ago';
-                                if (sec < 86400) return Math.floor(sec / 3600) + ' h ago';
-                                return Math.floor(sec / 86400) + ' d ago';
-                            },
-                            init() {
-                                if (typeof window.Echo === 'undefined') {
-                                    setTimeout(() => this.init(), 200);
-                                    return;
-                                }
-                                setInterval(() => {
-                                    this.feedItems = this.feedItems.slice();
-                                }, 60000);
-                                try {
-                                    const channel = window.Echo.private('dashboard');
-                                    const self = this;
-                                    const push = (e) => {
-                                        const msg = e.feed_message || e.message;
-                                        const link = e.feed_link || e.link || null;
-                                        if (msg) {
-                                            self.feedItems.unshift({
-                                                id: ++self.feedId,
-                                                feed_message: msg,
-                                                feed_link: link,
-                                                added_at: Date.now()
-                                            });
-                                            if (self.feedItems.length > self.maxItems) self.feedItems = self.feedItems.slice(0, self.maxItems);
-                                        }
-                                    };
-                                    channel.listen('.OrderCreated', push)
-                                        .listen('.OrderItemStatusUpdated', push)
-                                        .listen('.ReservationCreated', push)
-                                        .listen('.ReservationUpdated', push)
-                                        .listen('.InvoiceIssued', push);
-                                    if (window.Echo.connector && window.Echo.connector.pusher) {
-                                        window.Echo.connector.pusher.connection.bind('connected', () => { Alpine.store('echo').connected = true; });
-                                        Alpine.store('echo').connected = true;
-                                    }
-                                } catch (err) { console.error('Dashboard Live Feed:', err); }
-                            }
-                        }));
-                    });
-                </script>
             @endif
 
             @if($sections['quick_actions'] ?? true)

@@ -108,4 +108,12 @@ class TableService
             }
         });
     }
+
+    /**
+     * Explicitly mark a table as occupied (e.g. walk-in guests from host view).
+     */
+    public function markTableOccupied(Table $table): void
+    {
+        $table->markAsOccupied();
+    }
 }

@@ -16,6 +16,14 @@ class OrderService
     public function createOrder(array $data, User $waiter): Order
     {
         return DB::transaction(function () use ($data, $waiter) {
+            $hasOpenOrder = Order::where('table_id', $data['table_id'])
+                ->where('status', OrderStatus::Open)
+                ->exists();
+
+            if ($hasOpenOrder) {
+                throw new \InvalidArgumentException(__('This table already has an open order.'));
+            }
+
             $order = Order::create([
                 'table_id' => $data['table_id'],
                 'user_id' => $waiter->id,
@@ -44,6 +52,34 @@ class OrderService
             if ($table) {
                 $table->markAsOccupied();
             }
+
+            event(new OrderCreated($order->load('table')));
+
+            return $order;
+        });
+    }
+
+    /**
+     * Create an empty open order for a table (e.g. Host seats walk-in guests).
+     * Ensures there is at most one open order per table.
+     */
+    public function createEmptyOrderForTable(Table $table): Order
+    {
+        return DB::transaction(function () use ($table) {
+            $hasOpenOrder = Order::where('table_id', $table->id)
+                ->where('status', OrderStatus::Open)
+                ->exists();
+
+            if ($hasOpenOrder) {
+                throw new \InvalidArgumentException(__('This table already has an open order.'));
+            }
+
+            $order = Order::create([
+                'table_id' => $table->id,
+                'user_id' => null,
+                'status' => OrderStatus::Open,
+                'total_price' => 0,
+            ]);
 
             event(new OrderCreated($order->load('table')));
 

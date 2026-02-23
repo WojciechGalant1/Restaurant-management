@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Reservation;
+use App\Enums\OrderItemStatus;
 use App\Enums\ReservationStatus;
 use App\Enums\OrderStatus;
 use App\Events\InvoiceIssued;
@@ -26,7 +27,15 @@ class InvoiceService
     public function createInvoice(array $data): Invoice
     {
         return DB::transaction(function () use ($data) {
-            $order = Order::findOrFail($data['order_id']);
+            $order = Order::with('orderItems')->findOrFail($data['order_id']);
+
+            $allowedItemStatuses = [OrderItemStatus::Served, OrderItemStatus::Cancelled];
+            $unserved = $order->orderItems->filter(
+                fn ($item) => ! in_array($item->status, $allowedItemStatuses, true)
+            );
+            if ($unserved->isNotEmpty()) {
+                throw new \InvalidArgumentException(__('Cannot pay order with unserved or unprepared items.'));
+            }
 
             $invoice = Invoice::create([
                 'order_id' => $order->id,

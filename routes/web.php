@@ -38,8 +38,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('orders', OrderController::class);
     Route::resource('tables', TableController::class);
     Route::post('tables/{table}/assign', [TableController::class, 'assign'])->name('tables.assign');
-    Route::patch('tables/{table}/status', [TableController::class, 'updateStatus'])->name('tables.update-status');
+    Route::post('tables/{table}/seat-walk-in', [TableController::class, 'seatWalkIn'])->name('tables.seat-walk-in');
     Route::resource('rooms', RoomController::class);
+    Route::post('reservations/{reservation}/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
+    Route::post('reservations/{reservation}/seat', [ReservationController::class, 'seat'])->name('reservations.seat');
+    Route::post('reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
     Route::resource('reservations', ReservationController::class);
     Route::resource('dishes', DishController::class);
     Route::resource('menu-items', MenuItemController::class);
@@ -69,8 +72,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/waiter', [WaiterController::class, 'index'])->name('waiter.index');
     Route::patch('/waiter/items/{orderItem}/mark-served', [WaiterController::class, 'markAsServed'])->name('waiter.mark-served');
     Route::patch('/waiter/reservations/{reservation}/mark-seated', [WaiterController::class, 'markReservationAsSeated'])->name('waiter.reservation.mark-seated');
-    Route::patch('/waiter/reservations/{reservation}/mark-no-show', [WaiterController::class, 'markReservationAsNoShow'])->name('waiter.reservation.mark-no-show');
-    Route::patch('/waiter/reservations/{reservation}/status', [WaiterController::class, 'updateReservationStatus'])->name('waiter.reservation.update-status');
 });
 
 require __DIR__.'/auth.php';
