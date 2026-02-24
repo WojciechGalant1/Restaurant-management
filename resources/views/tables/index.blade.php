@@ -324,11 +324,11 @@
                                 @endif
 
                                 @if($isManager ?? false)
-                                <form :action="`{{ url('tables') }}/${modalTable.id}/assign`" method="POST" class="space-y-3">
-                                    @csrf
+                                <div class="space-y-3">
                                     <label class="text-xs font-medium text-gray-500 uppercase tracking-wider block">{{ __('Change Assignment') }}</label>
 
                                     <select name="shift_id" x-model="selectedShiftId"
+                                            form="assign-form"
                                             class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                         <option value="">{{ __('Select active shift...') }}</option>
                                         @foreach($activeShifts as $shift)
@@ -339,20 +339,25 @@
                                         @endforeach
                                     </select>
 
-                                    <input type="hidden" name="user_id" :value="selectedWaiterId">
-
                                     <div class="flex space-x-2">
-                                        <button type="submit" :disabled="!selectedShiftId"
-                                                class="flex-1 px-3 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                                            {{ __('Assign') }}
-                                        </button>
-                                        <button type="submit" @click="selectedShiftId = modalTable.shift_id; $nextTick(() => { $el.closest('form').querySelector('[name=user_id]').value = ''; })"
-                                                x-show="modalTable.waiter_name && modalTable.shift_id"
-                                                class="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition">
-                                            {{ __('Unassign') }}
-                                        </button>
+                                        <form id="assign-form" :action="`{{ url('tables') }}/${modalTable.id}/assign`" method="POST" class="flex-1">
+                                            @csrf
+                                            <input type="hidden" name="user_id" :value="selectedWaiterId">
+                                            <button type="submit" :disabled="!selectedShiftId"
+                                                    class="w-full px-3 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                                {{ __('Assign') }}
+                                            </button>
+                                        </form>
+                                        <form x-show="modalTable.waiter_name && modalTable.shift_id"
+                                              :action="`{{ url('tables') }}/${modalTable.id}/assign`" method="POST" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="shift_id" :value="modalTable.shift_id">
+                                            <button type="submit" class="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition">
+                                                {{ __('Unassign') }}
+                                            </button>
+                                        </form>
                                     </div>
-                                </form>
+                                </div>
                                 @endif
                             </div>
 

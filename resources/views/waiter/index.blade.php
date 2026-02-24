@@ -35,12 +35,36 @@
                 </p>
             </div>
 
-            {{-- 2. My Tables --}}
+            {{-- 2. My Tables (grouped by status) --}}
             @if($tables->isNotEmpty())
+                @php
+                    $statusOrder = [
+                        \App\Enums\TableStatus::Occupied->value,
+                        \App\Enums\TableStatus::Reserved->value,
+                        \App\Enums\TableStatus::Available->value,
+                    ];
+                    $statusLabels = [
+                        \App\Enums\TableStatus::Occupied->value => __('Occupied'),
+                        \App\Enums\TableStatus::Reserved->value => __('Reserved'),
+                        \App\Enums\TableStatus::Available->value => __('Available'),
+                    ];
+                    $tablesByStatus = $tables->groupBy(fn($t) => $t->status->value);
+                @endphp
                 <section>
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('My Tables') }}</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        @foreach($tables as $table)
+                    @foreach($statusOrder as $statusValue)
+                        @php $groupTables = $tablesByStatus->get($statusValue, collect()); @endphp
+                        @if($groupTables->isNotEmpty())
+                            <div class="mb-6">
+                                <h4 class="text-sm font-medium text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+                                    <span class="inline-block w-2 h-2 rounded-full
+                                        {{ $statusValue === \App\Enums\TableStatus::Occupied->value ? 'bg-red-500' : '' }}
+                                        {{ $statusValue === \App\Enums\TableStatus::Reserved->value ? 'bg-yellow-500' : '' }}
+                                        {{ $statusValue === \App\Enums\TableStatus::Available->value ? 'bg-green-500' : '' }}"></span>
+                                    {{ $statusLabels[$statusValue] ?? ucfirst($statusValue) }} ({{ $groupTables->count() }})
+                                </h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    @foreach($groupTables as $table)
                             @php
                                 $status = $table->status instanceof \App\Enums\TableStatus ? $table->status : \App\Enums\TableStatus::tryFrom($table->status);
                                 $activeOrder = $activeOrders->firstWhere('table_id', $table->id);
@@ -102,8 +126,11 @@
                                     @endif
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
                 </section>
             @endif
 
