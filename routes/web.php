@@ -53,6 +53,8 @@ Route::middleware('auth')->group(function () {
         Route::get('shifts/availability', [ShiftController::class, 'availability'])->name('shifts.availability');
         Route::get('shifts/coverage', [ShiftController::class, 'coverage'])->name('shifts.coverage');
         Route::get('reservations/calendar-events', [ReservationController::class, 'calendarEvents'])->name('reservations.calendar-events');
+        Route::get('reservations/available-tables', [ReservationController::class, 'availableTables'])->name('reservations.available-tables');
+        Route::get('reservations/customer-by-phone', [ReservationController::class, 'customerByPhone'])->name('reservations.customer-by-phone');
         Route::get('tables/floor-data', [TableController::class, 'floorData'])->name('tables.floor-data');
         Route::post('tables/reorder', [TableController::class, 'reorder'])->name('tables.reorder');
     });

@@ -11,7 +11,7 @@ class TablePolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, [UserRole::Manager, UserRole::Host]);
+        return in_array($user->role, [UserRole::Manager, UserRole::Host, UserRole::Waiter]);
     }
 
     public function view(User $user, Table $table): bool

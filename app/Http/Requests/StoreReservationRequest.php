@@ -20,6 +20,8 @@ class StoreReservationRequest extends FormRequest
             'reservation_date' => 'required|date',
             'reservation_time' => 'required',
             'party_size' => 'required|integer|min:1',
+            'duration_minutes' => 'required|integer|min:15|max:480',
+            'notes' => 'nullable|string|max:1000',
         ];
     }
 }

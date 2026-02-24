@@ -17,6 +17,7 @@ class Reservation extends Model
         'reservation_date',
         'reservation_time',
         'party_size',
+        'duration_minutes',
         'status',
         'notes',
     ];
@@ -25,6 +26,7 @@ class Reservation extends Model
         'status' => ReservationStatus::class,
         'reservation_date' => 'date',
         'reservation_time' => 'datetime',
+        'duration_minutes' => 'integer',
     ];
 
     public function table()

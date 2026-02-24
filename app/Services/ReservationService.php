@@ -46,6 +46,7 @@ class ReservationService
                 'reservation_date' => $now->toDateString(),
                 'reservation_time' => $now->format('H:i:s'),
                 'party_size' => max(1, $partySize),
+                'duration_minutes' => 120,
                 'status' => ReservationStatus::WalkInSeated,
             ]);
 
