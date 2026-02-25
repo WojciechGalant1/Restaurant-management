@@ -50,4 +50,19 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function bills()
+    {
+        return $this->hasMany(Bill::class);
+    }
+
+    public function openBill(): ?Bill
+    {
+        return $this->bills()->where('status', \App\Enums\BillStatus::Open)->first();
+    }
+
+    public function paidBill(): ?Bill
+    {
+        return $this->bills()->where('status', \App\Enums\BillStatus::Paid)->latest()->first();
+    }
 }

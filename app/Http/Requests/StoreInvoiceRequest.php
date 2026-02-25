@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreInvoiceRequest extends FormRequest
 {
@@ -16,10 +14,9 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'order_id' => 'required|exists:orders,id',
+            'bill_id' => 'required|exists:bills,id',
             'customer_name' => 'nullable|string',
             'tax_id' => 'nullable|string',
-            'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
         ];
     }
 }

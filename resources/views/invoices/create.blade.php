@@ -17,26 +17,16 @@
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <x-input-label for="order_id" :value="__('Select Order (Unpaid)')" />
-                            <select id="order_id" name="order_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required autofocus>
-                                <option value="">-- Choose an Order --</option>
-                                @foreach($orders as $order)
-                                    <option value="{{ $order->id }}" {{ (old('order_id') == $order->id || request('order_id') == $order->id) ? 'selected' : '' }}>
-                                        Order #{{ $order->id }} - Table #{{ $order->table->table_number ?? 'N/A' }} ({{ number_format($order->total_price, 2) }} PLN)
+                            <x-input-label for="bill_id" :value="__('Select Bill (Paid, no invoice)')" />
+                            <select id="bill_id" name="bill_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required autofocus>
+                                <option value="">-- {{ $bills->isEmpty() ? __('No paid bills without invoice') : __('Choose a Bill') }} --</option>
+                                @foreach($bills as $bill)
+                                    <option value="{{ $bill->id }}" {{ (old('bill_id') == $bill->id || request('bill_id') == $bill->id) ? 'selected' : '' }}>
+                                        Bill #{{ $bill->id }} - Order #{{ $bill->order_id }} - Table #{{ $bill->order?->table?->table_number ?? 'N/A' }} ({{ number_format($bill->total_amount, 2) }} PLN)
                                     </option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('order_id')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="payment_method" :value="__('Payment Method')" />
-                             <select id="payment_method" name="payment_method" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="{{ \App\Enums\PaymentMethod::Cash->value }}" {{ old('payment_method') === \App\Enums\PaymentMethod::Cash->value ? 'selected' : '' }}>Cash</option>
-                                <option value="{{ \App\Enums\PaymentMethod::Card->value }}" {{ old('payment_method') === \App\Enums\PaymentMethod::Card->value ? 'selected' : '' }}>Payment Card</option>
-                                <option value="{{ \App\Enums\PaymentMethod::Online->value }}" {{ old('payment_method') === \App\Enums\PaymentMethod::Online->value ? 'selected' : '' }}>Online Payment</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('payment_method')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('bill_id')" class="mt-2" />
                         </div>
 
                         <div>
@@ -54,7 +44,7 @@
 
                     <div class="mt-6">
                         <x-primary-button>
-                            {{ __('Generate & Pay') }}
+                            {{ __('Generate Invoice') }}
                         </x-primary-button>
                     </div>
                 </form>

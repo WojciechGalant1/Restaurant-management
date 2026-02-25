@@ -41,8 +41,8 @@
                     </div>
                     <div class="text-right">
                         <h5 class="text-xs font-bold uppercase text-gray-400 mb-1">Order Ref:</h5>
-                        <p class="font-bold">Order #{{ $invoice->order_id }}</p>
-                        <p class="text-sm text-gray-500">Table: #{{ $invoice->order->table->table_number ?? 'N/A' }}</p>
+                        <p class="font-bold">Order #{{ $invoice->order?->id ?? '-' }}</p>
+                        <p class="text-sm text-gray-500">Table: #{{ $invoice->order?->table?->table_number ?? 'N/A' }}</p>
                     </div>
                 </div>
 
@@ -56,7 +56,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($invoice->order->orderItems as $item)
+                        @foreach($invoice->order?->orderItems ?? [] as $item)
                             <tr class="border-b border-gray-50">
                                 <td class="py-4 text-gray-800">{{ $item->menuItem->dish->name ?? 'Unknown item' }}</td>
                                 <td class="py-4 text-center text-gray-500">{{ $item->quantity }}</td>
@@ -81,10 +81,14 @@
                             <span>Total</span>
                             <span>{{ number_format($invoice->amount, 2) }} PLN</span>
                         </div>
+                        @if($invoice->bill?->payments->isNotEmpty())
                         <div class="mt-4 text-right">
-                            <span class="text-xs font-bold uppercase text-gray-400 block mb-1">Paid via:</span>
-                            <span class="px-2 py-1 bg-gray-100 rounded text-xs font-bold">{{ strtoupper($invoice->payment_method->value) }}</span>
+                            <span class="text-xs font-bold uppercase text-gray-400 block mb-1">{{ __('Payments') }}:</span>
+                            @foreach($invoice->bill->payments as $p)
+                                <span class="px-2 py-1 bg-gray-100 rounded text-xs font-bold mr-1">{{ number_format($p->amount, 2) }} PLN ({{ $p->method->label() }})</span>
+                            @endforeach
                         </div>
+                        @endif
                     </div>
                 </div>
 

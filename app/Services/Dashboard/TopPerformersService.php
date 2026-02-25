@@ -3,8 +3,8 @@
 namespace App\Services\Dashboard;
 
 use App\Enums\PaymentMethod;
-use App\Models\Invoice;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -33,10 +33,11 @@ class TopPerformersService
     public function bestWaiterByRevenueToday(): ?User
     {
         $today = today();
-        $userId = Invoice::query()
-            ->whereDate('issued_at', $today)
-            ->join('orders', 'invoices.order_id', '=', 'orders.id')
-            ->selectRaw('orders.user_id, SUM(invoices.amount) as total')
+        $userId = Payment::query()
+            ->whereDate('payments.created_at', $today)
+            ->join('bills', 'payments.bill_id', '=', 'bills.id')
+            ->join('orders', 'bills.order_id', '=', 'orders.id')
+            ->selectRaw('orders.user_id, SUM(payments.amount) as total')
             ->groupBy('orders.user_id')
             ->orderByDesc('total')
             ->value('orders.user_id');
@@ -46,11 +47,12 @@ class TopPerformersService
     public function mostUsedPaymentMethodToday(): ?PaymentMethod
     {
         $today = today();
-        return Invoice::query()
-            ->whereDate('issued_at', $today)
-            ->selectRaw('payment_method, COUNT(*) as c')
-            ->groupBy('payment_method')
+        $method = DB::table('payments')
+            ->whereDate('created_at', $today)
+            ->selectRaw('method, COUNT(*) as c')
+            ->groupBy('method')
             ->orderByDesc('c')
-            ->value('payment_method');
+            ->value('method');
+        return $method ? PaymentMethod::from($method) : null;
     }
 }

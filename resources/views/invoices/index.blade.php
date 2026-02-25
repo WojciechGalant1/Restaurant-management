@@ -14,10 +14,9 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issued</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
@@ -29,16 +28,13 @@
                                         {{ $invoice->invoice_number }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        #{{ $invoice->order_id }}
+                                        #{{ $invoice->order?->id ?? '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $invoice->customer_name ?? 'Guest' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-extrabold text-indigo-600">
                                         {{ number_format($invoice->amount, 2) }} PLN
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ ucfirst($invoice->payment_method->value) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $invoice->issued_at->format('d.m.Y H:i') }}
@@ -51,7 +47,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-10 text-center text-gray-500 italic">
+                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500 italic">
                                         {{ __('No invoices found.') }}
                                     </td>
                                 </tr>

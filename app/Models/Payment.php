@@ -2,33 +2,27 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Invoice extends Model
+class Payment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'bill_id',
-        'invoice_number',
         'amount',
-        'tax_id',
-        'customer_name',
-        'issued_at',
+        'method',
     ];
 
     protected $casts = [
-        'issued_at' => 'datetime',
+        'amount' => 'decimal:2',
+        'method' => PaymentMethod::class,
     ];
 
     public function bill()
     {
         return $this->belongsTo(Bill::class);
-    }
-
-    public function getOrderAttribute(): ?Order
-    {
-        return $this->bill?->order;
     }
 }

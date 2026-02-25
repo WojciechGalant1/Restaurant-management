@@ -53,6 +53,10 @@
                         <p class="text-2xl font-bold text-gray-900">{{ number_format($kpis['avg_order_value_today'] ?? 0, 2) }} PLN</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                        <p class="text-sm text-gray-500">{{ __('Tips Today') }}</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format($kpis['tips_today'] ?? 0, 2) }} PLN</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <p class="text-sm text-gray-500">{{ __('Active Tables') }}</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $kpis['active_tables_count'] ?? 0 }}/{{ $kpis['total_tables_count'] ?? 0 }}</p>
                     </div>

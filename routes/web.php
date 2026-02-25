@@ -8,6 +8,7 @@ use App\Http\Controllers\DishController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BillController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KitchenController;
@@ -36,6 +37,9 @@ Route::middleware('auth')->group(function () {
 
     // Restaurant Management
     Route::resource('orders', OrderController::class);
+    Route::post('orders/{order}/bill', [BillController::class, 'store'])->name('orders.bill.store');
+    Route::post('bills/{bill}/payments', [BillController::class, 'addPayment'])->name('bills.payments.store');
+    Route::post('bills/{bill}/cancel', [BillController::class, 'cancel'])->name('bills.cancel');
     Route::resource('tables', TableController::class);
     Route::post('tables/{table}/assign', [TableController::class, 'assign'])->name('tables.assign');
     Route::post('tables/{table}/seat-walk-in', [TableController::class, 'seatWalkIn'])->name('tables.seat-walk-in');

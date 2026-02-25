@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Bill;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Reservation;
-use App\Enums\OrderItemStatus;
+use App\Enums\BillStatus;
 use App\Enums\ReservationStatus;
 use App\Enums\OrderStatus;
 use App\Events\InvoiceIssued;
-use App\Events\ReservationUpdated;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -27,33 +27,27 @@ class InvoiceService
     public function createInvoice(array $data): Invoice
     {
         return DB::transaction(function () use ($data) {
-            $order = Order::with('orderItems')->findOrFail($data['order_id']);
+            $bill = Bill::with('order')->findOrFail($data['bill_id']);
 
-            $allowedItemStatuses = [OrderItemStatus::Served, OrderItemStatus::Cancelled];
-            $unserved = $order->orderItems->filter(
-                fn ($item) => ! in_array($item->status, $allowedItemStatuses, true)
-            );
-            if ($unserved->isNotEmpty()) {
-                throw new \InvalidArgumentException(__('Cannot pay order with unserved or unprepared items.'));
+            if ($bill->status !== BillStatus::Paid) {
+                throw new \InvalidArgumentException(__('Invoice can only be generated for paid bills.'));
+            }
+
+            if ($bill->invoice) {
+                throw new \InvalidArgumentException(__('This bill already has an invoice.'));
             }
 
             $invoice = Invoice::create([
-                'order_id' => $order->id,
+                'bill_id' => $bill->id,
                 'invoice_number' => 'INV-' . strtoupper(Str::random(8)),
-                'amount' => $order->total_price,
+                'amount' => $bill->total_amount,
                 'customer_name' => $data['customer_name'] ?? null,
                 'tax_id' => $data['tax_id'] ?? null,
-                'payment_method' => $data['payment_method'],
                 'issued_at' => now(),
             ]);
 
-            $order->update([
-                'status' => OrderStatus::Paid,
-                'paid_at' => now()
-            ]);
-
-            $this->autoCompleteReservations($order);
-            $this->releaseTableIfFree($order);
+            $this->autoCompleteReservations($bill->order);
+            $this->releaseTableIfFree($bill->order);
             $this->clearRevenueCaches();
 
             event(new InvoiceIssued($invoice));

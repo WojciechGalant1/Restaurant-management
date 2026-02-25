@@ -80,13 +80,20 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $this->authorize('view', $order);
-        $order->load(['table', 'waiter', 'orderItems.menuItem.dish']);
+        $order->load(['table', 'waiter', 'orderItems.menuItem.dish', 'bills.payments', 'bills.invoice']);
         return view('orders.show', compact('order'));
     }
 
     public function edit(Order $order)
     {
         $this->authorize('update', $order);
+
+        if ($order->openBill()) {
+            return redirect()
+                ->route('orders.show', $order)
+                ->with('error', __('Order is locked. Cancel the open bill first to edit.'));
+        }
+
         $order->load(['orderItems.menuItem.dish']);
         $tables = Table::where('status', 'available')->orWhere('id', $order->table_id)->orderBy('table_number')->get();
         $menuItems = MenuItem::with('dish')->where('is_available', true)->get();
@@ -96,6 +103,12 @@ class OrderController extends Controller
     public function update(UpdateOrderRequest $request, Order $order)
     {
         $this->authorize('update', $order);
+
+        if ($order->openBill()) {
+            return redirect()
+                ->route('orders.show', $order)
+                ->with('error', __('Order is locked. Cancel the open bill first to edit.'));
+        }
 
         $order = $this->orderService->updateOrder($order, $request->validated());
         return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
