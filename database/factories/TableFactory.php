@@ -18,7 +18,12 @@ class TableFactory extends Factory
         return [
             'table_number' => $this->faker->unique()->numberBetween(1, 100),
             'capacity' => $this->faker->numberBetween(2, 8),
-            'status' => TableStatus::Available,
+            'status' => $this->faker->randomElement([
+                ...array_fill(0, 60, TableStatus::Available),
+                ...array_fill(0, 20, TableStatus::Occupied),
+                ...array_fill(0, 15, TableStatus::Reserved),
+                ...array_fill(0, 5, TableStatus::Cleaning),
+            ]),
         ];
     }
 }

@@ -17,29 +17,30 @@ class DishFactory extends Factory
     {
         $dishes = [
             DishCategory::Starter->value => [
-                'Caesar Salad', 'Bruschetta', 'Garlic Bread', 'Calamari', 'Tomato Soup',
-                'Caprese Salad', 'Chicken Wings', 'Spring Rolls', 'Nachos', 'Mozzarella Sticks'
+                'names' => ['Caesar Salad', 'Bruschetta', 'Garlic Bread', 'Calamari', 'Tomato Soup', 'Caprese Salad', 'Chicken Wings', 'Spring Rolls', 'Nachos', 'Mozzarella Sticks'],
+                'price_range' => [12, 28]
             ],
             DishCategory::Main->value => [
-                'Grilled Salmon', 'Steak Frites', 'Spaghetti Carbonara', 'Chicken Curry', 'Beef Burger',
-                'Fish and Chips', 'Mushroom Risotto', 'Pizza Margherita', 'Roast Chicken', 'Lamb Chops'
+                'names' => ['Grilled Salmon', 'Steak Frites', 'Spaghetti Carbonara', 'Chicken Curry', 'Beef Burger', 'Fish and Chips', 'Mushroom Risotto', 'Pizza Margherita', 'Roast Chicken', 'Lamb Chops'],
+                'price_range' => [28, 79]
             ],
             DishCategory::Dessert->value => [
-                'Tiramisu', 'New York Cheesecake', 'Chocolate Brownie', 'Apple Pie', 'Ice Cream Sundae',
-                'Panna Cotta', 'Creme Brulee', 'Fruit Salad', 'Belgian Waffles', 'Pancakes'
+                'names' => ['Tiramisu', 'New York Cheesecake', 'Chocolate Brownie', 'Apple Pie', 'Ice Cream Sundae', 'Panna Cotta', 'Creme Brulee', 'Fruit Salad', 'Belgian Waffles', 'Pancakes'],
+                'price_range' => [14, 32]
             ],
             DishCategory::Drink->value => [
-                'Cola', 'Lemonade', 'Iced Tea', 'Espresso', 'Cappuccino',
-                'Orange Juice', 'Sparkling Water', 'Craft Beer', 'House Red Wine', 'Mojito'
+                'names' => ['Cola', 'Lemonade', 'Iced Tea', 'Espresso', 'Cappuccino', 'Orange Juice', 'Sparkling Water', 'Craft Beer', 'House Red Wine', 'Mojito'],
+                'price_range' => [8, 26]
             ],
             DishCategory::Side->value => [
-                'French Fries', 'Mashed Potatoes', 'Steamed Vegetables', 'Onion Rings', 'Jasmine Rice',
-                'Coleslaw', 'Roasted Potatoes', 'Garlic Mushrooms', 'Garden Salad', 'Sweet Potato Fries'
+                'names' => ['French Fries', 'Mashed Potatoes', 'Steamed Vegetables', 'Onion Rings', 'Jasmine Rice', 'Coleslaw', 'Roasted Potatoes', 'Garlic Mushrooms', 'Garden Salad', 'Sweet Potato Fries'],
+                'price_range' => [12, 28]
             ],
         ];
 
         $category = $this->faker->randomElement(DishCategory::cases());
-        $name = $this->faker->randomElement($dishes[$category->value]);
+        $config = $dishes[$category->value];
+        $name = $this->faker->randomElement($config['names']);
 
         return [
             'name' => $name,

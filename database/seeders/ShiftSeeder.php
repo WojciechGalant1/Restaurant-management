@@ -19,9 +19,9 @@ class ShiftSeeder extends Seeder
 
         $shiftTypes = [ShiftType::Morning, ShiftType::Evening];
 
-        // Create shifts for the last 14 days, avoiding duplicates
+        // Create shifts for the last 30 days, avoiding duplicates
         $staff->each(function (User $user) use ($shiftTypes) {
-            for ($i = 0; $i < 14; $i++) {
+            for ($i = 0; $i < 30; $i++) {
                 $date = now()->subDays($i)->toDateString();
                 $type = $shiftTypes[array_rand($shiftTypes)];
 

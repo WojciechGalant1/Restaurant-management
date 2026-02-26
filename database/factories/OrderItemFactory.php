@@ -18,19 +18,32 @@ class OrderItemFactory extends Factory
 
     public function definition(): array
     {
-        $status = $this->faker->randomElement(OrderItemStatus::cases());
-        $createdAt = $this->faker->dateTimeBetween('-30 days', 'now');
+        $status = $this->faker->randomElement([
+            ...array_fill(0, 65, OrderItemStatus::Served),
+            ...array_fill(0, 15, OrderItemStatus::Ready),
+            ...array_fill(0, 10, OrderItemStatus::Preparing),
+            ...array_fill(0, 8, OrderItemStatus::Pending),
+            ...array_fill(0, 2, OrderItemStatus::Cancelled),
+        ]);
+
+        $quantity = $this->faker->randomElement([
+            ...array_fill(0, 70, 1),
+            ...array_fill(0, 20, 2),
+            ...array_fill(0, 10, 3),
+        ]);
 
         return [
             'order_id' => Order::factory(),
             'menu_item_id' => MenuItem::factory(),
-            'quantity' => $this->faker->numberBetween(1, 3),
-            'unit_price' => $this->faker->randomFloat(2, 5, 50), // Ideally should match MenuItem price
-            'notes' => $this->faker->optional(0.2)->sentence(),
+            'quantity' => $quantity,
+            'unit_price' => function (array $attributes) {
+                return MenuItem::find($attributes['menu_item_id'])->price;
+            },
+            'notes' => $this->faker->optional(0.1)->sentence(),
             'status' => $status,
-            'created_at' => $createdAt,
+            'created_at' => now(), // Usually overridden in seeder
             'ready_at' => in_array($status, [OrderItemStatus::Ready, OrderItemStatus::Served]) 
-                ? Carbon::parse($createdAt)->addMinutes(rand(5, 45)) 
+                ? now()->addMinutes(rand(5, 45)) 
                 : null,
         ];
     }
