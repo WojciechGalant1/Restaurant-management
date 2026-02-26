@@ -73,10 +73,15 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                @foreach($order->orderItems as $item)
-                                    <tr>
+                                @foreach($order->orderItems->where('status', '!=', \App\Enums\OrderItemStatus::Cancelled) as $item)
+                                    <tr class="{{ $item->cancellationRequest?->isPending() ? 'bg-amber-50' : '' }}">
                                         <td class="px-4 py-3 text-sm text-gray-900 font-medium">
                                             {{ $item->menuItem->dish->name ?? 'Unknown item' }}
+                                            @if($item->cancellationRequest?->isPending())
+                                                <span class="ml-2 inline-flex px-2 py-0.5 rounded text-xs font-medium bg-amber-200 text-amber-900">
+                                                    {{ __('Awaiting cancellation approval') }}
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-500">
                                             {{ $item->quantity }}

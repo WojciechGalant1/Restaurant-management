@@ -25,10 +25,8 @@
         {{-- Main --}}
         <div class="space-y-1">
             <p x-show="!collapsed" class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Main') }}</p>
-            @if(in_array(auth()->user()->role, [UserRole::Manager]))
             <x-sidebar-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="heroicon-o-home">
                 {{ __('Dashboard') }}
-            @endif
             </x-sidebar-link>
             <x-sidebar-link :href="route('shifts.index')" :active="request()->is('shifts*')" icon="heroicon-o-clock">
                 @if(in_array(auth()->user()->role, [UserRole::Manager]))
@@ -98,6 +96,9 @@
             </x-sidebar-link>
             <x-sidebar-link :href="route('invoices.index')" :active="request()->is('invoices*')" icon="heroicon-o-document-text">
                 {{ __('Invoices') }}
+            </x-sidebar-link>
+            <x-sidebar-link :href="route('manager.cancellation-requests.index')" :active="request()->is('manager/cancellation-requests*')" icon="heroicon-o-x-circle">
+                {{ __('Cancellation Requests') }}
             </x-sidebar-link>
         </div>
         @endif

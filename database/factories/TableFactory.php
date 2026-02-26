@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TableStatus;
 use App\Models\Table;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,7 +18,7 @@ class TableFactory extends Factory
         return [
             'table_number' => $this->faker->unique()->numberBetween(1, 100),
             'capacity' => $this->faker->numberBetween(2, 8),
-            'status' => $this->faker->randomElement(['available', 'occupied', 'reserved']),
+            'status' => TableStatus::Available,
         ];
     }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\KitchenController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\WaiterController;
 use App\Http\Controllers\HostController;
+use App\Http\Controllers\Manager\CancellationRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -64,6 +65,12 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::resource('shifts', ShiftController::class);
+    Route::post('shifts/{shift}/clock-in', [ShiftController::class, 'clockIn'])->name('shifts.clock-in');
+
+    // Manager: cancellation requests
+    Route::get('manager/cancellation-requests', [CancellationRequestController::class, 'index'])->name('manager.cancellation-requests.index');
+    Route::post('manager/cancellation-requests/{cancellationRequest}/approve', [CancellationRequestController::class, 'approve'])->name('manager.cancellation-requests.approve');
+    Route::post('manager/cancellation-requests/{cancellationRequest}/reject', [CancellationRequestController::class, 'reject'])->name('manager.cancellation-requests.reject');
     Route::resource('users', UserController::class);
     Route::resource('invoices', InvoiceController::class);
 

@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Table;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -60,12 +59,13 @@ class DatabaseSeeder extends Seeder
             'role' => 'host',
         ]);
 
+        // Shifts MUST run before Tables (TableSeeder uses Shift::activeNow())
         $this->call([
+            ShiftSeeder::class,
             TableSeeder::class,
             DishSeeder::class,
             ReservationSeeder::class,
             OrderSeeder::class,
-            ShiftSeeder::class,
         ]);
     }
 }
