@@ -36,11 +36,13 @@ class KitchenStatsService
 
         $pendingOver15MinCount = (int) OrderItem::query()
             ->where('status', OrderItemStatus::Pending)
+            ->whereDate('created_at', $today)
             ->where('created_at', '<', $cutoff15)
             ->count();
 
         $pendingOver20MinCount = (int) OrderItem::query()
             ->where('status', OrderItemStatus::Pending)
+            ->whereDate('created_at', $today)
             ->where('created_at', '<', $cutoff20)
             ->count();
 
@@ -65,6 +67,7 @@ class KitchenStatsService
     {
         $kitchenQueue = OrderItem::query()
             ->whereIn('status', [OrderItemStatus::Pending, OrderItemStatus::Preparing])
+            ->whereDate('created_at', today())
             ->selectRaw('status, COUNT(*) as c')
             ->groupBy('status')
             ->pluck('c', 'status')

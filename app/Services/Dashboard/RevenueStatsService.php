@@ -2,6 +2,7 @@
 
 namespace App\Services\Dashboard;
 
+use App\Models\Bill;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Support\Carbon;
@@ -124,7 +125,11 @@ class RevenueStatsService
             ? round((($ordersToday - $ordersYesterday) / $ordersYesterday) * 100, 1)
             : null;
 
-        $avgOrderValueToday = $ordersToday > 0 ? round($revenueToday / $ordersToday, 2) : 0;
+        // Avg order value: only paid orders today (consistent with revenue from payments)
+        $paidOrdersToday = Bill::query()
+            ->whereDate('paid_at', $todayStr)
+            ->count();
+        $avgOrderValueToday = $paidOrdersToday > 0 ? round($revenueToday / $paidOrdersToday, 2) : 0;
 
         $tipsToday = (float) \App\Models\Bill::query()
             ->whereDate('paid_at', $todayStr)
