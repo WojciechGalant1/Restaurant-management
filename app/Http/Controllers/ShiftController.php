@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Enums\ShiftType;
 use App\Enums\UserRole;
 use App\Models\Shift;
+use App\Models\ShiftClockIn;
 use App\Models\User;
+use App\Services\NotificationService;
 use App\Http\Requests\StoreShiftRequest;
 use App\Http\Requests\UpdateShiftRequest;
 use App\Services\ShiftCreationService;
@@ -20,7 +22,8 @@ class ShiftController extends Controller
         private CalendarRangeService $calendarRangeService,
         private ShiftCreationService $creationService,
         private ShiftAnalyticsService $analyticsService,
-        private ShiftCalendarService $calendarService
+        private ShiftCalendarService $calendarService,
+        private NotificationService $notificationService
     ) {}
 
     public function index(Request $request)
@@ -167,6 +170,35 @@ class ShiftController extends Controller
         $this->authorize('delete', $shift);
         $shift->delete();
         return redirect()->route('shifts.index')->with('success', 'Shift deleted successfully.');
+    }
+
+    public function clockIn(Request $request, Shift $shift)
+    {
+        if ($shift->user_id !== $request->user()->id) {
+            abort(403, __('You can only clock in to your own shift.'));
+        }
+
+        if (!$shift->isActive()) {
+            return back()->with('error', __('This shift is not currently active.'));
+        }
+
+        $exists = ShiftClockIn::where('shift_id', $shift->id)
+            ->where('user_id', $request->user()->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('info', __('You have already clocked in to this shift.'));
+        }
+
+        ShiftClockIn::create([
+            'shift_id' => $shift->id,
+            'user_id' => $request->user()->id,
+            'clocked_in_at' => now(),
+        ]);
+
+        $this->notificationService->clearCacheForUser($request->user()->id);
+
+        return back()->with('success', __('Clocked in successfully.'));
     }
 
     public function calendarEvents(Request $request)

@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
-use App\Models\OrderItem;
 use App\Policies\KitchenPolicy;
 use App\Policies\WaiterPolicy;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,5 +31,14 @@ class AppServiceProvider extends ServiceProvider
         // Waiter abilities
         Gate::define('waiter.view', [WaiterPolicy::class, 'view']);
         Gate::define('waiter.serve-item', [WaiterPolicy::class, 'serveItem']);
+
+        // Notifications for top bar
+        View::composer('layouts.app', function ($view) {
+            $notifications = [];
+            if (auth()->check()) {
+                $notifications = app(NotificationService::class)->getAlertsForUser(auth()->user());
+            }
+            $view->with('notifications', $notifications);
+        });
     }
 }

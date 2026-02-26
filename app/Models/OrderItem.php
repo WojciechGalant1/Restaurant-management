@@ -34,4 +34,9 @@ class OrderItem extends Model
     {
         return $this->belongsTo(MenuItem::class);
     }
+
+    public function cancellationRequest()
+    {
+        return $this->hasOne(OrderItemCancellationRequest::class);
+    }
 }

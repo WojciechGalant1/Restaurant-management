@@ -25,6 +25,20 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            @if($shiftNeedingClockIn ?? null)
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+                    <p class="text-amber-800 font-medium">
+                        {{ __('You have an active shift. Please clock in.') }}
+                    </p>
+                    <form action="{{ route('shifts.clock-in', $shiftNeedingClockIn) }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 font-medium">
+                            {{ __('Clock In') }}
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <p class="text-gray-600">{{ __('Welcome back') }}, <span class="font-bold">{{ Auth::user()->name }}</span>!</p>
 
             @if($sections['kpis'] ?? false)

@@ -95,9 +95,11 @@ class RevenueStatsService
         $revenueYesterday = $revenueByDate->get($yesterdayStr) ?? 0;
         $revenueLast7Avg = $revenueByDate->isEmpty() ? 0 : $revenueByDate->avg();
 
-        $revenueVsYesterday = $revenueYesterday > 0
-            ? round((($revenueToday - $revenueYesterday) / $revenueYesterday) * 100, 1)
-            : null;
+        $revenueVsYesterday = match (true) {
+            $revenueYesterday > 0 => round((($revenueToday - $revenueYesterday) / $revenueYesterday) * 100, 1),
+            $revenueYesterday == 0 && $revenueToday > 0 => 100.0,
+            default => 0.0,
+        };
         $revenueVsLastWeek = $revenueLast7Avg > 0
             ? round((($revenueToday - $revenueLast7Avg) / $revenueLast7Avg) * 100, 1)
             : null;

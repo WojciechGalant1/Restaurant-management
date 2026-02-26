@@ -41,12 +41,50 @@
 
                     <div class="hidden lg:block"></div>
 
-                    {{-- Right: notifications placeholder + profile dropdown --}}
+                    {{-- Right: notifications dropdown + profile dropdown --}}
                     <div class="flex items-center gap-x-3">
-                        {{-- Notifications placeholder --}}
-                        <button class="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition" title="{{ __('Notifications') }}">
-                            <x-heroicon-o-bell class="w-5 h-5" />
-                        </button>
+                        {{-- Notifications dropdown --}}
+                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                            <button @click="open = ! open" class="relative p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition" title="{{ __('Notifications') }}">
+                                <x-heroicon-o-bell class="w-5 h-5" />
+                                @if(count($notifications ?? []) > 0)
+                                    <span class="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                        {{ count($notifications) > 9 ? '9+' : count($notifications) }}
+                                    </span>
+                                @endif
+                            </button>
+                            <div x-show="open"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 z-50 mt-2 w-80 max-h-96 overflow-y-auto rounded-md shadow-lg ring-1 ring-black ring-opacity-5 bg-white"
+                                 style="display: none;">
+                                <div class="py-1">
+                                    <div class="px-4 py-2 border-b border-gray-100 text-sm font-semibold text-gray-700">
+                                        {{ __('Notifications') }}
+                                    </div>
+                                    @forelse($notifications ?? [] as $alert)
+                                        <a href="{{ $alert['link'] }}" class="block px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
+                                            <div class="flex items-start gap-2">
+                                                <span class="shrink-0 mt-0.5 w-2 h-2 rounded-full
+                                                    {{ $alert['severity'] === 'critical' ? 'bg-red-500' : '' }}
+                                                    {{ $alert['severity'] === 'warning' ? 'bg-amber-500' : '' }}
+                                                    {{ $alert['severity'] === 'info' ? 'bg-blue-500' : '' }}
+                                                "></span>
+                                                <span class="text-sm text-gray-800">{{ $alert['message'] }}</span>
+                                            </div>
+                                        </a>
+                                    @empty
+                                        <div class="px-4 py-6 text-sm text-gray-500 text-center">
+                                            {{ __('No new notifications') }}
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
 
                         {{-- Profile dropdown --}}
                         <x-dropdown align="right" width="48">

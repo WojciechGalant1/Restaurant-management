@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\Shift;
+use App\Models\ShiftClockIn;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,6 +59,15 @@ class DashboardController extends Controller
             $data['topDishes'] = $this->dashboard->topDishesToday(5);
             $data['bestWaiter'] = $this->dashboard->bestWaiterByRevenueToday();
             $data['mostUsedPaymentMethod'] = $this->dashboard->mostUsedPaymentMethodToday();
+        }
+
+        // Active shift needing clock-in (for non-managers)
+        $data['shiftNeedingClockIn'] = null;
+        if ($user->role !== UserRole::Manager) {
+            $activeShift = Shift::where('user_id', $user->id)->activeNow()->first();
+            if ($activeShift && !ShiftClockIn::where('shift_id', $activeShift->id)->where('user_id', $user->id)->exists()) {
+                $data['shiftNeedingClockIn'] = $activeShift;
+            }
         }
 
         return response()

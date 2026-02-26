@@ -80,7 +80,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $this->authorize('view', $order);
-        $order->load(['table', 'waiter', 'orderItems.menuItem.dish', 'bills.payments', 'bills.invoice']);
+        $order->load(['table', 'waiter', 'orderItems.menuItem.dish', 'orderItems.cancellationRequest', 'bills.payments', 'bills.invoice']);
         return view('orders.show', compact('order'));
     }
 
@@ -94,7 +94,7 @@ class OrderController extends Controller
                 ->with('error', __('Order is locked. Cancel the open bill first to edit.'));
         }
 
-        $order->load(['orderItems.menuItem.dish']);
+        $order->load(['orderItems.menuItem.dish', 'orderItems.cancellationRequest']);
         $tables = Table::where('status', 'available')->orWhere('id', $order->table_id)->orderBy('table_number')->get();
         $menuItems = MenuItem::with('dish')->where('is_available', true)->get();
         return view('orders.edit', compact('order', 'tables', 'menuItems'));
@@ -110,8 +110,16 @@ class OrderController extends Controller
                 ->with('error', __('Order is locked. Cancel the open bill first to edit.'));
         }
 
-        $order = $this->orderService->updateOrder($order, $request->validated());
-        return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
+        $result = $this->orderService->updateOrder($order, $request->validated());
+        $order = $result['order'];
+        $requestsCreated = $result['cancellation_requests_created'] ?? 0;
+
+        $message = __('Order updated successfully.');
+        if ($requestsCreated > 0) {
+            $message = __('Order updated. :count item(s) require manager approval for cancellation.', ['count' => $requestsCreated]);
+        }
+
+        return redirect()->route('orders.show', $order)->with('success', $message);
     }
 
     public function destroy(Order $order)

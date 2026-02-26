@@ -46,6 +46,11 @@ class Shift extends Model
         return $this->hasMany(TableAssignment::class);
     }
 
+    public function clockIns()
+    {
+        return $this->hasMany(ShiftClockIn::class);
+    }
+
     public function crossesMidnight(): bool
     {
         return $this->end_time < $this->start_time;
