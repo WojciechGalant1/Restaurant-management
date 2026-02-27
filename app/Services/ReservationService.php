@@ -21,7 +21,8 @@ class ReservationService
 
         $reservation = Reservation::create($data);
 
-        if ($reservation->table) {
+        // Only mark as Reserved if the reservation is actually for today
+        if ($reservation->table && $reservation->reservation_date->isToday()) {
             $reservation->table->markAsReserved();
         }
 
@@ -57,6 +58,27 @@ class ReservationService
         });
     }
 
+    public function updateReservation(Reservation $reservation, array $data): void
+    {
+        $oldTableId = $reservation->table_id;
+        $oldDate = $reservation->reservation_date;
+
+        $reservation->update($data);
+
+        // Sync old table if it changed or if date changed
+        if ($oldTableId !== $reservation->table_id || !$oldDate->isSameDay($reservation->reservation_date)) {
+            $oldTable = Table::find($oldTableId);
+            if ($oldTable) {
+                $this->releaseTableIfFree($oldTable);
+            }
+        }
+
+        // Sync current table status
+        $this->syncTableStatusAfterReservation($reservation, $reservation->status);
+        
+        event(new ReservationUpdated($reservation));
+    }
+
     public function updateStatus(Reservation $reservation, ReservationStatus|string $newStatus): void
     {
         if (is_string($newStatus)) {
@@ -82,7 +104,10 @@ class ReservationService
         }
 
         match ($newStatus) {
-            ReservationStatus::Confirmed => $table->markAsReserved(),
+            // Only mark as Reserved if the reservation is for today
+            ReservationStatus::Confirmed => Carbon::parse($reservation->reservation_date)->isToday()
+                ? $table->markAsReserved()
+                : $this->releaseTableIfFree($table),
             ReservationStatus::WalkInSeated => $table->markAsOccupied(),
             ReservationStatus::Seated => $table->markAsOccupied(),
             ReservationStatus::Completed,
@@ -98,8 +123,10 @@ class ReservationService
             ->where('status', OrderStatus::Open)
             ->exists();
 
+        // Only count today's reservations — future confirmed reservations should not block table release
         $hasActiveReservations = Reservation::where('table_id', $table->id)
             ->whereIn('status', [ReservationStatus::Confirmed, ReservationStatus::WalkInSeated, ReservationStatus::Seated])
+            ->whereDate('reservation_date', today())
             ->exists();
 
         if (!$hasOpenOrders && !$hasActiveReservations) {

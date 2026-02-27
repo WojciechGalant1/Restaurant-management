@@ -44,6 +44,22 @@ class TablePolicy
     }
 
     /**
+     * Allow waiter to mark their assigned table as cleaned (Cleaning → Available).
+     * Manager and Host can always complete cleaning.
+     */
+    public function completeCleaning(User $user, Table $table): bool
+    {
+        if (in_array($user->role, [UserRole::Manager, UserRole::Host], true)) {
+            return true;
+        }
+        if ($user->role === UserRole::Waiter) {
+            $assignment = $table->activeAssignment;
+            return $assignment && $assignment->user_id === $user->id;
+        }
+        return false;
+    }
+
+    /**
      * Determine whether the user can restore the model.
      */
     public function restore(User $user, Table $table): bool

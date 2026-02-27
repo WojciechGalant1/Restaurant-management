@@ -7,7 +7,7 @@ enum TableStatus: string
     case Available = 'available';
     case Occupied = 'occupied';
     case Reserved = 'reserved';
-    case Cleaning = 'cleaning'; //todo
+    case Cleaning = 'cleaning';
 
     public function label(): string
     {
@@ -15,6 +15,7 @@ enum TableStatus: string
             self::Available => 'Available',
             self::Occupied => 'Occupied',
             self::Reserved => 'Reserved',
+            self::Cleaning => 'Cleaning',
         };
     }
 }

@@ -115,6 +115,12 @@ class Table extends Model
         event(new TableStatusUpdated($this));
     }
 
+    public function markAsCleaning(): void
+    {
+        $this->update(['status' => TableStatus::Cleaning]);
+        event(new TableStatusUpdated($this));
+    }
+
     // --- Scopes ---
 
     /**

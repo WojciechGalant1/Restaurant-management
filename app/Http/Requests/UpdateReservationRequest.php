@@ -17,7 +17,7 @@ class UpdateReservationRequest extends FormRequest
             'table_id' => 'sometimes|exists:tables,id',
             'customer_name' => 'sometimes|string',
             'phone_number' => 'sometimes|string',
-            'reservation_date' => 'sometimes|date',
+            'reservation_date' => 'sometimes|date|after_or_equal:today',
             'party_size' => 'sometimes|integer|min:1',
         ];
     }

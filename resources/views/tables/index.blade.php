@@ -57,6 +57,10 @@
                         {{ __('Occupied') }}
                     </span>
                     <span class="flex items-center">
+                        <span class="w-3 h-3 rounded-full bg-orange-500 mr-1.5"></span>
+                        {{ __('Cleaning') }}
+                    </span>
+                    <span class="flex items-center">
                         <span class="w-3 h-3 rounded-full bg-amber-500 mr-1.5"></span>
                         {{ __('Reserved') }}
                     </span>
@@ -219,6 +223,7 @@
                                                 :class="{
                                                     'bg-green-100 text-green-800': table.status === 'available',
                                                     'bg-red-100 text-red-800': table.status === 'occupied',
+                                                    'bg-orange-100 text-orange-800': table.status === 'cleaning',
                                                     'bg-yellow-100 text-yellow-800': table.status === 'reserved',
                                                 }"
                                                 x-text="table.status_label">
@@ -262,6 +267,7 @@
                                  :class="{
                                     'bg-emerald-50': modalTable.status === 'available',
                                     'bg-red-50': modalTable.status === 'occupied',
+                                    'bg-orange-50': modalTable.status === 'cleaning',
                                     'bg-amber-50': modalTable.status === 'reserved',
                                  }">
                                 <div>
@@ -310,18 +316,22 @@
                                 </div>
                                 @endif
 
-                                @if($isHost ?? false)
-                                <div class="border-t pt-3 mt-3">
-                                    <form :action="`{{ url('tables') }}/${modalTable.id}/seat-walk-in`" method="POST">
+                                <div class="border-t pt-3 mt-3 space-y-2" x-show="(isHost && modalTable.status === 'available') || modalTable.status === 'cleaning'">
+                                    @if($isHost ?? false)
+                                    <form x-show="modalTable.status === 'available'" :action="`{{ url('tables') }}/${modalTable.id}/seat-walk-in`" method="POST">
                                         @csrf
-                                        <button type="submit"
-                                                class="w-full px-3 py-2 mt-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                                :disabled="modalTable.status !== 'available'">
+                                        <button type="submit" class="w-full px-3 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">
                                             {{ __('Seat Walk-in') }}
                                         </button>
                                     </form>
+                                    @endif
+                                    <form x-show="modalTable.status === 'cleaning'" :action="`{{ url('tables') }}/${modalTable.id}/complete-cleaning`" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-full px-3 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md">
+                                            {{ __('Clear table') }}
+                                        </button>
+                                    </form>
                                 </div>
-                                @endif
 
                                 @if($isManager ?? false)
                                 <div class="space-y-3">

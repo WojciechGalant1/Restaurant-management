@@ -93,7 +93,7 @@ class OrderService
 
 
 
-    public function updateOrder(Order $order, array $data): Order
+    public function updateOrder(Order $order, array $data): array
     {
         return DB::transaction(function () use ($order, $data) {
             if (isset($data['table_id'])) {
@@ -207,7 +207,9 @@ class OrderService
             ->exists();
 
         if (!$hasOtherOpenOrders) {
-            $table->markAsAvailable();
+            $order->status === OrderStatus::Paid
+                ? $table->markAsCleaning()
+                : $table->markAsAvailable();
         }
     }
 }

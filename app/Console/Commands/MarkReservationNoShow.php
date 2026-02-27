@@ -24,17 +24,22 @@ class MarkReservationNoShow extends Command
         $graceMinutes = (int) $this->option('grace');
         $cutoff = now()->subMinutes($graceMinutes);
 
+        // Find confirmed reservations that are past their scheduled time (reservation_date + reservation_time)
+        // using a single query structure for clarity.
         $reservations = Reservation::where('status', ReservationStatus::Confirmed)
+            ->where(function ($q) use ($cutoff) {
+                // Case A: Date is in the past
+                $q->whereDate('reservation_date', '<', $cutoff->toDateString())
+                  // Case B: Date is today, but time is past cutoff
+                  ->orWhere(function ($q2) use ($cutoff) {
+                      $q2->whereDate('reservation_date', $cutoff->toDateString())
+                         ->whereTime('reservation_time', '<', $cutoff->format('H:i:s'));
+                  });
+            })
             ->get();
 
         $marked = 0;
         foreach ($reservations as $reservation) {
-            $slot = $reservation->reservation_date->copy()->setTimeFromTimeString(
-                $reservation->reservation_time->format('H:i:s')
-            );
-            if ($slot->gte($cutoff)) {
-                continue;
-            }
             try {
                 $this->reservationService->updateStatus($reservation, ReservationStatus::NoShow);
                 $marked++;

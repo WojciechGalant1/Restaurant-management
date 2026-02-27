@@ -126,7 +126,7 @@ class BillService
             ->exists();
 
         if (!$hasOtherOpenOrders && !$hasActiveReservations) {
-            $table->markAsAvailable();
+            $table->markAsCleaning();
         }
     }
 

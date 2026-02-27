@@ -26,7 +26,7 @@ class NotificationService
     private const UNSERVED_TABLE_MINUTES = 10;
     private const UPCOMING_RESERVATION_MIN = 10;
     private const UPCOMING_RESERVATION_MAX = 20;
-    private const NO_SHOW_MINUTES = 20;
+    private const NO_SHOW_MINUTES = 15;
     private const STAFF_LATE_CLOCKIN_MINUTES = 15;
 
     public function __construct(
@@ -251,7 +251,7 @@ class NotificationService
             ];
         }
 
-        // No-show: Confirmed, reservation_time > 20 min ago
+        // No-show: Confirmed, reservation_time > 15 min ago
         $noShowCutoff = $now->copy()->subMinutes(self::NO_SHOW_MINUTES);
         $noShows = Reservation::with('table')
             ->whereDate('reservation_date', $today)
@@ -271,9 +271,10 @@ class NotificationService
                 : substr((string) $r->reservation_time, 0, 5);
             $alerts[] = [
                 'type' => 'no_show_alert',
-                'message' => __('Rezerwacja \':name\' (:time) spóźnia się 20 minut. Anulować?', [
+                'message' => __('Rezerwacja \':name\' (:time) spóźnia się :minutes minut. Anulować?', [
                     'name' => $r->customer_name,
                     'time' => $timeStr,
+                    'minutes' => self::NO_SHOW_MINUTES,
                 ]),
                 'link' => route('reservations.edit', $r),
                 'severity' => 'warning',

@@ -40,11 +40,13 @@
                 @php
                     $statusOrder = [
                         \App\Enums\TableStatus::Occupied->value,
+                        \App\Enums\TableStatus::Cleaning->value,
                         \App\Enums\TableStatus::Reserved->value,
                         \App\Enums\TableStatus::Available->value,
                     ];
                     $statusLabels = [
                         \App\Enums\TableStatus::Occupied->value => __('Occupied'),
+                        \App\Enums\TableStatus::Cleaning->value => __('Cleaning'),
                         \App\Enums\TableStatus::Reserved->value => __('Reserved'),
                         \App\Enums\TableStatus::Available->value => __('Available'),
                     ];
@@ -59,6 +61,7 @@
                                 <h4 class="text-sm font-medium text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-2">
                                     <span class="inline-block w-2 h-2 rounded-full
                                         {{ $statusValue === \App\Enums\TableStatus::Occupied->value ? 'bg-red-500' : '' }}
+                                        {{ $statusValue === \App\Enums\TableStatus::Cleaning->value ? 'bg-orange-500' : '' }}
                                         {{ $statusValue === \App\Enums\TableStatus::Reserved->value ? 'bg-yellow-500' : '' }}
                                         {{ $statusValue === \App\Enums\TableStatus::Available->value ? 'bg-green-500' : '' }}"></span>
                                     {{ $statusLabels[$statusValue] ?? ucfirst($statusValue) }} ({{ $groupTables->count() }})
@@ -72,6 +75,7 @@
                             @endphp
                             <div class="bg-white rounded-lg shadow border-l-4
                                 {{ $status === \App\Enums\TableStatus::Occupied ? 'border-red-400' : '' }}
+                                {{ $status === \App\Enums\TableStatus::Cleaning ? 'border-orange-400' : '' }}
                                 {{ $status === \App\Enums\TableStatus::Reserved ? 'border-yellow-400' : '' }}
                                 {{ $status === \App\Enums\TableStatus::Available ? 'border-green-400' : '' }}">
                                 <div class="p-4">
@@ -80,6 +84,7 @@
                                         <span class="text-xs px-2 py-0.5 rounded-full
                                             {{ $status === \App\Enums\TableStatus::Available ? 'bg-green-100 text-green-800' : '' }}
                                             {{ $status === \App\Enums\TableStatus::Occupied ? 'bg-red-100 text-red-800' : '' }}
+                                            {{ $status === \App\Enums\TableStatus::Cleaning ? 'bg-orange-100 text-orange-800' : '' }}
                                             {{ $status === \App\Enums\TableStatus::Reserved ? 'bg-yellow-100 text-yellow-800' : '' }}">
                                             {{ $status instanceof \App\Enums\TableStatus ? $status->label() : ucfirst($table->status) }}
                                         </span>
@@ -122,7 +127,13 @@
                                         <a href="{{ route('orders.show', $activeOrder) }}" class="block w-full text-center py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                                             {{ __('Open Order') }}
                                         </a>
-                                    
+                                    @elseif($status === \App\Enums\TableStatus::Cleaning)
+                                        <form action="{{ route('tables.complete-cleaning', $table) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="w-full py-2 px-4 rounded-lg text-sm font-medium bg-orange-600 hover:bg-orange-700 text-white transition">
+                                                {{ __('Clear table') }}
+                                            </button>
+                                        </form>
                                     @endif
                                 </div>
                             </div>

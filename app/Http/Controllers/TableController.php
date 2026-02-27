@@ -169,4 +169,20 @@ class TableController extends Controller
 
         return redirect()->route('tables.index')->with('success', __('Walk-in guests seated.'));
     }
+
+    /**
+     * Mark table as cleaned (Cleaning → Available). Waiter/Manager/Host.
+     */
+    public function completeCleaning(Table $table)
+    {
+        $this->authorize('completeCleaning', $table);
+
+        if ($table->status !== TableStatus::Cleaning) {
+            return back()->with('error', __('Only tables in cleaning status can be marked as cleaned.'));
+        }
+
+        $table->markAsAvailable();
+
+        return back()->with('success', __('Table marked as available.'));
+    }
 }

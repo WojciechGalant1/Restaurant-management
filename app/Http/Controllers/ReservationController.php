@@ -132,7 +132,7 @@ class ReservationController extends Controller
 
         $validated = $request->validated();
         if (!empty($validated)) {
-            $reservation->update($validated);
+            $this->reservationService->updateReservation($reservation, $validated);
         }
 
         return redirect()->route('reservations.index')->with('success', 'Reservation updated successfully.');

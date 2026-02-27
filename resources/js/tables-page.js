@@ -14,6 +14,11 @@ export default function tablesPage(page = {}) {
             dot: 'bg-red-500',
             text: 'text-red-700',
         },
+        cleaning: {
+            cardBg: 'bg-orange-50 border-orange-300 hover:border-orange-500',
+            dot: 'bg-orange-500',
+            text: 'text-orange-700',
+        },
         reserved: {
             cardBg: 'bg-amber-50 border-amber-300 hover:border-amber-500',
             dot: 'bg-amber-500',

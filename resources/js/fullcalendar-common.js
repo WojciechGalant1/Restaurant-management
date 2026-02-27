@@ -82,7 +82,13 @@ export function initFullCalendar(options) {
 
         dateClick: (info) => {
             if (createUrl) {
-                window.location.href = `${createUrl}?date=${info.dateStr}`;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const clicked = new Date(info.date);
+                clicked.setHours(0, 0, 0, 0);
+                if (clicked >= today) {
+                    window.location.href = `${createUrl}?date=${info.dateStr}`;
+                }
             }
         },
     });

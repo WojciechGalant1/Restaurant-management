@@ -36,6 +36,7 @@
                             <select id="status" name="status" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="{{ \App\Enums\TableStatus::Available->value }}" {{ old('status', $table->status instanceof \App\Enums\TableStatus ? $table->status->value : $table->status) === \App\Enums\TableStatus::Available->value ? 'selected' : '' }}>Available</option>
                                 <option value="{{ \App\Enums\TableStatus::Occupied->value }}" {{ old('status', $table->status instanceof \App\Enums\TableStatus ? $table->status->value : $table->status) === \App\Enums\TableStatus::Occupied->value ? 'selected' : '' }}>Occupied</option>
+                                <option value="{{ \App\Enums\TableStatus::Cleaning->value }}" {{ old('status', $table->status instanceof \App\Enums\TableStatus ? $table->status->value : $table->status) === \App\Enums\TableStatus::Cleaning->value ? 'selected' : '' }}>Cleaning</option>
                                 <option value="{{ \App\Enums\TableStatus::Reserved->value }}" {{ old('status', $table->status instanceof \App\Enums\TableStatus ? $table->status->value : $table->status) === \App\Enums\TableStatus::Reserved->value ? 'selected' : '' }}>Reserved</option>
                             </select>
                             <x-input-error :messages="$errors->get('status')" class="mt-2" />

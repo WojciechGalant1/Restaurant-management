@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('tables', TableController::class);
     Route::post('tables/{table}/assign', [TableController::class, 'assign'])->name('tables.assign');
     Route::post('tables/{table}/seat-walk-in', [TableController::class, 'seatWalkIn'])->name('tables.seat-walk-in');
+    Route::post('tables/{table}/complete-cleaning', [TableController::class, 'completeCleaning'])->name('tables.complete-cleaning');
     Route::resource('rooms', RoomController::class);
     Route::post('reservations/{reservation}/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
     Route::post('reservations/{reservation}/seat', [ReservationController::class, 'seat'])->name('reservations.seat');

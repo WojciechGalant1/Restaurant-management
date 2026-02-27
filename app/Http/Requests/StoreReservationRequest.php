@@ -17,7 +17,7 @@ class StoreReservationRequest extends FormRequest
             'table_id' => 'required|exists:tables,id',
             'customer_name' => 'required|string',
             'phone_number' => 'required|string',
-            'reservation_date' => 'required|date',
+            'reservation_date' => 'required|date|after_or_equal:today',
             'reservation_time' => 'required',
             'party_size' => 'required|integer|min:1',
             'duration_minutes' => 'required|integer|min:15|max:480',

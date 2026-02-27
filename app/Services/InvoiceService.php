@@ -83,7 +83,7 @@ class InvoiceService
             ->exists();
 
         if (!$hasOtherOpenOrders && !$hasActiveReservations) {
-            $table->markAsAvailable();
+            $table->markAsCleaning();
         }
     }
 

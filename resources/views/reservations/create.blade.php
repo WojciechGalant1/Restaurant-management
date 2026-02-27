@@ -34,7 +34,7 @@
                             <div>
                                 <x-input-label for="reservation_date" :value="__('Date')" />
                                 <x-text-input id="reservation_date" name="reservation_date" type="date" class="mt-1 block w-full"
-                                              x-model="reservationDate" @input="fetchAvailableTables()" required />
+                                              min="{{ now()->format('Y-m-d') }}" x-model="reservationDate" @input="fetchAvailableTables()" required />
                                 <x-input-error :messages="$errors->get('reservation_date')" class="mt-2" />
                             </div>
                             <div>
@@ -174,7 +174,7 @@
             'availableTablesUrl' => route('reservations.available-tables'),
             'customerByPhoneUrl' => route('reservations.customer-by-phone'),
             'partySize' => old('party_size', 2),
-            'reservationDate' => old('reservation_date', now()->format('Y-m-d')),
+            'reservationDate' => old('reservation_date', request()->query('date') ? substr(request()->query('date'), 0, 10) : now()->format('Y-m-d')),
             'reservationTime' => old('reservation_time', '19:00'),
             'durationMinutes' => (int) old('duration_minutes', 120),
             'customerName' => old('customer_name', ''),
