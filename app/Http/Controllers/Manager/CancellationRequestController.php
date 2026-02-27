@@ -49,7 +49,7 @@ class CancellationRequestController extends Controller
 
         $order->update([
             'total_price' => $order->orderItems()
-                ->whereNot('status', OrderItemStatus::Cancelled)
+                ->whereNotIn('status', [OrderItemStatus::Cancelled, OrderItemStatus::Voided])
                 ->get()
                 ->sum(fn ($i) => $i->quantity * $i->unit_price),
         ]);

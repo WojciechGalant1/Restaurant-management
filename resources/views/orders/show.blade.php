@@ -73,7 +73,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                @foreach($order->orderItems->where('status', '!=', \App\Enums\OrderItemStatus::Cancelled) as $item)
+                                @foreach($order->orderItems->whereNotIn('status', [\App\Enums\OrderItemStatus::Cancelled, \App\Enums\OrderItemStatus::Voided]) as $item)
                                     <tr class="{{ $item->cancellationRequest?->isPending() ? 'bg-amber-50' : '' }}">
                                         <td class="px-4 py-3 text-sm text-gray-900 font-medium">
                                             {{ $item->menuItem->dish->name ?? 'Unknown item' }}

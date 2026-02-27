@@ -26,7 +26,7 @@ class BillService
         return DB::transaction(function () use ($order) {
             $order->load('orderItems');
 
-            $allowedItemStatuses = [OrderItemStatus::Served, OrderItemStatus::Cancelled];
+            $allowedItemStatuses = [OrderItemStatus::Served, OrderItemStatus::Cancelled, OrderItemStatus::Voided];
             $unserved = $order->orderItems->filter(
                 fn ($item) => ! in_array($item->status, $allowedItemStatuses, true)
             );

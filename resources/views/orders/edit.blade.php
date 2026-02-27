@@ -12,6 +12,8 @@
             'quantity' => $i->quantity,
             'unit_price' => (float) $i->unit_price,
             'notes' => $i->notes ?? '',
+            'status' => $i->status->value,
+            'cancel_action' => null,
         ])->values();
     @endphp
     <div class="py-6">
@@ -21,9 +23,10 @@
                     items: @js($itemsForEdit),
                     menuItems: @js($menuItems),
                     addItem() {
-                        this.items.push({ id: null, menu_item_id: null, quantity: 1, unit_price: 0, notes: '' });
+                        this.items.push({ id: null, menu_item_id: null, quantity: 1, unit_price: 0, notes: '', status: '{{ \App\Enums\OrderItemStatus::Pending->value }}', cancel_action: null });
                     },
                     removeItem(index) {
+                        if (this.items[index].id) return;
                         this.items.splice(index, 1);
                     },
                     updatePrice(index) {
@@ -33,13 +36,19 @@
                             this.items[index].unit_price = menuItem.price;
                         }
                     },
+                    isTerminal(item) {
+                        return ['{{ \App\Enums\OrderItemStatus::Cancelled->value }}', '{{ \App\Enums\OrderItemStatus::Voided->value }}'].includes(item.cancel_action || item.status);
+                    },
                     get total() {
-                        return this.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2);
+                        return this.items
+                            .filter(item => !this.isTerminal(item))
+                            .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
+                            .toFixed(2);
                     }
                 }">
                     @csrf
                     @method('PUT')
-                    
+
                     <div class="mb-8">
                         <x-input-label for="table_id" :value="__('Table')" />
                         <select id="table_id" name="table_id" class="mt-1 block w-1/3 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
@@ -63,12 +72,14 @@
                                 <template x-if="item.id">
                                     <input type="hidden" :name="'items['+index+'][id]'" :value="item.id">
                                 </template>
+                                <input type="hidden" :name="'items['+index+'][cancel_action]'" :value="item.cancel_action ?? ''">
                                 <div class="flex-grow">
                                     <x-input-label :value="__('Dish')" />
                                     <select
                                         :name="'items['+index+'][menu_item_id]'"
                                         x-model.number="item.menu_item_id"
                                         @change="updatePrice(index)"
+                                        :disabled="isTerminal(item)"
                                         class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                         required>
                                         <option value="">Select a dish</option>
@@ -79,7 +90,7 @@
                                 </div>
                                 <div class="w-24">
                                     <x-input-label :value="__('Qty')" />
-                                    <x-text-input type="number" x-bind:name="'items['+index+'][quantity]'" x-model="item.quantity" min="1" class="mt-1 block w-full" required />
+                                    <x-text-input type="number" x-bind:name="'items['+index+'][quantity]'" x-model="item.quantity" min="1" class="mt-1 block w-full" x-bind:disabled="isTerminal(item)" required />
                                 </div>
                                 <div class="w-32">
                                     <x-input-label :value="__('Price')" />
@@ -90,12 +101,24 @@
                                 </div>
                                 <div class="w-40">
                                     <x-input-label :value="__('Notes')" />
-                                    <x-text-input type="text" x-bind:name="'items['+index+'][notes]'" x-model="item.notes" class="mt-1 block w-full" placeholder="Optional" />
+                                    <x-text-input type="text" x-bind:name="'items['+index+'][notes]'" x-model="item.notes" class="mt-1 block w-full" x-bind:disabled="isTerminal(item)" placeholder="Optional" />
                                 </div>
-                                <div>
-                                    <button type="button" @click="removeItem(index)" class="mb-1 text-red-600 hover:text-red-900">
-                                        <x-heroicon-o-trash class="w-6 h-6" />
-                                    </button>
+                                <div class="flex flex-col gap-2">
+                                    <template x-if="!item.id">
+                                        <button type="button" @click="removeItem(index)" class="mb-1 text-red-600 hover:text-red-900" title="{{ __('Remove unsaved item') }}">
+                                            <x-heroicon-o-trash class="w-6 h-6" />
+                                        </button>
+                                    </template>
+                                    <template x-if="item.id && item.status !== '{{ \App\Enums\OrderItemStatus::Served->value }}' && item.status !== '{{ \App\Enums\OrderItemStatus::Cancelled->value }}' && item.status !== '{{ \App\Enums\OrderItemStatus::Voided->value }}'">
+                                        <div class="flex flex-col gap-1">
+                                            <button type="button" @click="item.cancel_action = '{{ \App\Enums\OrderItemStatus::Voided->value }}'" class="text-xs px-2 py-1 bg-amber-100 text-amber-800 rounded hover:bg-amber-200">{{ __('Void') }}</button>
+                                            <button type="button" @click="item.cancel_action = '{{ \App\Enums\OrderItemStatus::Cancelled->value }}'" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">{{ __('Cancel') }}</button>
+                                            <button type="button" x-show="item.cancel_action" @click="item.cancel_action = null" class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">{{ __('Undo') }}</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="isTerminal(item)">
+                                        <span class="text-xs font-semibold text-gray-600 uppercase" x-text="item.cancel_action || item.status"></span>
+                                    </template>
                                 </div>
                             </div>
                         </template>

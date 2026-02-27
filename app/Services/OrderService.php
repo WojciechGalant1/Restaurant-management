@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Events\OrderCreated;
 use App\Events\OrderItemCancelled;
 use App\Events\OrderItemCreated;
+use App\Events\OrderItemStatusUpdated;
 use App\Models\Order;
 use App\Models\OrderItemCancellationRequest;
 use App\Models\Table;
@@ -110,12 +111,45 @@ class OrderService
                         'unit_price' => (float) $item['unit_price'],
                         'notes' => $item['notes'] ?? null,
                     ];
+
                     if (!empty($item['id']) && (int) $item['id'] > 0) {
                         $orderItem = $order->orderItems()->find((int) $item['id']);
-                        if ($orderItem) {
-                            $orderItem->update($payload);
-                            $submittedIds[] = $orderItem->id;
+                        if (!$orderItem) {
+                            continue;
                         }
+
+                        $cancelAction = $item['cancel_action'] ?? null;
+                        if ($cancelAction === OrderItemStatus::Voided->value) {
+                            $orderItem->update(['status' => OrderItemStatus::Voided]);
+                            event(new OrderItemStatusUpdated($orderItem));
+                            $submittedIds[] = $orderItem->id;
+                            continue;
+                        }
+
+                        if ($cancelAction === OrderItemStatus::Cancelled->value) {
+                            $amount = (float) ($orderItem->quantity * $orderItem->unit_price);
+                            if ($amount >= self::CANCELLATION_APPROVAL_THRESHOLD) {
+                                if (!$orderItem->cancellationRequest?->isPending()) {
+                                    OrderItemCancellationRequest::create([
+                                        'order_item_id' => $orderItem->id,
+                                        'requested_by' => auth()->id(),
+                                        'amount' => $amount,
+                                        'reason' => null,
+                                        'status' => 'pending',
+                                    ]);
+                                    $cancellationRequestsCreated++;
+                                }
+                            } else {
+                                $orderItem->update(['status' => OrderItemStatus::Cancelled]);
+                                event(new OrderItemCancelled($orderItem));
+                            }
+
+                            $submittedIds[] = $orderItem->id;
+                            continue;
+                        }
+
+                        $orderItem->update($payload);
+                        $submittedIds[] = $orderItem->id;
                     } else {
                         $orderItem = $order->orderItems()->create(array_merge($payload, ['status' => OrderItemStatus::Pending]));
                         $orderItem->refresh();
@@ -124,35 +158,14 @@ class OrderService
                     }
                 }
 
-                $removedItems = $order->orderItems()->whereNotIn('id', $submittedIds)->get();
-                foreach ($removedItems as $orderItem) {
-                    if (in_array($orderItem->status, [OrderItemStatus::Pending, OrderItemStatus::Preparing])) {
-                        $amount = (float) ($orderItem->quantity * $orderItem->unit_price);
-                        if ($amount >= self::CANCELLATION_APPROVAL_THRESHOLD) {
-                            if (!$orderItem->cancellationRequest?->isPending()) {
-                                OrderItemCancellationRequest::create([
-                                'order_item_id' => $orderItem->id,
-                                'requested_by' => auth()->id(),
-                                'amount' => $amount,
-                                'reason' => null,
-                                'status' => 'pending',
-                                ]);
-                                $cancellationRequestsCreated++;
-                            }
-                            // Item stays in order until manager approves
-                        } else {
-                            $orderItem->update(['status' => OrderItemStatus::Cancelled]);
-                            event(new OrderItemCancelled($orderItem));
-                        }
-                    } else {
-                        $orderItem->delete();
-                    }
-                }
+                // Existing items that are omitted from payload are intentionally kept.
+                // Waiters can append or edit items here, but they must not remove already
+                // persisted order lines by simply submitting a shorter list.
             }
 
             $order->update([
                 'total_price' => $order->orderItems()
-                    ->whereNot('status', OrderItemStatus::Cancelled)
+                    ->whereNotIn('status', [OrderItemStatus::Cancelled, OrderItemStatus::Voided])
                     ->get()
                     ->sum(fn ($i) => $i->quantity * $i->unit_price),
             ]);

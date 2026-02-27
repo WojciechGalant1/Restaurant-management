@@ -3,6 +3,7 @@ export default function kitchenDisplay(config = {}) {
         items: config.items || [],
         servedStatus: config.servedStatus,
         cancelledStatus: config.cancelledStatus,
+        voidedStatus: config.voidedStatus,
         justNowLabel: config.justNowLabel || 'just now',
 
         init() {
@@ -56,12 +57,12 @@ export default function kitchenDisplay(config = {}) {
                     .listen('.OrderItemStatusUpdated', (e) => {
                         const index = this.items.findIndex((i) => i.id === e.id);
                         if (index !== -1) {
-                            if (e.status === this.servedStatus || e.status === this.cancelledStatus) {
+                            if (e.status === this.servedStatus || e.status === this.cancelledStatus || e.status === this.voidedStatus) {
                                 this.items = this.items.filter((i) => i.id !== e.id);
                             } else {
                                 this.items[index] = { ...this.items[index], ...e };
                             }
-                        } else if (e.status !== this.servedStatus && e.status !== this.cancelledStatus) {
+                        } else if (e.status !== this.servedStatus && e.status !== this.cancelledStatus && e.status !== this.voidedStatus) {
                             this.items.unshift(e);
                         }
                     });

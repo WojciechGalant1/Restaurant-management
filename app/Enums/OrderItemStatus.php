@@ -9,6 +9,7 @@ enum OrderItemStatus: string
     case Ready = 'ready';
     case Served = 'served';
     case Cancelled = 'cancelled';
+    case Voided = 'voided';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum OrderItemStatus: string
             self::Ready => 'Ready',
             self::Served => 'Served',
             self::Cancelled => 'Cancelled',
+            self::Voided => 'Voided',
         };
     }
 }
