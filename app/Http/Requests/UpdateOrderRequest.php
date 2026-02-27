@@ -25,6 +25,7 @@ class UpdateOrderRequest extends FormRequest
             'items.*.unit_price' => 'required_with:items|numeric',
             'items.*.notes' => 'nullable|string',
             'items.*.cancel_action' => 'sometimes|nullable|in:voided,cancelled',
+            'items.*.cancel_reason' => 'required_if:items.*.cancel_action,voided,items.*.cancel_action,cancelled|nullable|string|max:500',
         ];
     }
 }

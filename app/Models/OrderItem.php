@@ -17,6 +17,7 @@ class OrderItem extends Model
         'unit_price',
         'notes',
         'status',
+        'cancellation_reason',
         'ready_at',
     ];
 

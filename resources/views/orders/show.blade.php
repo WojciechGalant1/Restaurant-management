@@ -12,8 +12,13 @@
                         </a>
                     @endif
                 @endcan
-                @php $openBill = $order->openBill(); $paidBill = $order->paidBill(); @endphp
-                @if(!$openBill && !$paidBill && $order->orderItems->isNotEmpty())
+                @php
+                    $openBill = $order->openBill();
+                    $paidBill = $order->paidBill();
+                    $billableItems = $order->orderItems->whereNotIn('status', [\App\Enums\OrderItemStatus::Cancelled, \App\Enums\OrderItemStatus::Voided]);
+                    $allServed = $billableItems->isEmpty() || $billableItems->every(fn($i) => $i->status === \App\Enums\OrderItemStatus::Served);
+                @endphp
+                @if(!$openBill && !$paidBill && $order->orderItems->isNotEmpty() && $allServed)
                     @can('create', \App\Models\Bill::class)
                         <form action="{{ route('orders.bill.store', $order) }}" method="POST" class="inline">
                             @csrf

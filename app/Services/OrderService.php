@@ -119,8 +119,12 @@ class OrderService
                         }
 
                         $cancelAction = $item['cancel_action'] ?? null;
+                        $cancelReason = $item['cancel_reason'] ?? null;
                         if ($cancelAction === OrderItemStatus::Voided->value) {
-                            $orderItem->update(['status' => OrderItemStatus::Voided]);
+                            $orderItem->update([
+                                'status' => OrderItemStatus::Voided,
+                                'cancellation_reason' => $cancelReason,
+                            ]);
                             event(new OrderItemStatusUpdated($orderItem));
                             $submittedIds[] = $orderItem->id;
                             continue;
@@ -134,13 +138,16 @@ class OrderService
                                         'order_item_id' => $orderItem->id,
                                         'requested_by' => auth()->id(),
                                         'amount' => $amount,
-                                        'reason' => null,
+                                        'reason' => $cancelReason,
                                         'status' => 'pending',
                                     ]);
                                     $cancellationRequestsCreated++;
                                 }
                             } else {
-                                $orderItem->update(['status' => OrderItemStatus::Cancelled]);
+                                $orderItem->update([
+                                    'status' => OrderItemStatus::Cancelled,
+                                    'cancellation_reason' => $cancelReason,
+                                ]);
                                 event(new OrderItemCancelled($orderItem));
                             }
 

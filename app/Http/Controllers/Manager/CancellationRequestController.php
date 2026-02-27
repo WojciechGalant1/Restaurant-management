@@ -44,7 +44,10 @@ class CancellationRequestController extends Controller
 
         $orderItem = $cancellationRequest->orderItem;
         $order = $orderItem->order;
-        $orderItem->update(['status' => OrderItemStatus::Cancelled]);
+        $orderItem->update([
+            'status' => OrderItemStatus::Cancelled,
+            'cancellation_reason' => $cancellationRequest->reason,
+        ]);
         event(new OrderItemCancelled($orderItem));
 
         $order->update([

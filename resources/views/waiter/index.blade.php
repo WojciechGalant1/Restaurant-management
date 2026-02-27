@@ -101,13 +101,17 @@
                                                 {{ \Carbon\Carbon::parse($reservation->reservation_time)->format('H:i') }} · {{ $reservation->party_size }} {{ __('guests') }}
                                             </p>
                                             @if($reservation->status === \App\Enums\ReservationStatus::Confirmed)
-                                                <form action="{{ route('waiter.reservation.mark-seated', $reservation) }}" method="POST" class="mt-2">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="w-full py-1.5 px-2 rounded text-xs font-medium bg-green-600 hover:bg-green-700 text-white transition">
-                                                        {{ __('Seat guests') }}
-                                                    </button>
-                                                </form>
+                                                @if(in_array(auth()->user()->role, [\App\Enums\UserRole::Host, \App\Enums\UserRole::Manager]))
+                                                    <form action="{{ route('waiter.reservation.mark-seated', $reservation) }}" method="POST" class="mt-2">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="w-full py-1.5 px-2 rounded text-xs font-medium bg-green-600 hover:bg-green-700 text-white transition">
+                                                            {{ __('Seat guests') }}
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <p class="text-xs text-gray-500 mt-2">{{ __('Contact host to seat guests') }}</p>
+                                                @endif
                                             @else
                                                 <p class="text-xs font-medium px-2 py-1 rounded
                                                     {{ $reservation->status === \App\Enums\ReservationStatus::Pending ? 'bg-yellow-100 text-yellow-800' : '' }}

@@ -14,16 +14,18 @@
             'notes' => $i->notes ?? '',
             'status' => $i->status->value,
             'cancel_action' => null,
+            'cancel_reason' => '',
         ])->values();
     @endphp
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <form method="POST" action="{{ route('orders.update', $order) }}" x-data="{
+    <div class="py-6" x-data="{
                     items: @js($itemsForEdit),
                     menuItems: @js($menuItems),
+                    cancelModalOpen: false,
+                    pendingCancelIndex: null,
+                    pendingCancelAction: null,
+                    pendingCancelReason: '',
                     addItem() {
-                        this.items.push({ id: null, menu_item_id: null, quantity: 1, unit_price: 0, notes: '', status: '{{ \App\Enums\OrderItemStatus::Pending->value }}', cancel_action: null });
+                        this.items.push({ id: null, menu_item_id: null, quantity: 1, unit_price: 0, notes: '', status: '{{ \App\Enums\OrderItemStatus::Pending->value }}', cancel_action: null, cancel_reason: '' });
                     },
                     removeItem(index) {
                         if (this.items[index].id) return;
@@ -36,6 +38,27 @@
                             this.items[index].unit_price = menuItem.price;
                         }
                     },
+                    openCancelModal(index, action) {
+                        this.pendingCancelIndex = index;
+                        this.pendingCancelAction = action;
+                        this.pendingCancelReason = '';
+                        this.cancelModalOpen = true;
+                    },
+                    confirmCancel() {
+                        if (!this.pendingCancelReason.trim()) return;
+                        this.items[this.pendingCancelIndex].cancel_action = this.pendingCancelAction;
+                        this.items[this.pendingCancelIndex].cancel_reason = this.pendingCancelReason.trim();
+                        this.cancelModalOpen = false;
+                        this.pendingCancelIndex = null;
+                        this.pendingCancelAction = null;
+                        this.pendingCancelReason = '';
+                    },
+                    closeCancelModal() {
+                        this.cancelModalOpen = false;
+                        this.pendingCancelIndex = null;
+                        this.pendingCancelAction = null;
+                        this.pendingCancelReason = '';
+                    },
                     isTerminal(item) {
                         return ['{{ \App\Enums\OrderItemStatus::Cancelled->value }}', '{{ \App\Enums\OrderItemStatus::Voided->value }}'].includes(item.cancel_action || item.status);
                     },
@@ -44,8 +67,19 @@
                             .filter(item => !this.isTerminal(item))
                             .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
                             .toFixed(2);
+                    },
+                    validateBeforeSubmit() {
+                        const missing = this.items.find(item => (item.cancel_action === 'voided' || item.cancel_action === 'cancelled') && !(item.cancel_reason || '').trim());
+                        if (missing) {
+                            alert('{{ __('Reason is required for voided or cancelled items.') }}');
+                            return false;
+                        }
+                        return true;
                     }
                 }">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <form method="POST" action="{{ route('orders.update', $order) }}" @submit="if (!validateBeforeSubmit()) $event.preventDefault()">
                     @csrf
                     @method('PUT')
 
@@ -73,6 +107,7 @@
                                     <input type="hidden" :name="'items['+index+'][id]'" :value="item.id">
                                 </template>
                                 <input type="hidden" :name="'items['+index+'][cancel_action]'" :value="item.cancel_action ?? ''">
+                                <input type="hidden" :name="'items['+index+'][cancel_reason]'" :value="item.cancel_reason ?? ''">
                                 <div class="flex-grow">
                                     <x-input-label :value="__('Dish')" />
                                     <select
@@ -111,9 +146,9 @@
                                     </template>
                                     <template x-if="item.id && item.status !== '{{ \App\Enums\OrderItemStatus::Served->value }}' && item.status !== '{{ \App\Enums\OrderItemStatus::Cancelled->value }}' && item.status !== '{{ \App\Enums\OrderItemStatus::Voided->value }}'">
                                         <div class="flex flex-col gap-1">
-                                            <button type="button" @click="item.cancel_action = '{{ \App\Enums\OrderItemStatus::Voided->value }}'" class="text-xs px-2 py-1 bg-amber-100 text-amber-800 rounded hover:bg-amber-200">{{ __('Void') }}</button>
-                                            <button type="button" @click="item.cancel_action = '{{ \App\Enums\OrderItemStatus::Cancelled->value }}'" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">{{ __('Cancel') }}</button>
-                                            <button type="button" x-show="item.cancel_action" @click="item.cancel_action = null" class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">{{ __('Undo') }}</button>
+                                            <button type="button" @click="openCancelModal(index, '{{ \App\Enums\OrderItemStatus::Voided->value }}')" class="text-xs px-2 py-1 bg-amber-100 text-amber-800 rounded hover:bg-amber-200">{{ __('Void') }}</button>
+                                            <button type="button" @click="openCancelModal(index, '{{ \App\Enums\OrderItemStatus::Cancelled->value }}')" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">{{ __('Cancel') }}</button>
+                                            <button type="button" x-show="item.cancel_action" @click="item.cancel_action = null; item.cancel_reason = ''" class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">{{ __('Undo') }}</button>
                                         </div>
                                     </template>
                                     <template x-if="isTerminal(item)">
@@ -140,5 +175,22 @@
                 </form>
             </div>
         </div>
-    </div>
+
+    {{-- Modal: Reason for void/cancel --}}
+    <div x-show="cancelModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="closeCancelModal()">
+        <div x-show="cancelModalOpen" x-transition class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Reason required') }}</h3>
+            <p class="text-sm text-gray-600 mb-4">{{ __('Please provide a reason for this action (audit trail).') }}</p>
+            <textarea x-model="pendingCancelReason" rows="3" placeholder="{{ __('e.g. Wrong order, guest changed mind...') }}"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="button" @click="closeCancelModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                    {{ __('Cancel') }}
+                </button>
+                <button type="button" @click="confirmCancel()" :disabled="!pendingCancelReason.trim()"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {{ __('Confirm') }}
+                </button>
+            </div>
+        </div>
 </x-app-layout>
