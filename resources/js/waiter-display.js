@@ -4,6 +4,7 @@ export default function waiterDisplay(config = {}) {
         readyStatus: config.readyStatus,
         servedStatus: config.servedStatus,
         cancelledStatus: config.cancelledStatus,
+        voidedStatus: config.voidedStatus,
         markServedUrlTemplate: config.markServedUrlTemplate || '',
 
         init() {
@@ -55,7 +56,7 @@ export default function waiterDisplay(config = {}) {
                             } else {
                                 this.items[index] = { ...this.items[index], ...e };
                             }
-                        } else if (e.status === this.servedStatus || e.status === this.cancelledStatus || e.status !== this.readyStatus) {
+                        } else if (e.status === this.servedStatus || e.status === this.cancelledStatus || e.status === this.voidedStatus || e.status !== this.readyStatus) {
                             if (index !== -1) this.items.splice(index, 1);
                         }
                     })

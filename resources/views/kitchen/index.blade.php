@@ -124,6 +124,7 @@
             ]),
             'servedStatus' => \App\Enums\OrderItemStatus::Served->value,
             'cancelledStatus' => \App\Enums\OrderItemStatus::Cancelled->value,
+            'voidedStatus' => \App\Enums\OrderItemStatus::Voided->value,
             'justNowLabel' => __('just now'),
         ]);
     </script>

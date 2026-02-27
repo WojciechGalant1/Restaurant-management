@@ -251,6 +251,7 @@
             'readyStatus' => \App\Enums\OrderItemStatus::Ready->value,
             'servedStatus' => \App\Enums\OrderItemStatus::Served->value,
             'cancelledStatus' => \App\Enums\OrderItemStatus::Cancelled->value,
+            'voidedStatus' => \App\Enums\OrderItemStatus::Voided->value,
             'markServedUrlTemplate' => route('waiter.mark-served', ':id'),
         ]);
     </script>
