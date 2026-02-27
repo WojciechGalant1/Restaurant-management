@@ -52,9 +52,15 @@
                         </a>
                     @endif
                 @endif
-                <a href="{{ route('orders.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
-                    {{ __('Back to List') }}
-                </a>
+                @if(auth()->user()->role === \App\Enums\UserRole::Waiter)
+                    <a href="{{ route('waiter.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+                        {{ __('Back to Waiter View') }}
+                    </a>
+                @else
+                    <a href="{{ route('orders.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+                        {{ __('Back to List') }}
+                    </a>
+                @endif
             </div>
         </div>
     </x-slot>

@@ -1,6 +1,12 @@
 import './bootstrap';
 
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+import 'tippy.js/themes/light-border.css';
+
 import Alpine from 'alpinejs';
+
+window.tippy = tippy;
 import tablesPage from './tables-page';
 import dashboardLiveFeed from './dashboard-live-feed';
 import shiftCreateForm from './shift-create-form';

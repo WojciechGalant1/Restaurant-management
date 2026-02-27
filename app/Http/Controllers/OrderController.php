@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\MenuItem;
+use App\Models\Reservation;
+use App\Enums\ReservationStatus;
 use App\Enums\TableStatus;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -74,7 +76,7 @@ class OrderController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('orders.show', $order)->with('success', 'Order created successfully.');
+        return redirect()->route('orders.edit', $order)->with('success', 'Order created successfully.');
     }
 
     public function show(Order $order)
@@ -94,10 +96,15 @@ class OrderController extends Controller
                 ->with('error', __('Order is locked. Cancel the open bill first to edit.'));
         }
 
-        $order->load(['orderItems.menuItem.dish', 'orderItems.cancellationRequest']);
-        $tables = Table::where('status', 'available')->orWhere('id', $order->table_id)->orderBy('table_number')->get();
+        $order->load(['orderItems.menuItem.dish', 'orderItems.cancellationRequest', 'table', 'waiter']);
         $menuItems = MenuItem::with('dish')->where('is_available', true)->get();
-        return view('orders.edit', compact('order', 'tables', 'menuItems'));
+        $menuItemsGrouped = $menuItems->groupBy(fn ($m) => $m->dish?->category?->value ?? 'other');
+        $guests = Reservation::where('table_id', $order->table_id)
+            ->whereIn('status', [ReservationStatus::Seated, ReservationStatus::WalkInSeated])
+            ->whereDate('reservation_date', $order->ordered_at->toDateString())
+            ->orderByDesc('reservation_time')
+            ->first()?->party_size;
+        return view('orders.edit', compact('order', 'menuItems', 'menuItemsGrouped', 'guests'));
     }
 
     public function update(UpdateOrderRequest $request, Order $order)
