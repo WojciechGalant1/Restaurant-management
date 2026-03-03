@@ -110,6 +110,24 @@ services:
             - mysql
             - redis
         command: [ 'php', 'artisan', 'schedule:work' ]
+    queue:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.5
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: sail-8.5/app
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - mysql
+            - redis
+        command: [ 'php', 'artisan', 'queue:work', 'redis', '--tries=3' ]
 networks:
     sail:
         driver: bridge
