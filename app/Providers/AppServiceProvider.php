@@ -35,10 +35,12 @@ class AppServiceProvider extends ServiceProvider
         // Notifications for top bar
         View::composer('layouts.app', function ($view) {
             $notifications = [];
+            $notificationUserRole = null;
             if (auth()->check()) {
                 $notifications = app(NotificationService::class)->getAlertsForUser(auth()->user());
+                $notificationUserRole = auth()->user()->role?->value;
             }
-            $view->with('notifications', $notifications);
+            $view->with('notifications', $notifications)->with('notificationUserRole', $notificationUserRole);
         });
     }
 }
