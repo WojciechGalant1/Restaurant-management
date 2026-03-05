@@ -13,8 +13,12 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->date('date');
             $table->enum('shift_type', ['morning', 'evening', 'full_day']);
+            $table->time('start_time');
+            $table->time('end_time');
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'date', 'shift_type']);
         });
     }
 

@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('table_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // waiter
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade'); // waiter
             $table->enum('status', ['open', 'paid', 'cancelled'])->default('open');
             $table->decimal('total_price', 10, 2)->default(0);
             $table->timestamp('ordered_at')->useCurrent();

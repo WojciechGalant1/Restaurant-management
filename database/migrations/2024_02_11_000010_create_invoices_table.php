@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->onDelete('cascade');
+            $table->foreignId('bill_id')->constrained()->onDelete('cascade');
             $table->string('invoice_number')->unique();
             $table->decimal('amount', 10, 2);
             $table->string('tax_id')->nullable(); // NIP etc.
             $table->string('customer_name')->nullable();
-            $table->enum('payment_method', ['cash', 'card', 'online'])->default('card');
             $table->timestamp('issued_at')->useCurrent();
             $table->timestamps();
         });

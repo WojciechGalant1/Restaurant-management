@@ -19,23 +19,10 @@ return new class extends Migration
             $table->unique(['table_id', 'shift_id']);
             $table->index(['user_id', 'shift_id']);
         });
-
-        Schema::table('tables', function (Blueprint $table) {
-            $table->dropForeign(['waiter_id']);
-            $table->dropIndex(['waiter_id']);
-            $table->dropIndex('tables_waiter_id_status_index');
-            $table->dropColumn('waiter_id');
-        });
     }
 
     public function down(): void
     {
-        Schema::table('tables', function (Blueprint $table) {
-            $table->foreignId('waiter_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->index('waiter_id');
-            $table->index(['waiter_id', 'status']);
-        });
-
         Schema::dropIfExists('table_assignments');
     }
 };

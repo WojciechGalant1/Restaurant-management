@@ -12,16 +12,13 @@ return new class extends Migration
             $table->id();
             $table->integer('table_number')->unique();
             $table->integer('capacity');
-            $table->enum('status', ['available', 'occupied', 'reserved'])->default('available');
-            $table->foreignId('waiter_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
+            $table->enum('status', ['available', 'occupied', 'reserved', 'cleaning'])->default('available');
+            $table->foreignId('room_id')->nullable()->constrained()->nullOnDelete();
+            $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
 
-            $table->index('waiter_id');
             $table->index('status');
-            $table->index(['waiter_id', 'status']);
+            $table->index('room_id');
         });
     }
 
