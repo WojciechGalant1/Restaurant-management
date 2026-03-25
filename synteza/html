@@ -1,0 +1,387 @@
+# Podsumowanie przeglądu literatury
+
+<style>
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 11px; line-height: 1.4; }
+    th, td { border: 1px solid #aaa; padding: 10px; text-align: left; vertical-align: top; }
+    th { background-color: #eeeeee; font-weight: bold; text-transform: uppercase; color: #333; }
+    tr:nth-child(even) { background-color: #fdfdfd; }
+    h2 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 8px; margin-top: 40px; font-family: "Segoe UI", sans-serif; }
+    .lp-col { width: 30px; text-align: center; }
+    ul { margin: 0; padding-left: 15px; }
+    li { margin-bottom: 3px; }
+</style>
+
+## 2.1 Charakterystyka frameworka Laravel i ekosystemu PHP
+
+<table>
+    <thead>
+        <tr>
+            <th class="lp-col">Lp.</th>
+            <th>Autorzy</th>
+            <th>Tytuł</th>
+            <th>Cel badań / Hipotezy</th>
+            <th>Metodyka badań: stanowisko / scenariusze / narzędzia</th>
+            <th>Zbiór danych / Oceniane narzędzia</th>
+            <th>Wyniki</th>
+            <th>Wnioski (max. 3)</th>
+            <th>Opis artykułu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="lp-col">1.</td>
+            <td>Ahmed, M. K.; Bello, A. H.; Jauro, S. S.; Dawaki, M.</td>
+            <td>A comparative analysis of performance optimization techniques for benchmarking PHP frameworks: Laravel and Codeigniter</td>
+            <td>Porównanie technik optymalizacji wydajności w Laravel i CodeIgniter (czas odpowiedzi, przepustowość).</td>
+            <td>Apache JMeter, Xdebug, New Relic. 1-10 użytkowników, 1-1000 iteracji.</td>
+            <td>Laravel, CodeIgniter (PHP)</td>
+            <td>CodeIgniter baseline szybciej; Laravel zyskuje znacząco po optymalizacji zapytań i pamięci.</td>
+            <td><ul><li>CodeIgniter szybciej "out of the box".</li><li>Laravel wykazuje większy potencjał optymalizacji.</li><li>Złożone projekty premiują Laravel.</li></ul></td>
+            <td>Eksperymentalny pomiar wpływu technik optymalizacji na czas odpowiedzi i przepustowość frameworków PHP.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">2.</td>
+            <td>Niarman, A.; Iswandi; Candri, A. K.</td>
+            <td>Comparative Analysis of PHP Frameworks for Development of Academic Information System Using Load and Stress Testing</td>
+            <td>Zbadanie wydajności czystego PHP, CodeIgniter i Laravel w warunkach obciążenia.</td>
+            <td>JMeter (load testing 50-500 VU, stress testing 600-2000 VU). Pomiar czasu i pamięci w kodzie.</td>
+            <td>PHP, CodeIgniter, Laravel</td>
+            <td>CodeIgniter dominuje w RPS; czysty PHP najbardziej oszczędny w zużyciu pamięci RAM.</td>
+            <td><ul><li>CodeIgniter liderem stabilności i przepustowości.</li><li>Pure PHP najbardziej oszczędne w zasobach.</li><li>Laravel ma wysoki narzut przy bogatym ekosystemie.</li></ul></td>
+            <td>Benchmarking wydajności systemów akademickich zbudowanych w czystym PHP oraz popularnych frameworkach.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">3.</td>
+            <td>Rahman, M. H.; Naderuzzaman, M.; Kashem, M. A.; Salahuddin, B. M.; Mahmud, Z.</td>
+            <td>Comparative Study: Performance of MVC Frameworks on RDBMS</td>
+            <td>Wskazanie optymalnej kombinacji frameworka PHP i bazy danych (MySQL vs PostgreSQL) na 1 mln rekordów.</td>
+            <td>100 iteracji x 10 000 operacji losowych CRUD. Pomiar statystyczny czasów.</td>
+            <td>CodeIgniter, Laravel, Phalcon / MySQL, PgSQL (1 mln rekordów)</td>
+            <td>Phalcon w parze z PostgreSQL osiągnął najlepsze uśrednione czasy operacji CRUD.</td>
+            <td><ul><li>Relacja DB-framework kluczowa dla wydajności.</li><li>Phalcon + PostgreSQL najszybszą kombinacją.</li><li>Silnik bazy danych determinuje skalowalność frameworka.</li></ul></td>
+            <td>Analiza statystyczna wydajności operacji CRUD na dużych zbiorach danych w różnych silnikach bazodanowych.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">4.</td>
+            <td>Abutaleb, H.; Tamimi, A.; Alrawashdeh, T.</td>
+            <td>Empirical Study of Most Popular PHP Framework</td>
+            <td>Porównanie wydajności (RPS, RAM) 7 popularnych frameworków PHP.</td>
+            <td>Apache Benchmark ("Hello world", ładowanie tabeli) - kompilacja starszych analiz.</td>
+            <td>Laravel, CodeIgniter, Symfony, Symfony2, Phalcon, CakePHP, Yii</td>
+            <td>Laravel osiągnął szczytową przepustowość 3000 RPS; Phalcon najniższą latencję (3.1 ms).</td>
+            <td><ul><li>Laravel liderem pod względem liczby żądań na sekundę.</li><li>Phalcon minimalizuje czas ładowania plików.</li><li>Dobór narzędzia powinien wynikać ze specyfiki projektu.</li></ul></td>
+            <td>Zestawienie porównawcze najpopularniejszych frameworków PHP oparte na zagregowanych wynikach testów "Hello World".</td>
+        </tr>
+        <tr>
+            <td class="lp-col">5.</td>
+            <td>Khan, S.; Khanam, A. T.</td>
+            <td>Study on MVC Framework for Web Development in PHP</td>
+            <td>Przegląd literatury wzorca MVC w PHP skupiony na ciężarze architektonicznym CodeIgniter vs Laravel.</td>
+            <td>Analiza literaturowa (nie-eksperymentalna).</td>
+            <td>CodeIgniter, Laravel</td>
+            <td>CodeIgniter minimalny narzut architektoniczny; Laravel rozbudowany ORM i system routingu.</td>
+            <td><ul><li>CodeIgniter optymalny dla małych i szybkich aplikacji.</li><li>Laravel dedykowany dla systemów klasy enterprise.</li><li>Wzorzec MVC zwiększa poziom bezpieczeństwa aplikacji.</li></ul></td>
+            <td>Przegląd teoretyczny różnic architektonicznych między lekkimi a rozbudowanymi frameworkami PHP.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">6.</td>
+            <td>Dhaniswara, A.; Kusumasari, T. F.; Alam, E. N.</td>
+            <td>Performance Evaluation of Laravel Application Deployment on Docker</td>
+            <td>Porównanie klasycznego PHP-FPM+Nginx (model żądań) z FrankenPHP+Octane (model long-running) w Dockerze.</td>
+            <td>JMeter - 100 VU przez 10 min. Śledzenie CPU/RAM w Docker stats. 2 endpointy API.</td>
+            <td>Laravel: Nginx+FPM vs FrankenPHP+Octane</td>
+            <td>FrankenPHP skrócił czas odpowiedzi o ok. 15% przy lekkim ruchu w porównaniu do PHP-FPM.</td>
+            <td><ul><li>Serwery long-running znacząco przyspieszają obsługę zapytań.</li><li>Tryb Worker wiąże się z większym obciążeniem RAM.</li><li>Warstwa aplikacji pozostaje wąskim gardłem przy ciężkich zapytaniach.</li></ul></td>
+            <td>Ewaluacja nowoczesnych metod wdrażania Laravela w środowisku kontenerowym z użyciem modeli długo działających w pamięci.</td>
+        </tr>
+    </tbody>
+</table>
+
+## 2.2 NestJS i ekosystem Node.js
+
+<table>
+    <thead>
+        <tr>
+            <th class="lp-col">Lp.</th>
+            <th>Autorzy</th>
+            <th>Tytuł</th>
+            <th>Cel badań / Hipotezy</th>
+            <th>Metodyka badań: stanowisko / scenariusze / narzędzia</th>
+            <th>Zbiór danych / Oceniane narzędzia</th>
+            <th>Wyniki</th>
+            <th>Wnioski (max. 3)</th>
+            <th>Opis artykułu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="lp-col">7.</td>
+            <td>Lundar, J.; Grønli, T.-M.</td>
+            <td>Performance Evaluation of a Modern Web Architecture</td>
+            <td>Analiza Node.js vs Jetty i czyste Websockets vs Long-polling w czasie rzeczywistym.</td>
+            <td>JMeter & Custom TCP Dumps (do pakietów sieciowych). Żądania 1K - 12.5K reqs.</td>
+            <td>Node.js, Jetty, WebSockets, REST, własny custom client</td>
+            <td>Node.js z WebSockets przesyła 5x mniej danych niż model Long Polling w Javie Jetty.</td>
+            <td><ul><li>Architektura zdarzeniowa minimalizuje opóźnienia sieciowe.</li><li>WebSockets drastycznie redukują rozmiar przesyłanych danych.</li><li>Node.js wydajniej zarządza zasobami CPU niż wątkowa Java.</li></ul></td>
+            <td>Badanie efektywności protokołów komunikacji czasu rzeczywistego w różnych modelach serwerowych.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">8.</td>
+            <td>Krishna, V.</td>
+            <td>Scalable and Efficient Backend Development with Node.js: Architecture, Performance, and use Cases</td>
+            <td>H: Node.js pokona Javę/Jango pod dużym I/O. H: Node zużywa mniej RAM.</td>
+            <td>JMeter pod 100/500/1000 użytkowników na EC2. Test REST API (DB-read).</td>
+            <td>Node (Express), Django (Python), Spring Boot (Java) / MySQL</td>
+            <td>Node.js (Express) utrzymał najniższą latencję i stabilny RAM przy obciążeniu 1000 VU.</td>
+            <td><ul><li>Node.js osiąga wyższą wydajność w scenariuszach intensywnego I/O.</li><li>Stabilne zużycie pamięci przy wzroście liczby użytkowników.</li><li>Trudności występują przy obliczeniach typu CPU-bound.</li></ul></td>
+            <td>Eksperyment porównujący skalowalność asynchronicznego modelu Node.js z tradycyjnymi frameworkami Pythona i Javy.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">9.</td>
+            <td>Arroziqi, A.; Susanty, M.</td>
+            <td>Bridging Monolith and Microservices: A Modular Monolith Architecture for Scalable RESTful Applications Using NestJS</td>
+            <td>Modularyzm w NestJS zmniejsza dług techniczny i ułatwia skalowanie.</td>
+            <td>Sonarqube (dług tech), JMeter (obciążenie 500-1000VU), RESTful statystyka.</td>
+            <td>Tradycyjny monolit vs NestJS (Modular). Aplikacja "Tahsin"</td>
+            <td>Model Modular Monolith w NestJS zredukował dług techniczny o 30% i zwiększył throughput zapisu.</td>
+            <td><ul><li>Modułowość podnosi długoterminową utrzymywalność kodu.</li><li>Zwiększona wydajność zapytań POST pod obciążeniem.</li><li>Tradycyjny monolit zachowuje przewagę w najprostszych operacjach GET.</li></ul></td>
+            <td>Analiza metryk jakości kodu i przepustowości dla aplikacji opartej na architekturze modularnej w NestJS.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">10.</td>
+            <td>Alasmar, I.</td>
+            <td>Evaluating the Performance of the Node.js Frameworks Express, Fastify, and NestJS in Modern Cloud Environments</td>
+            <td>Porównanie frameworków Node na AWS Lambda (serverless) od małego do gigantycznego loadu.</td>
+            <td>AWS Lambda. Artillery (100, 1000, 10 000 VU). Akcja POST bez baz danych.</td>
+            <td>Express, Fastify, NestJS</td>
+            <td>NestJS wykazał szczytowy throughput przy 10k VU mimo wysokich opóźnień cold-start.</td>
+            <td><ul><li>Fastify zapewnia najlepszy kompromis szybkości i zasobów.</li><li>NestJS jest wysoce efektywny przy ekstremalnej współbieżności.</li><li>Cold boot jest kluczowym problemem dla NestJS w chmurze.</li></ul></td>
+            <td>Benchmarking frameworków Node.js w środowisku Serverless pod kątem opóźnień rozruchowych i skalowalności.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">11.</td>
+            <td>Munirov, J. J.</td>
+            <td>NestJS vs Express.js: A Comprehensive Comparison</td>
+            <td>Analiza zalet i wad obydwu środowisk jako pomost miedzy mini- a makro rozwiązaniami.</td>
+            <td>Przegląd teoretyczny. Zbieranie konsensusu środowisk devs z dokumentacji.</td>
+            <td>ExpressJS, NestJS</td>
+            <td>Express.js dominował w szybkości prototypowania; NestJS stabilniej wspiera duże systemy (DI/IoC).</td>
+            <td><ul><li>Express.js optymalny dla szybkiego startu projektu.</li><li>NestJS ułatwia zarządzanie logiką w złożonych systemach.</li><li>Wybór zależy od wymagań biznesowych i doświadczenia zespołu.</li></ul></td>
+            <td>Teoretyczne porównanie filozofii projektowania i ekosystemów czołowych rozwiązań Node.js.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">12.</td>
+            <td>Pratama, I P. A. E.; Raharja, I M. S.</td>
+            <td>Node.js Performance Benchmarking and Analysis at VirtualBox, Docker, and Podman Environment</td>
+            <td>Zależność między maszyną wirtualną (wydaność) a 11 frameworkami Node'owymi.</td>
+            <td>Metoda biblioteczna Node-Bench we frameworkach pod Docker/Podman i VBox.</td>
+            <td>11 platform Node.js (VBox, Docker, Podman), Sequelize, MySQL</td>
+            <td>Docker w parze z Fastify zapewnił najwyższą liczbę RPS i najniższą latencję.</td>
+            <td><ul><li>Konteneryzacja oferuje znacznie wyższą wydajność niż wirtualizacja.</li><li>Wybór ORM (Sequelize) istotnie wpływa na czasy odpowiedzi.</li><li>Platforma Docker dominuje w testach przepustowości Node.js.</li></ul></td>
+            <td>Wielowymiarowy pomiar wpływu warstwy konteneryzacji na parametry pracy różnych frameworków JavaScript.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">13.</td>
+            <td>Iyer, G.</td>
+            <td>Node.js: Event Driven Concurrency for Web Applications</td>
+            <td>Node.js jest wyjściem na problem C10k w oparciu o zdarzenia (Asynchronicznie)</td>
+            <td>Przegląd architektury procesorowo-zadaniowych pod V8 i pętlą eventów C10k.</td>
+            <td>Model wątkowy (Thread) vs Model zdarzeniowy (Event)</td>
+            <td>Event loop w Node.js obsłużył 10k połączeń bez narzutu związanego z przełączaniem kontekstu wątków.</td>
+            <td><ul><li>Model asynchroniczny rozwiązuje problem limitów C10k.</li><li>Brak narzutu przy przełączaniu zadań zwiększa throughput.</li><li>Naturalna skalowalność w systemach opartych na zdarzeniach.</li></ul></td>
+            <td>Techniczny opis mechanizmów współbieżności w modelu non-blocking I/O na przykładzie silnika V8.</td>
+        </tr>
+    </tbody>
+</table>
+
+## 2.3 Mapowanie obiektowo-relacyjne (ORM) i warstwa danych
+
+<table>
+    <thead>
+        <tr>
+            <th class="lp-col">Lp.</th>
+            <th>Autorzy</th>
+            <th>Tytuł</th>
+            <th>Cel badań / Hipotezy</th>
+            <th>Metodyka badań: stanowisko / scenariusze / narzędzia</th>
+            <th>Zbiór danych / Oceniane narzędzia</th>
+            <th>Wyniki</th>
+            <th>Wnioski (max. 3)</th>
+            <th>Opis artykułu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="lp-col">14.</td>
+            <td>Zhadko-Bazilevych, S.</td>
+            <td>Analysis of ORM Framework Approaches for Node.js</td>
+            <td>Porównanie szybkości Sequelize, Prisma, TypeORM dla aplikacji sklepowych (Postgres).</td>
+            <td>1000 zapytań (single, parallel, nested/joins, transakcje). Pomiary czasów SQL i I/O.</td>
+            <td>Sequelize, Prisma, TypeORM / PostgreSQL</td>
+            <td>Prisma osiągnęła 2-3x lepszą wydajność przy zapytaniach równoległych; TypeORM najsprawniejszy przy danych hierarchicznych.</td>
+            <td><ul><li>Użycie ORM w Node.js zazwyczaj podwaja czas trwania zapytań.</li><li>Prisma jest liderem w efektywnym zarządzaniu pulą połączeń.</li><li>Złożone złączenia stanowią główne obciążenie dla abstrakcji ORM.</li></ul></td>
+            <td>Porównanie efektywności popularnych narzędzi mapowania obiektowego w zadaniach o różnym stopniu skomplikowania logicznego.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">15.</td>
+            <td>Halimi, H.</td>
+            <td>Comparison of Performance Between Raw SQL and Eloquent ORM in Laravel</td>
+            <td>Wpływ warstwy danych na wydajność. Hipoteza: ORM zawsze i wszędzie spowalnia.</td>
+            <td>Debugger Laravel. Używano Faker. Zestaw 10 000 powtórzeń insert/update i JOIN-y.</td>
+            <td>Eloquent ORM, Raw SQL w PHP / MySQL</td>
+            <td>Eloquent ORM był ok. 10x wolniejszy niż surowy SQL przy zapytaniach z 4 complex JOINs.</td>
+            <td><ul><li>Raw SQL jest niezbędny przy operacjach masowych i raportach.</li><li>Eloquent generuje duży narzut pamięciowy i procesowy.</li><li>Wydajność ORM drastycznie spada wraz ze złożonością relacji.</li></ul></td>
+            <td>Ilościowe badanie degradacji wydajności aplikacji Laravel wynikającej z abstrakcji warstwy bazodanowej.</td>
+        </tr>
+    </tbody>
+</table>
+
+## 2.4 Bezpośrednie porównania PHP / Node.js w REST i innych architekturach
+
+<table>
+    <thead>
+        <tr>
+            <th class="lp-col">Lp.</th>
+            <th>Autorzy</th>
+            <th>Tytuł</th>
+            <th>Cel badań / Hipotezy</th>
+            <th>Metodyka badań: stanowisko / scenariusze / narzędzia</th>
+            <th>Zbiór danych / Oceniane narzędzia</th>
+            <th>Wyniki</th>
+            <th>Wnioski (max. 3)</th>
+            <th>Opis artykułu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="lp-col">16.</td>
+            <td>Siahaan, M.; Wijaya, R. W.</td>
+            <td>Performance Comparison Between Laravel and ExpressJs Framework Using Apache JMeter</td>
+            <td>REST API dla powrotów po 1000 userów: Laravel a ExpressJS (zobacz kto ulega limitom)</td>
+            <td>Jmeter 100-1000 VU na prostym wielkim GECIE (Digital Ocean).</td>
+            <td>Laravel 10 (PHP), ExpressJS 18+ (Node) / MySQL</td>
+            <td>Laravel osiągnął lepsze wyniki przy odczycie dużych paczek (1.7s vs 10.8s w Express dla 1000 rekordów).</td>
+            <td><ul><li>Laravel wykazuje wysoką efektywność przy odczycie dużych zbiorów danych.</li><li>Express.js może ulegać nasyceniu przy specyficznej implementacji MySQL.</li><li>Node.js wykazuje większą wrażliwość na obciążenia CPU w tym scenariuszu.</li></ul></td>
+            <td>Bezpośrednie starcie Laravel i Express.js w zadaniach wysokiej przepustowości danych relacyjnych.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">17.</td>
+            <td>Muttemwar, A.; Likhar, Y.; Bagade, R.</td>
+            <td>Comparative Analysis for Web Development Performance in Node.JS and Python Technologies</td>
+            <td>Co lepiej wybrać - Node czy Pythona (przegląd architektury) - nie dot. PHP</td>
+            <td>Metoda konsensusu na podstawie literaturowych metryk/wielkich wdrożeń.</td>
+            <td>Node.js (Express) vs Python (Flask)</td>
+            <td>Node.js dominuje w scenariuszach wysokiej współbieżności I/O; Python pozostaje liderem obliczeń numerycznych.</td>
+            <td><ul><li>Event Loop zapewnia przewagę w liczbie żądań na sekundę.</li><li>Python pozostaje rozwiązaniem pierwszego wyboru dla zadań CPU-bound.</li><li>Zróżnicowane ekosystemy silnie rzutują na celowość wyboru technologii.</li></ul></td>
+            <td>Zestawienie profilu wydajności technologii asynchronicznych (Node.js) z silnie typowanymi modelami obliczeniowymi.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">18.</td>
+            <td>Odeniran, Q.; Wimmer, H.; Rebman, C.</td>
+            <td>Node.js or PHP? Determining the Better Website Server Backend Scripting Language</td>
+            <td>Szybkość przetwarzania obliczeń - sortowania w Node vs PHP.</td>
+            <td>JMeter - 100 użytkowników w tabelach od 100 do 10 000 elementów z odczytem od standardów.</td>
+            <td>PHP Czyste vs Czysty Node (funkcje Sort m.in bubble, heap)</td>
+            <td>Node.js wykazał do 10x wyższą sprawność obliczeniową w algorytmicznych testach sortowania.</td>
+            <td><ul><li>Silnik V8 deklasuje Zend Engine w operacjach matematycznych.</li><li>Skalowalność PHP maleje przy wzroście n-elementowości danych.</li><li>Latencja w PHP rośnie wykładniczo przy zadaniach obliczeniowych.</li></ul></td>
+            <td>Badanie porównawcze czystej mocy obliczeniowej silników skryptowych przy wykorzystaniu klasycznych algorytmów.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">19.</td>
+            <td>Lei, K.; Ma, Y.; Tan, Z.</td>
+            <td>Performance Comparison and Evaluation of Web Development Technologies in PHP, Python, and Node.js</td>
+            <td>Którą technologie opartą na REST dać jako lidera współbieżności i RPSów?</td>
+            <td>Obciążenie przez Apache Bench. Testy fibbonachi i operacji Database. VU = do 1000</td>
+            <td>Node (Express), PHP (Apache), WebPy / MySQL</td>
+            <td>Node.js osiągnął 2x wyższy RPS niż PHP w testach ujednoliconych wstrzyknięć do bazy danych.</td>
+            <td><ul><li>Node.js jest optymalnym wyborem dla systemów I/O Intensive.</li><li>PHP zachowuje stabilność przy umiarkowanym obciążeniu.</li><li>Złożone zadania rekurencyjne obniżają wydajność obu platform.</li></ul></td>
+            <td>Benchmark wydajnościowy technologii REST oparty na testach syntetycznych i operacjach na bazie danych.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">20.</td>
+            <td>Zima, B.; Barszcz, M.</td>
+            <td>Comparative Analysis of Node.js Frameworks</td>
+            <td>NestJS vs Express pod mocny load (120k vusers).</td>
+            <td>2 aplikacje (Postgres + JWT). testowane 3 strumieniami po 40 000 hitów (jmeter)</td>
+            <td>ExpressJS, NestJS / Postgres</td>
+            <td>NestJS wykazał mniejszą stabilność pod szczytowym obciążeniem uwierzytelniania w porównaniu do Express.js.</td>
+            <td><ul><li>NestJS i Express.js oferują zbliżoną latencję w prostym REST.</li><li>Złożona logika auth może obnażać błędy wydajnościowe NestJS.</li><li>Express.js pozostaje bardziej stabilny przy ekstremalnych skokach ruchu.</li></ul></td>
+            <td>Badanie zachowania rozbudowanych frameworków Node.js pod wpływem symulowanego, gwałtownego wzrostu liczby użytkowników.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">21.</td>
+            <td>Szewczyk, M.; Skublewska-Paszkowska, M.</td>
+            <td>Performance Comparison of Development Frameworks in Selected Environments in REST API Architecture</td>
+            <td>Wzorcowe zmierzenie 5 frameworków do operacji REST (H: ASP/Spring > Django/Express).</td>
+            <td>Azure Container. 10minutowe loady (1-1000 records pull). Różny wachlarz REST</td>
+            <td>ASP, Spring, Express, Laravel, Django</td>
+            <td>ASP.NET Core został liderem przepustowości; Laravel zajął ostatnie miejsce w grupie testowej.</td>
+            <td><ul><li>Laravel cechuje się wyraźnie najniższą przepustowością w teście.</li><li>Express.js oferuje optymalny balans użycia zasobów CPU i RAM.</li><li>Platformy .NET wykazały najwyższą skalowalność w chmurze Azure.</li></ul></td>
+            <td>Porównawczy ranking pięciu frameworków webowych w ujednoliconym środowisku chmurowym.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">22.</td>
+            <td>Stępień, K.; Skublewska-Paszkowska, M.</td>
+            <td>Performance Evaluation of REST and GraphQL API Approaches in Data Retrieval Scenarios Using NestJS</td>
+            <td>REST vs GraphQL w NestJS dla operacji dużej zawiłości.</td>
+            <td>Grafana K6 - do 24 000 wirtualnych users na obydwu formatach. 4 tabele PostgreSQL</td>
+            <td>NestJS (REST vs GRAPH QL API)</td>
+            <td>GraphQL był 2x szybszy dla zapytań głęboko relacyjnych (4 stopnie) przy mniejszym payloadzie.</td>
+            <td><ul><li>GraphQL dominuje przy pobieraniu wysoce powiązanych danych.</li><li>REST zachowuje przewagę w pojedynczych, płaskich zapytaniach.</li><li>Wybór techniki API determinuje sprawność transmisji danych.</li></ul></td>
+            <td>Badanie efektywności różnych interfejsów dostępu do danych w ramach jednego frameworka (NestJS).</td>
+        </tr>
+    </tbody>
+</table>
+
+## 2.5 Metryki systemowe i charakterystyki profilowane narzędzi testingowych
+
+<table>
+    <thead>
+        <tr>
+            <th class="lp-col">Lp.</th>
+            <th>Autorzy</th>
+            <th>Tytuł</th>
+            <th>Cel badań / Hipotezy</th>
+            <th>Metodyka badań: stanowisko / scenariusze / narzędzia</th>
+            <th>Zbiór danych / Oceniane narzędzia</th>
+            <th>Wyniki</th>
+            <th>Wnioski (max. 3)</th>
+            <th>Opis artykułu</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="lp-col">23.</td>
+            <td>Khlamov, S.; Mendielieva, M.; Vovk, O.; Deineko, Z.</td>
+            <td>Comparative Analysis of Jmeter and Postman for API-Based Performance Testing</td>
+            <td>Które narzędzie testingowe (Postman vs JMeter) odzwierciedla w czym problem?</td>
+            <td>5 publicznych API. Profil "Ramp-up/Spike/Fixed" od 1 do 80 użytkowania po sekundzie.</td>
+            <td>JMETER, POSTMAN</td>
+            <td>JMeter utrzymał pełną wiarygodność pomiarów przy skokach sieciowych; Postman tracił logikę uderzeniową.</td>
+            <td><ul><li>JMeter jest jedynym profesjonalnym wyborem dla testów typu Spike.</li><li>Postman służy do funkcjonalnej weryfikacji API, nie obciążenia.</li><li>Narzędzie wpływa na wiarygodność wyników testowanego środowiska.</li></ul></td>
+            <td>Ocena wpływu wyboru oprogramowania testującego na precyzję zbieranych metryk wydajnościowych.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">24.</td>
+            <td>Barford, P.; Crovella, M.</td>
+            <td>Generating Representative Web Workloads for Network and Server Performance Evaluation</td>
+            <td>Wykazanie dlaczego dawne benchmarki (SPECweb) to mrzonka matematyczna vs Surf (Surge)</td>
+            <td>Wielowątkowe sekwencje obciążeń WWW skorelowanych matematycznie.</td>
+            <td>SURGE, Apache, SPECWeb96</td>
+            <td>Udowodniono "burstowy" charakter ruchu WWW w przeciwieństwie do mrzonki jednostajnych benchmarków.</td>
+            <td><ul><li>Obciążenie sieciowe ma charakter losowy i samopodobny.</li><li>Syntetyczne, jednostajne metryki dają fałszywy obraz wydajności.</li><li>Błędy w konfiguracji TCP powodują wycieki pamięci w badaniu.</li></ul></td>
+            <td>Praca naukowa nad matematycznym modelowaniem rzeczywistego obciążenia serwerów WWW.</td>
+        </tr>
+        <tr>
+            <td class="lp-col">25.</td>
+            <td>Yenugula, M.; Kodam, R.; He, D.</td>
+            <td>Performance and Load Testing: Tools and Challenges</td>
+            <td>Rozpoznanie oprogramowania symulującego testy użytkowe w ekosystemach serwerowych.</td>
+            <td>5 prób w seriach badających wyważenie Locust na pętli względem JMeter. Przegląd arch.</td>
+            <td>JMeter, Locust, k6</td>
+            <td>Locust okazał się sprawniejszy w szybkim skryptowaniu; JMeter dominuje w głębokiej analizie metryk.</td>
+            <td><ul><li>Locust optymalny do zwinnego prototypowania testów obciążeniowych.</li><li>JMeter stanowi standard branżowy dla kompleksowej analityki.</li><li>Różnice w wynikach zależą od charakterystyki testowanego API.</li></ul></td>
+            <td>Przegląd wyzwań i narzędzi stosowanych przy symulacji obciążeń w nowoczesnych ekosystemach IT.</td>
+        </tr>
+    </tbody>
+</table>
